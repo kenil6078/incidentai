@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-pulse-dot: pulseDot 1.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-in: animateIn 0.3s ease-out;
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.15); }
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes animateIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+body {
+    margin: 0;
+    font-family: 'Outfit', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #FAFAFA;
+    color: #09090B;
+}
+
+code, pre, .font-mono {
+    font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 98%;
+        --foreground: 240 10% 4%;
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 4%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 240 10% 4%;
+        --primary: 240 10% 4%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 240 5% 96%;
+        --secondary-foreground: 240 10% 4%;
+        --muted: 240 5% 96%;
+        --muted-foreground: 240 4% 46%;
+        --accent: 240 5% 96%;
+        --accent-foreground: 240 10% 4%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 6% 90%;
+        --input: 240 6% 90%;
+        --ring: 240 10% 4%;
+        --radius: 0.25rem;
+    }
+
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* Custom utilities */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+.pulse-dot {
+    @apply animate-pulse-dot;
+}
+
+/* Tracing beam for AI panel */
+.ai-panel-border {
+    background: linear-gradient(180deg, #4F46E5 0%, #06B6D4 50%, #10B981 100%);
+}
+
+/* Selection */
+::selection {
+    background: #09090B;
+    color: #FAFAFA;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: #A1A1AA; }
+
+/* Grid background for landing */
+.grid-bg {
+    background-image:
+        linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* AI Modal & Markdown Styling */
+.prose { @apply text-sm leading-relaxed text-zinc-800; }
+.prose h1 { @apply text-xl font-black tracking-tight text-zinc-950 mt-6 mb-3 first:mt-0; }
+.prose h2 { @apply text-base font-bold text-zinc-900 mt-5 mb-2; }
+.prose p { @apply my-3; }
+.prose ul { @apply list-disc list-inside my-3 space-y-1; }
+.prose strong { @apply font-bold text-zinc-950; }
+.prose code { @apply bg-zinc-100 px-1 py-0.5 rounded text-[13px] font-mono text-zinc-900; }
+.prose pre { @apply bg-zinc-950 text-zinc-50 p-4 my-4 overflow-x-auto font-mono text-xs; }
+
+.shimmer-bg {
+    @apply relative overflow-hidden bg-zinc-200;
+}
+
+.shimmer-bg::after {
+    content: "";
+    @apply absolute inset-0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+.ai-modal-content { max-height: 70vh; overflow-y: auto; }
+.ai-modal-content::-webkit-scrollbar { width: 4px; }
+.ai-modal-content::-webkit-scrollbar-thumb { @apply bg-zinc-200; }
