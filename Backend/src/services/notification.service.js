@@ -1,0 +1,41 @@
+import Notification from '../models/notification.model.js';
+import { sendEmail } from './email.service.js';
+
+const createNotification = async (userId, orgId, message, type, io) => {
+  try {
+    const notification = new Notification({
+      userId,
+      orgId,
+      message,
+      type
+    });
+    await notification.save();
+
+    // Emit real-time notification if socket io is provided
+    if (io) {
+      io.to(userId.toString()).emit('notification', notification);
+    }
+
+    return notification;
+  } catch (err) {
+    console.error('Failed to create notification', err);
+  }
+};
+
+const notifyTeam = async (users, orgId, message, type, io) => {
+  for (const user of users) {
+    await createNotification(user._id, orgId, message, type, io);
+    if (user.email) {
+      await sendEmail({ 
+        to: user.email, 
+        subject: `Incident Alert: ${message}`, 
+        html: `<p>${message}</p>` 
+      });
+    }
+  }
+};
+
+export default {
+  createNotification,
+  notifyTeam
+};
