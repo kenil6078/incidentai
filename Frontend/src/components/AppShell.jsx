@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../features/auth/hooks/useAuth";
+import { useAuth } from "../features/auth/hook/useAuth";
 import { useSocket } from "../context/SocketContext";
 import { useNotification } from "../features/notification/hooks/useNotification";
 import {
@@ -33,7 +33,7 @@ const NavItem = ({ to, icon: Icon, label, end, onClick }) => (
 );
 
 export default function AppShell({ children }) {
-  const { user, logout } = useAuth();
+  const { user, handleLogout } = useAuth();
   const { connected, subscribe } = useSocket();
   const { notifications: notifs, unreadCount: unread, getNotifications, readAll: markAllRead } = useNotification();
   const navigate = useNavigate();
@@ -214,7 +214,7 @@ export default function AppShell({ children }) {
                 <DropdownMenuItem onClick={() => navigate("/settings")} data-testid="menu-settings">
                   <Settings className="w-3.5 h-3.5 mr-2" /> Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout} data-testid="menu-logout">
+                <DropdownMenuItem onClick={handleLogout} data-testid="menu-logout">
                   <LogOut className="w-3.5 h-3.5 mr-2" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

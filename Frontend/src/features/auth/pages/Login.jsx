@@ -1,63 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useEffect } from "react";
+import { useAuth } from "../hook/useAuth";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
-import authService from "../services/authService";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
-  const { login, isAuthenticated, user } = useAuth();
+  
+  const { handleLogin, handleResendEmail, user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (user) {
       if (user.role === "super_admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [user, navigate]);
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setUnverifiedEmail("");
     try {
-      const resultAction = await login({ email, password });
-      const data = await resultAction.unwrap();
+      const response = await handleLogin({ email, password });
       toast.success("Welcome back");
-      if (data.user.role === "super_admin") {
+      if (response.user.role === "super_admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     } catch (err) {
-      if (err?.unverified) {
+      if (err.response?.data?.unverified || err.response?.data?.err === "email not verified") {
         setUnverifiedEmail(email);
         toast.error("Please verify your email first.");
       } else {
-        toast.error(err?.detail || "Login failed");
+        // Error is handled by the hook (setting state), 
+        // but we can also toast here if we want specific messages.
+        toast.error(err.response?.data?.message || err.response?.data?.detail || "Login failed");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleResend = async () => {
-    setLoading(true);
+  const onResend = async () => {
     try {
-      const res = await authService.resendVerification(unverifiedEmail);
-      toast.success(res.detail || "Verification email resent!");
+      await handleResendEmail({ email: unverifiedEmail });
+      toast.success("Verification email resent!");
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Failed to resend email.");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to resend email.");
     }
   };
 
@@ -78,7 +71,7 @@ export default function Login() {
               You need to verify your email (<strong>{unverifiedEmail}</strong>) before you can sign in.
             </p>
             <button
-              onClick={handleResend}
+              onClick={onResend}
               disabled={loading}
               className="w-full bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
             >

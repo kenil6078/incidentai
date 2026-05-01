@@ -9,21 +9,48 @@ export const register = async (req, res) => {
   try {
     const { name, email, password, orgName } = req.body;
 
-    let user = await userModel.findOne({ email });
-    if (user) return res.status(400).json({ detail: "User already exists" });
+    if (!name || !email || !password || !orgName) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "All fields (name, email, password, orgName) are required" 
+      });
+    }
+
+    const userExists = await userModel.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User with this email already exists" 
+      });
+    }
 
     // Create Organization
     const slug = orgName
       .toLowerCase()
       .replace(/ /g, "-")
       .replace(/[^\w-]+/g, "");
-    const organization = new organizationModel({ name: orgName, slug });
-    await organization.save();
+    
+    if (!slug) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid organization name" 
+      });
+    }
+
+    const orgExists = await organizationModel.findOne({ slug });
+    if (orgExists) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Organization name is already taken" 
+      });
+    }
+
+    const organization = await organizationModel.create({ name: orgName, slug });
 
     // Create User with Verification Token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
-    user = new userModel({
+    const user = await userModel.create({
       name,
       email,
       password,
@@ -31,75 +58,136 @@ export const register = async (req, res) => {
       role: 'admin',
       verificationToken
     });
-    await user.save();
 
-    const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-    // Send Verification Email
     const verifyUrl = `${config.FRONTEND_URL}/verify-email/${verificationToken}`;
-    await sendEmail({
+    
+    // Premium Email Template like Perplexity
+    const emailResult = await sendEmail({
       to: email,
       subject: 'Verify your email - incident.ai',
       html: `
-        <h1>Welcome to incident.ai!</h1>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#FF6B6B;color:black;font-weight:bold;text-decoration:none;border:2px solid black;">Verify Email</a>
-        <p>If the button doesn't work, copy and paste this link: ${verifyUrl}</p>
+        <div style="background-color: #FAFAFA; padding: 40px 20px; font-family: 'Inter', -apple-system, sans-serif;">
+          <div style="background-color: #FFFFFF; max-width: 500px; margin: 0 auto; border-radius: 12px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; overflow: hidden;">
+            <div style="padding: 48px; text-align: center;">
+              <div style="width: 56px; height: 56px; background-color: #FF6B6B; border: 2px solid #000; border-radius: 8px; margin: 0 auto 32px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0px #000;">
+                 <span style="color: #000; font-weight: 900; font-size: 24px;">i</span>
+              </div>
+              <h1 style="color: #000; font-size: 28px; font-weight: 900; margin: 0 0 16px; letter-spacing: -0.05em;">Verify your workspace</h1>
+              <p style="color: #555; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
+                Welcome to <strong>incident.ai</strong>, ${name}. You've created the <strong>${orgName}</strong> workspace. Please verify your email to get started.
+              </p>
+              <a href="${verifyUrl}" 
+                 style="display: inline-block; background-color: #FF6B6B; color: #000; padding: 16px 40px; border: 2px solid #000; font-size: 16px; font-weight: 700; text-decoration: none; box-shadow: 4px 4px 0px #000;">
+                Verify Email Address
+              </a>
+              <div style="margin-top: 48px; padding-top: 32px; border-top: 2px solid #EEE;">
+                <p style="color: #888; font-size: 12px; line-height: 20px; margin: 0;">
+                  If you didn't create an account, you can safely ignore this email.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       `
     });
 
-    res.json({ 
+    if (!emailResult.success) {
+      console.error("Failed to send verification email:", emailResult.error);
+    }
+
+    res.status(201).json({ 
+      success: true,
       message: 'Registration successful! Please check your email to verify your account.',
-      user: { id: user._id, name, email, orgId: organization._id, org_name: orgName, orgName, role: user.role } 
+      user: { 
+        id: user._id, 
+        name, 
+        email, 
+        orgId: organization._id, 
+        orgName, 
+        org_name: orgName, 
+        role: user.role 
+      } 
     });
   } catch (err) {
-    res.status(500).json({ detail: err.message });
+    console.error('Registration error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error during registration",
+      detail: err.message 
+    });
   }
 };
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email and password are required' 
+      });
+    }
+
     const user = await userModel.findOne({ email }).populate('orgId').select('+password');
-    if (!user) return res.status(400).json({ detail: 'Invalid credentials' });
+    
+    if (!user) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid credentials',
+        err: "user not found" 
+      });
+    }
 
     if (!user.isVerified) {
       return res.status(403).json({ 
-        detail: 'Please verify your email first', 
-        unverified: true 
+        success: false,
+        message: 'Please verify your email first', 
+        unverified: true,
+        err: "email not verified"
       });
     }
 
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ detail: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid credentials',
+        err: "incorrect password"
+      });
+    }
 
     const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
       expiresIn: "7d",
     });
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: config.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    res.json({
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
       user: {
         id: user._id,
         name: user.name,
-        email,
-        orgId: user.orgId._id,
-        org_name: user.orgId.name,
-        orgName: user.orgId.name, 
+        email: user.email,
+        orgId: user.orgId?._id,
+        orgName: user.orgId?.name, 
+        org_name: user.orgId?.name, 
         role: user.role 
       } 
     });
   } catch (err) {
-    res.status(500).json({ detail: err.message });
+    console.error('Login error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error during login",
+      detail: err.message 
+    });
   }
 };
 
@@ -107,26 +195,42 @@ export const getMe = async (req, res) => {
   try {
     const user = await userModel
       .findById(req.user.id)
-      .populate("orgId")
-      .select("-password");
-    res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      orgId: user.orgId._id,
-      organizationId: user.orgId._id,
-      org_name: user.orgId.name,
-      orgName: user.orgId.name,
-      role: user.role
+      .populate("orgId");
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        orgId: user.orgId?._id,
+        orgName: user.orgId?.name,
+        org_name: user.orgId?.name,
+        role: user.role
+      }
     });
   } catch (err) {
-    res.status(500).json({ detail: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch user profile",
+      detail: err.message 
+    });
   }
 };
 
 export const logout = (req, res) => {
   res.clearCookie("token");
-  res.json({ success: true });
+  res.status(200).json({ 
+    success: true, 
+    message: "Logged out successfully" 
+  });
 };
 
 export const verifyEmail = async (req, res) => {
@@ -135,16 +239,36 @@ export const verifyEmail = async (req, res) => {
     const user = await userModel.findOne({ verificationToken: token });
     
     if (!user) {
-      return res.status(400).json({ detail: 'Invalid or expired verification token' });
+      return res.status(400).send(`
+        <html>
+          <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #FAFAFA;">
+            <div style="text-align: center; padding: 40px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; background: #FFF;">
+              <h1 style="color: #FF6B6B;">Verification Failed</h1>
+              <p>The link is invalid or has expired.</p>
+              <a href="${config.FRONTEND_URL}/register" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #000; color: #FFF; text-decoration: none;">Back to Register</a>
+            </div>
+          </body>
+        </html>
+      `);
     }
 
     user.isVerified = true;
     user.verificationToken = undefined;
     await user.save();
 
-    res.json({ detail: 'Email verified successfully! You can now log in.' });
+    res.status(200).send(`
+      <html>
+        <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #FAFAFA;">
+          <div style="text-align: center; padding: 40px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; background: #FFF;">
+            <h1 style="color: #2ECC71;">Email Verified!</h1>
+            <p>Welcome to incident.ai, ${user.name}. Your account is ready.</p>
+            <a href="${config.FRONTEND_URL}/login" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #FF6B6B; color: #000; font-weight: bold; border: 2px solid #000; text-decoration: none; box-shadow: 4px 4px 0px #000;">Login to Workspace</a>
+          </div>
+        </body>
+      </html>
+    `);
   } catch (err) {
-    res.status(500).json({ detail: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -154,11 +278,11 @@ export const resendVerification = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ detail: 'User not found' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     if (user.isVerified) {
-      return res.status(400).json({ detail: 'Email is already verified' });
+      return res.status(400).json({ success: false, message: 'Email is already verified' });
     }
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -169,15 +293,11 @@ export const resendVerification = async (req, res) => {
     await sendEmail({
       to: email,
       subject: 'Verify your email - incident.ai',
-      html: `
-        <h1>Verify your email address</h1>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#FF6B6B;color:black;font-weight:bold;text-decoration:none;border:2px solid black;">Verify Email</a>
-      `
+      html: `<h1>Verify your email</h1><p>Click <a href="${verifyUrl}">here</a> to verify.</p>`
     });
 
-    res.json({ detail: 'Verification email resent!' });
+    res.status(200).json({ success: true, message: 'Verification email resent!' });
   } catch (err) {
-    res.status(500).json({ detail: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };

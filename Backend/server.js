@@ -13,10 +13,12 @@ const io = initSocket(server);
 app.set('io', io);
 
 // MongoDB Connection
-connectToDB();
-
-
-const PORT = config.PORT;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+connectToDB().then(() => {
+  const PORT = config.PORT;
+  server.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('❌ Server failed to start due to DB connection error:', err.message);
+  process.exit(1);
 });

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { Link } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
 
@@ -9,24 +9,18 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [orgName, setOrgName] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
   const [success, setSuccess] = useState(false);
+  
+  const { handleRegister, loading } = useAuth();
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const resultAction = await register({ name, email, password, orgName: orgName });
-      await resultAction.unwrap();
+      await handleRegister({ name, email, password, orgName });
       setSuccess(true);
       toast.success("Registration successful!");
     } catch (err) {
-      toast.error(err?.detail || "Registration failed");
-    } finally {
-      setLoading(false);
+      toast.error(err.response?.data?.message || err.response?.data?.detail || "Registration failed");
     }
   };
 

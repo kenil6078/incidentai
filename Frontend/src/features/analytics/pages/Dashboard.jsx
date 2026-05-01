@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSocket } from "../../../context/SocketContext";
-import { useAuth } from "../../auth/hooks/useAuth";
+import { useAuth } from "../../auth/hook/useAuth";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { useIncident } from "../../incident/hooks/useIncident";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";

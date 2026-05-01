@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSocket } from "../../../context/SocketContext";
-import { useAuth } from "../../auth/hooks/useAuth";
+import { useAuth } from "../../auth/hook/useAuth";
 import { useIncident } from "../hooks/useIncident";
 import { useTimeline } from "../../timeline/hooks/useTimeline";
 import { useAI } from "../../ai/hooks/useAI";

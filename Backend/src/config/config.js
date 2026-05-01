@@ -10,7 +10,8 @@ const requiredEnvVars = [
     'GOOGLE_USER',
     'GEMINI_API_KEY',
     'RAZORPAY_KEY_ID',
-    'RAZORPAY_KEY_SECRET'
+    'RAZORPAY_KEY_SECRET',
+    'FRONTEND_URL'
 ];
 
 requiredEnvVars.forEach((varName) => {
@@ -38,5 +39,6 @@ export const config = {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
+    FRONTEND_URL: process.env.FRONTEND_URL,
     NODE_ENV: process.env.NODE_ENV || "development",
 };

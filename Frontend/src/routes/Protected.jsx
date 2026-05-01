@@ -1,18 +1,18 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../features/auth/hooks/useAuth";
+import { useAuth } from "../features/auth/hook/useAuth";
 import { SocketProvider } from "../context/SocketContext";
 import AppShell from "../components/AppShell";
 import { Skeleton } from "../components/ui/skeleton";
 
 export default function Protected({ children }) {
-  const { user, loading, isInitialized, refreshUser } = useAuth();
+  const { user, loading, isInitialized, handleGetMe } = useAuth();
 
   React.useEffect(() => {
     if (!isInitialized) {
-      refreshUser();
+      handleGetMe();
     }
-  }, [isInitialized, refreshUser]);
+  }, [isInitialized, handleGetMe]);
 
   if (loading || !isInitialized) {
     return (

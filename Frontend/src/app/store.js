@@ -5,7 +5,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Feature reducers
-import authReducer         from '../features/auth/redux/authSlice';
+import authReducer         from '../features/auth/auth.slice';
 import adminReducer        from '../features/admin/redux/adminSlice';
 import incidentReducer     from '../features/incident/redux/incidentSlice';
 import teamReducer         from '../features/team/redux/teamSlice';

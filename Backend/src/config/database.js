@@ -5,7 +5,6 @@ export async function connectToDB() {
     try {
         await mongoose.connect(config.MONGODB_URI, {
             serverSelectionTimeoutMS: 5000,
-            tls: true,
         });
 
 

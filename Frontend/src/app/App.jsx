@@ -3,16 +3,16 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { routes } from "../routes/AppRoutes";
-import { useAuth } from "../features/auth/hooks/useAuth";
+import { useAuth } from "../features/auth/hook/useAuth";
 
 function App() {
-  const { refreshUser, isInitialized } = useAuth();
+  const { handleGetMe, isInitialized } = useAuth();
 
   useEffect(() => {
     if (!isInitialized) {
-      refreshUser();
+      handleGetMe();
     }
-  }, [isInitialized, refreshUser]);
+  }, [isInitialized, handleGetMe]);
 
   return (
     <div className="App">
