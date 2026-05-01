@@ -415,9 +415,8 @@ export default function IncidentDetail() {
               </button>
             </div>
           </div>
-
           <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
-            <DialogContent className="max-w-2xl rounded-none p-0 border-4 border-black neo-shadow-lg overflow-hidden">
+            <DialogContent className="max-w-2xl rounded-none p-0 border-4 border-black neo-shadow-lg overflow-hidden bg-white">
               <div className="bg-[#FF6B6B] h-2 w-full border-b-2 border-black" />
               <div className="p-8">
                 <DialogHeader>
@@ -425,7 +424,9 @@ export default function IncidentDetail() {
                     <Sparkles className="w-5 h-5 text-[#FF6B6B]" />
                     <span className="text-xs font-mono font-bold uppercase tracking-[0.2em] text-zinc-500">AI {aiOutput.kind} Response</span>
                   </div>
-                  <DialogTitle className="text-3xl font-black tracking-tighter capitalize">{aiOutput.kind?.replace('-', ' ')}</DialogTitle>
+                  <DialogTitle className="text-3xl font-black tracking-tighter capitalize text-black">
+                    {aiOutput.kind?.replace('-', ' ')}
+                  </DialogTitle>
                 </DialogHeader>
 
                 <div className="mt-8 prose prose-zinc max-w-none prose-sm leading-relaxed overflow-y-auto overflow-x-hidden max-h-[60vh] custom-scrollbar pr-4">
@@ -447,31 +448,34 @@ export default function IncidentDetail() {
                 </div>
 
                 <DialogFooter className="mt-10 pt-6 border-t-2 border-black flex items-center justify-between gap-4">
-                  <button
-                    onClick={copyAiOutput}
-                    disabled={!aiOutput.text}
-                    className="flex items-center gap-2 text-xs font-bold px-5 py-2.5 border-2 border-black bg-white hover:bg-zinc-50 transition-all neo-shadow-sm active:neo-shadow-none"
-                  >
-                    {copying ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                    {copying ? "Copied" : "Copy results"}
-                  </button>
                   <div className="flex gap-3">
                     <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(aiOutput.text);
+                        setCopying(true);
+                        setTimeout(() => setCopying(false), 2000);
+                      }}
+                      className="bg-white hover:bg-zinc-50 text-black px-4 py-2 border-2 border-black neo-shadow-sm flex items-center gap-2 text-xs font-bold transition-all active:translate-x-0.5 active:translate-y-0.5"
+                    >
+                      {copying ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copying ? "Copied" : "Copy results"}
+                    </button>
+                    <button
                       onClick={() => runAI(aiOutput.kind)}
-                      disabled={!aiOutput.text}
-                      className="text-xs font-bold px-5 py-2.5 border-2 border-black bg-white hover:bg-zinc-50 transition-all"
+                      disabled={loadingKey !== null}
+                      className="bg-white hover:bg-zinc-50 text-black px-4 py-2 border-2 border-black neo-shadow-sm flex items-center gap-2 text-xs font-bold transition-all active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
                     >
                       Regenerate
                     </button>
-                    <button
-                      onClick={onAddToTimelineFromAI}
-                      disabled={!aiOutput.text}
-                      className="flex items-center gap-2 text-xs font-bold px-6 py-2.5 bg-zinc-950 text-white border-2 border-black hover:bg-zinc-800 transition-all neo-shadow-sm active:neo-shadow-none"
-                    >
-                      <Clock className="w-4 h-4" />
-                      Add to Timeline
-                    </button>
                   </div>
+                  
+                  <button
+                    onClick={onAddToTimelineFromAI}
+                    disabled={!aiOutput.text || loadingKey !== null}
+                    className="bg-black text-white px-6 py-2 border-2 border-black neo-shadow flex items-center gap-2 text-xs font-bold transition-all hover:bg-zinc-800 active:translate-x-1 active:translate-y-1 active:neo-shadow-none disabled:opacity-50"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> Add to Timeline
+                  </button>
                 </DialogFooter>
               </div>
             </DialogContent>

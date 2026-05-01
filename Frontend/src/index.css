@@ -143,19 +143,19 @@ code, pre, .font-mono {
 }
 
 /* AI Modal & Markdown Styling */
-.prose { @apply text-sm leading-relaxed text-zinc-800; }
-.prose h1 { @apply text-xl font-black tracking-tight text-zinc-950 mt-6 mb-3 first:mt-0; }
-.prose h2 { @apply text-base font-bold text-zinc-900 mt-5 mb-2; }
+.prose { @apply text-sm leading-relaxed text-black; }
+.prose h1 { @apply text-xl font-black tracking-tight text-black mt-6 mb-3 first:mt-0 uppercase; }
+.prose h2 { @apply text-base font-bold text-black mt-5 mb-2; }
 .prose p { @apply my-3; }
 .prose ul { @apply list-disc list-inside my-3 space-y-1; }
-.prose strong { @apply font-bold text-zinc-950; }
-.prose code { @apply bg-zinc-100 px-1.5 py-0.5 border border-zinc-200 rounded-sm text-[12px] font-mono text-zinc-900; }
-.prose pre { @apply bg-zinc-50 text-zinc-900 p-4 my-4 border-2 border-black neo-shadow-sm overflow-x-hidden font-mono text-xs; }
+.prose strong { @apply font-bold text-black; }
+.prose code { @apply bg-zinc-50 px-1.5 py-0.5 border border-zinc-200 rounded-sm text-[12px] font-mono text-black; }
+.prose pre { @apply bg-white text-black p-4 my-4 border-2 border-black neo-shadow-sm overflow-x-hidden font-mono text-xs; }
 .prose pre code { @apply bg-transparent border-none p-0; }
 
-.custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-zinc-300 hover:bg-zinc-400 transition-colors; }
+.custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-zinc-300 hover:bg-zinc-400; }
 
 .shimmer-bg {
     @apply relative overflow-hidden bg-zinc-200;
