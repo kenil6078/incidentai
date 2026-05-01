@@ -1,52 +1,42 @@
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectCurrentUser, selectIsAuthenticated, selectAuthLoading, setCredentials, logout as logoutAction, setLoading } from '../auth.slice';
-import { authApi } from '../service/auth.api';
+import { 
+  login as loginThunk, 
+  register as registerThunk, 
+  logout as logoutAction, 
+  getMe as getMeThunk,
+  selectAuth 
+} from '../redux/authSlice';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectCurrentUser);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const loading = useSelector(selectAuthLoading);
+  const { user, isAuthenticated, loading, error, isInitialized } = useSelector(selectAuth);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const userData = await authApi.getMe();
-        dispatch(setCredentials({ user: userData }));
-      } catch (err) {
-        dispatch(logoutAction());
-      } finally {
-        dispatch(setLoading(false));
-      }
-    };
+  const login = useCallback((credentials) => {
+    return dispatch(loginThunk(credentials));
+  }, [dispatch]);
 
-    if (!user) {
-        initAuth();
-    } else {
-        dispatch(setLoading(false));
-    }
-  }, [dispatch, user]);
+  const register = useCallback((userData) => {
+    return dispatch(registerThunk(userData));
+  }, [dispatch]);
 
-  const login = async (email, password) => {
-    const data = await authApi.login(email, password);
-    dispatch(setCredentials(data));
-    return data.user;
-  };
-
-  const register = async (payload) => {
-    const data = await authApi.register(payload);
-    dispatch(setCredentials(data));
-    return data.user;
-  };
-
-  const logout = async () => {
-    try {
-      await authApi.logout();
-    } catch(e) {}
+  const logout = useCallback(() => {
     dispatch(logoutAction());
-    window.location.href = "/login";
-  };
+  }, [dispatch]);
 
-  return { user, isAuthenticated, loading, login, register, logout };
+  const refreshUser = useCallback(() => {
+    return dispatch(getMeThunk());
+  }, [dispatch]);
+
+  return {
+    user,
+    isAuthenticated,
+    loading,
+    error,
+    isInitialized,
+    login,
+    register,
+    logout,
+    refreshUser
+  };
 };

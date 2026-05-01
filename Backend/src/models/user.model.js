@@ -10,15 +10,15 @@ const userSchema = new mongoose.Schema({
 
   },
   password: {
-    type: String, required: true
+    type: String, required: true, select: false
   },
   orgId: {
-    type: mongoose.Schema.Types.ObjectId, 
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization',
     required: true
   },
   role: {
-    type: String, 
+    type: String,
     enum: ['admin', 'developer', 'viewer'],
     default: 'admin'
   },
@@ -29,9 +29,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean, default: true
   },
 },
-{
-  
-}
+  {
+
+  }
 );
 
 const userModel = mongoose.model('User', userSchema);
