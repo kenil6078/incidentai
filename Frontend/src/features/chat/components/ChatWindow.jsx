@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchMessages, addMessage } from '../chat.slice';
 import { useSocket } from '../../../context/SocketContext';
 import { Send, Paperclip, MoreVertical, Shield } from 'lucide-react';
+import { ChatWindowSkeleton } from '../../../components/ui/skeleton';
 
 export default function ChatWindow() {
   const dispatch = useDispatch();
@@ -60,6 +61,10 @@ export default function ChatWindow() {
         </p>
       </div>
     );
+  }
+
+  if (loading && !messages[currentChat?._id]) {
+    return <ChatWindowSkeleton />;
   }
 
   const chatMessages = messages[currentChat._id] || [];

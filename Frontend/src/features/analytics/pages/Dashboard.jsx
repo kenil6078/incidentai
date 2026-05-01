@@ -7,6 +7,7 @@ import { useIncident } from "../../incident/hooks/useIncident";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";
 import { formatRelative } from "../../../components/Badges";
 import { Activity, AlertTriangle, CheckCircle2, Timer, Plus, ArrowRight } from "lucide-react";
+import { DashboardSkeleton } from "../../../components/ui/skeleton";
 
 const Stat = ({ label, value, suffix, icon: Icon, accent = "text-zinc-950", testid }) => (
   <div className="bg-white border border-zinc-200 p-5" data-testid={testid}>
@@ -24,8 +25,9 @@ const Stat = ({ label, value, suffix, icon: Icon, accent = "text-zinc-950", test
 export default function Dashboard() {
   const { user } = useAuth();
   const { subscribe } = useSocket();
-  const { overview, getOverview } = useAnalytics();
-  const { list: incidents, getIncidents } = useIncident();
+  const { overview, getOverview, loading: analyticsLoading } = useAnalytics();
+  const { list: incidents, getIncidents, loading: incidentsLoading } = useIncident();
+  const loading = analyticsLoading || incidentsLoading;
 
   const loadData = () => {
     getOverview();
@@ -42,6 +44,10 @@ export default function Dashboard() {
 
   const active = incidents.filter((i) => i.status !== "Resolved");
   const recent = incidents.slice(0, 8);
+
+  if (loading && !overview) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-7xl">

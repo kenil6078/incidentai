@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchChats, fetchUsers, setCurrentChat, createChat } from '../chat.slice';
 import { Search, Plus, Users, MessageSquare } from 'lucide-react';
+import { ChatSidebarSkeleton } from '../../../components/ui/skeleton';
 
 export default function ChatSidebar() {
   const dispatch = useDispatch();
@@ -76,7 +77,9 @@ export default function ChatSidebar() {
           </div>
         ) : (
           <div className="divide-y divide-zinc-100">
-            {filteredChats.length === 0 ? (
+            {loading && chats.length === 0 ? (
+              <ChatSidebarSkeleton />
+            ) : filteredChats.length === 0 ? (
               <div className="p-8 text-center text-zinc-500 text-sm italic">
                 No conversations found.
               </div>
