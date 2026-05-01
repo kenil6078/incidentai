@@ -13,4 +13,5 @@ export const store = configureStore({
     team: teamReducer,
     services: servicesReducer,
   },
+  devTools: process.env.NODE_ENV !== 'production',
 });

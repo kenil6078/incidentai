@@ -12,18 +12,16 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
   password: {
-    type: String, 
-    required: true,
-    select: false
+    type: String, required: true
   },
   orgId: {
-    type: mongoose.Schema.Types.ObjectId, 
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization',
     required: true
   },
   role: {
     type: String, 
-    enum: ['super_admin', 'admin', 'developer', 'viewer'],
+    enum: ['admin', 'developer', 'viewer', 'super_admin'],
     default: 'admin'
   },
   isVerified: {
@@ -60,4 +58,3 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const userModel = mongoose.model('User', userSchema);
 export default userModel;
-

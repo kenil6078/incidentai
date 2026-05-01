@@ -1,31 +1,56 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import Protected from "./Protected";
 import ScrollToTop from "../components/ScrollToTop";
 
-import Landing from "../features/public/pages/Landing";
-import Login from "../features/auth/pages/Login";
-import Register from "../features/auth/pages/Register";
-import VerifyEmail from "../features/auth/pages/VerifyEmail";
-import Dashboard from "../features/analytics/pages/Dashboard";
-import IncidentsList from "../features/incident/pages/IncidentsList";
-import IncidentDetail from "../features/incident/pages/IncidentDetail";
-import CreateIncident from "../features/incident/pages/CreateIncident";
-import Team from "../features/team/pages/Team";
-import Analytics from "../features/analytics/pages/Analytics";
-import Services from "../features/services/pages/Services";
-import Billing from "../features/billing/pages/Billing";
-import Settings from "../features/settings/pages/Settings";
-import PublicStatus from "../features/public/pages/PublicStatus";
-import NotFound from "../features/public/pages/NotFound";
-import Pricing from "../features/public/pages/Pricing";
-import SuperAdminDashboard from "../features/admin/pages/SuperAdminDashboard";
+import { Skeleton } from "../components/ui/skeleton";
+
+// Lazy load pages for better performance
+const Landing = lazy(() => import("../features/public/pages/Landing"));
+const Login = lazy(() => import("../features/auth/pages/Login"));
+const Register = lazy(() => import("../features/auth/pages/Register"));
+const Dashboard = lazy(() => import("../features/analytics/pages/Dashboard"));
+const IncidentsList = lazy(() => import("../features/incident/pages/IncidentsList"));
+const IncidentDetail = lazy(() => import("../features/incident/pages/IncidentDetail"));
+const CreateIncident = lazy(() => import("../features/incident/pages/CreateIncident"));
+const Team = lazy(() => import("../features/team/pages/Team"));
+const Analytics = lazy(() => import("../features/analytics/pages/Analytics"));
+const Services = lazy(() => import("../features/services/pages/Services"));
+const Billing = lazy(() => import("../features/billing/pages/Billing"));
+const Settings = lazy(() => import("../features/settings/pages/Settings"));
+const PublicStatus = lazy(() => import("../features/public/pages/PublicStatus"));
+const NotFound = lazy(() => import("../features/public/pages/NotFound"));
+const Pricing = lazy(() => import("../features/public/pages/Pricing"));
+const SuperAdminDashboard = lazy(() => import("../features/admin/pages/SuperAdminDashboard"));
+const VerifyEmail = lazy(() => import("../features/auth/pages/VerifyEmail"));
+
+function PageLoader() {
+  return (
+    <div className="p-8 space-y-8 min-h-screen bg-[#FAFAFA]">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-10 w-48 border-2 border-black" />
+        <div className="flex gap-4">
+          <Skeleton className="h-10 w-10 rounded-none border-2 border-black" />
+          <Skeleton className="h-10 w-32 rounded-none border-2 border-black" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <Skeleton className="h-32 border-2 border-black neo-shadow" />
+        <Skeleton className="h-32 border-2 border-black neo-shadow" />
+        <Skeleton className="h-32 border-2 border-black neo-shadow" />
+      </div>
+      <Skeleton className="h-[400px] w-full border-2 border-black neo-shadow" />
+    </div>
+  );
+}
 
 function RootLayout() {
   return (
     <>
       <ScrollToTop />
-      <Outlet />
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
     </>
   );
 }
@@ -49,7 +74,7 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/verify-email/:token",
-        element: <VerifyEmail />,
+        element: <VerifyEmail/>,
       },
       {
         path: "/pricing",
