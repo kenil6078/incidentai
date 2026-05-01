@@ -11,6 +11,7 @@ import publicRoutes from './routes/public.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import billingRoutes from './routes/billing.routes.js';
 import adminRoutes from './routes/super_admin.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
@@ -52,5 +53,6 @@ app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chats', chatRoutes);
 
 export default app;

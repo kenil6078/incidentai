@@ -1,3 +1,4 @@
+import apiClient from '../../../lib/api';
 
 const timelineService = {
   getByIncident: (incidentId) =>

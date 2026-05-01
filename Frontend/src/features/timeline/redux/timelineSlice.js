@@ -12,7 +12,7 @@ export const fetchTimeline = createAsyncThunk(
     try {
       return await timelineService.getByIncident(incidentId);
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch timeline');
     }
   }
 );
@@ -23,7 +23,7 @@ export const addTimelineEntry = createAsyncThunk(
     try {
       return await timelineService.addEntry(incidentId, payload);
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to add timeline entry');
     }
   }
 );

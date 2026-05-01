@@ -2,6 +2,9 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config.js';
 import userModel from '../models/user.model.js';
+import chatModel from '../models/chat.model.js';
+import messageModel from '../models/message.model.js';
+import { encrypt } from '../utils/crypto.js';
 
 export const initSocket = (server) => {
   const io = new Server(server, {
@@ -43,10 +46,42 @@ export const initSocket = (server) => {
   io.on('connection', (socket) => {
     console.log(`📡 User Connected: ${socket.user.name} (${socket.id})`);
 
-    // Automatically join the organization room
+    // Automatically join rooms
     const orgRoom = socket.user.orgId.toString();
+    const userRoom = socket.user._id.toString();
     socket.join(orgRoom);
-    console.log(`🏠 User ${socket.user.name} joined room: ${orgRoom}`);
+    socket.join(userRoom);
+    console.log(`🏠 User ${socket.user.name} joined rooms: ${orgRoom}, ${userRoom}`);
+
+    socket.on('send_message', async (data) => {
+      try {
+        const { chatId, content, type } = data;
+        const encryptedContent = encrypt(content);
+
+        const newMessage = await messageModel.create({
+          chatId,
+          sender: socket.user._id,
+          content: encryptedContent,
+          type: type || 'text'
+        });
+
+        const chat = await chatModel.findByIdAndUpdate(chatId, {
+          lastMessage: newMessage._id
+        }, { new: true }).populate('participants');
+
+        const populatedMsg = await messageModel.findById(newMessage._id).populate('sender', 'name avatar');
+        const msgToSend = populatedMsg.toObject();
+        msgToSend.content = content; // Send decrypted content to participants
+
+        // Broadcast to all participants in the chat
+        chat.participants.forEach(p => {
+          io.to(p._id.toString()).emit('receive_message', msgToSend);
+        });
+
+      } catch (error) {
+        console.error('Socket send_message error:', error);
+      }
+    });
 
     socket.on('disconnect', () => {
       console.log(`🔌 User Disconnected: ${socket.id}`);

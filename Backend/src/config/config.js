@@ -11,7 +11,8 @@ const requiredEnvVars = [
     'GEMINI_API_KEY',
     'RAZORPAY_KEY_ID',
     'RAZORPAY_KEY_SECRET',
-    'FRONTEND_URL'
+    'FRONTEND_URL',
+    'ENCRYPTION_KEY'
 ];
 
 requiredEnvVars.forEach((varName) => {
@@ -29,6 +30,7 @@ export const config = {
 
     MONGODB_URI: process.env.MONGODB_URI,
     JWT_SECRET: process.env.JWT_SECRET,
+    ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: parseInt(process.env.REDIS_PORT),
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,

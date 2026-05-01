@@ -14,8 +14,10 @@ export const SocketProvider = ({ children }) => {
     if (!user) return;
 
     const newSocket = io("/", {
-      withCredentials: true,
       transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      timeout: 20000,
     });
 
     setSocket(newSocket);
@@ -65,10 +67,16 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connected, subscribe }}>
+    <SocketContext.Provider value={{ connected, subscribe, socket }}>
       {children}
     </SocketContext.Provider>
   );
 };
 
-export const useSocket = () => useContext(SocketContext);
+export const useSocket = () => {
+  const context = useContext(SocketContext);
+  if (!context) {
+    return { connected: false, subscribe: () => {}, socket: null };
+  }
+  return context;
+};

@@ -8,8 +8,11 @@ import { Plus, Search, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { IncidentRowSkeleton } from "../../../components/ui/skeleton";
 
+import { useAuth } from "../../auth/hook/useAuth";
+
 export default function IncidentsList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { subscribe } = useSocket();
   const { list: incidents, loading, getIncidents } = useIncident();
   
@@ -46,9 +49,11 @@ export default function IncidentsList() {
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/incidents</div>
           <h1 className="text-3xl font-black tracking-tighter text-zinc-950">All incidents</h1>
         </div>
-        <Link to="/incidents/new" className="bg-zinc-950 text-white text-sm font-semibold px-4 py-2 hover:bg-zinc-800 flex items-center gap-2" data-testid="incidents-new-button">
-          <Plus className="w-4 h-4" /> New Incident
-        </Link>
+        {user?.role === 'admin' && (
+          <Link to="/incidents/new" className="bg-zinc-950 text-white text-sm font-semibold px-4 py-2 hover:bg-zinc-800 flex items-center gap-2" data-testid="incidents-new-button">
+            <Plus className="w-4 h-4" /> New Incident
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3 bg-white border border-zinc-200 p-3">

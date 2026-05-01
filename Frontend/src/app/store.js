@@ -15,6 +15,7 @@ import notificationReducer from '../features/notification/redux/notificationSlic
 import timelineReducer     from '../features/timeline/redux/timelineSlice';
 import aiReducer           from '../features/ai/redux/aiSlice';
 import analyticsReducer    from '../features/analytics/redux/analyticsSlice';
+import chatReducer         from '../features/chat/chat.slice';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     timeline:     timelineReducer,
     ai:           aiReducer,
     analytics:    analyticsReducer,
+    chat:         chatReducer,
   },
   devTools: import.meta.env.MODE !== 'production',
 });

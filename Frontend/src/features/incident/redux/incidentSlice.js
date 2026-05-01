@@ -7,7 +7,7 @@ export const fetchIncidents = createAsyncThunk(
     try {
       return await incidentService.getIncidents(params);
     } catch (err) {
-      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch incidents' });
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch incidents');
     }
   }
 );
@@ -18,7 +18,7 @@ export const fetchIncidentDetail = createAsyncThunk(
     try {
       return await incidentService.getIncident(id);
     } catch (err) {
-      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch incident detail' });
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch incident detail');
     }
   }
 );
@@ -31,7 +31,7 @@ export const createIncident = createAsyncThunk(
       dispatch(fetchIncidents());
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { detail: 'Failed to create incident' });
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to create incident');
     }
   }
 );
@@ -55,6 +55,7 @@ const incidentSlice = createSlice({
     builder
       .addCase(fetchIncidents.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
         state.loading = false;
@@ -66,6 +67,7 @@ const incidentSlice = createSlice({
       })
       .addCase(fetchIncidentDetail.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchIncidentDetail.fulfilled, (state, action) => {
         state.loading = false;

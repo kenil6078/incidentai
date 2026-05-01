@@ -110,6 +110,7 @@ export const register = async (req, res) => {
         orgName: organization?.name, 
         org_name: organization?.name, 
         role: user.role,
+        isVerified: user.isVerified || false,
         profileCompleted: user.profileCompleted
       } 
     });
@@ -216,6 +217,7 @@ export const finalizeProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isVerified: user.isVerified,
                 orgId: user.orgId,
                 orgName: organization?.name,
                 org_name: organization?.name,
@@ -298,6 +300,7 @@ export const login = async (req, res) => {
         orgName: user.orgId?.name, 
         org_name: user.orgId?.name, 
         role: user.role,
+        isVerified: user.isVerified,
         profileCompleted: user.profileCompleted
       } 
     });
@@ -334,6 +337,7 @@ export const getMe = async (req, res) => {
         orgName: user.orgId?.name,
         org_name: user.orgId?.name,
         role: user.role,
+        isVerified: user.isVerified,
         profileCompleted: user.profileCompleted
       }
     });

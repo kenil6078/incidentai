@@ -1,0 +1,147 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMessages, addMessage } from '../chat.slice';
+import { useSocket } from '../../../context/SocketContext';
+import { Send, Paperclip, MoreVertical, Shield } from 'lucide-react';
+
+export default function ChatWindow() {
+  const dispatch = useDispatch();
+  const { currentChat, messages, loading } = useSelector(state => state.chat);
+  const { user } = useSelector(state => state.auth);
+  const { socket } = useSocket();
+  const [content, setContent] = useState('');
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (currentChat) {
+      dispatch(fetchMessages(currentChat._id));
+    }
+  }, [currentChat, dispatch]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, currentChat]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!content.trim() || !currentChat || !socket) return;
+
+    const tempMsg = {
+      _id: `temp-${Date.now()}`,
+      chatId: currentChat._id,
+      content: content.trim(),
+      sender: user,
+      createdAt: new Date().toISOString(),
+      optimistic: true
+    };
+
+    dispatch(addMessage(tempMsg));
+
+    socket.emit('send_message', {
+      chatId: currentChat._id,
+      content: content.trim(),
+      type: 'text'
+    });
+
+    setContent('');
+  };
+
+  if (!currentChat) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50 p-8 text-center">
+        <div className="w-20 h-20 bg-[#D4F4E4] border-2 border-black neo-shadow flex items-center justify-center mb-6">
+          <MessageSquare className="w-10 h-10" />
+        </div>
+        <h3 className="text-2xl font-black tracking-tight mb-2">Select a conversation</h3>
+        <p className="text-zinc-500 max-w-xs mx-auto">
+          Choose a teammate to start chatting or view historical discussions.
+        </p>
+      </div>
+    );
+  }
+
+  const chatMessages = messages[currentChat._id] || [];
+  const otherParticipant = currentChat.participants?.find(p => p && p._id !== user?._id);
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-white relative">
+      {/* Header */}
+      <div className="h-16 border-b-2 border-black flex items-center justify-between px-6 bg-[#D4F4E4]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-zinc-950 text-white border-2 border-black flex items-center justify-center font-bold">
+            {currentChat.type === 'group' ? 'G' : otherParticipant?.name[0].toUpperCase()}
+          </div>
+          <div>
+            <div className="text-sm font-black">{currentChat.type === 'group' ? currentChat.name : otherParticipant?.name}</div>
+            <div className="flex items-center gap-1 text-[10px] text-zinc-600 font-mono">
+              <Shield className="w-2.5 h-2.5 text-green-600" /> End-to-end encrypted
+            </div>
+          </div>
+        </div>
+        <button className="p-2 hover:bg-black/5 rounded-none">
+          <MoreVertical className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div 
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FAFAFA]"
+      >
+        {chatMessages.map((msg, i) => {
+          const isMe = msg.sender?._id === user._id || msg.sender === user._id;
+          return (
+            <div 
+              key={msg._id || i}
+              className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[70%] group`}>
+                {!isMe && (
+                  <div className="text-[10px] font-mono text-zinc-500 mb-1 ml-1">
+                    {msg.sender?.name}
+                  </div>
+                )}
+                <div className={`
+                  p-3 text-sm border-2 border-black neo-shadow
+                  ${isMe ? 'bg-[#FF6B6B] text-black' : 'bg-white text-black'}
+                `}>
+                  {msg.content}
+                </div>
+                <div className={`text-[9px] font-mono text-zinc-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
+                  {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Input */}
+      <div className="p-4 border-t-2 border-black bg-white">
+        <form onSubmit={handleSendMessage} className="flex gap-3">
+          <button type="button" className="p-2 border-2 border-black neo-shadow bg-zinc-100 hover:bg-zinc-200">
+            <Paperclip className="w-4 h-4" />
+          </button>
+          <input 
+            type="text"
+            placeholder="Type a message..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="flex-1 px-4 py-2 border-2 border-black focus:outline-none focus:bg-zinc-50 text-sm font-medium"
+          />
+          <button 
+            type="submit" 
+            disabled={!content.trim()}
+            className="px-4 border-2 border-black neo-shadow bg-[#FF6B6B] hover:bg-[#ff5252] disabled:opacity-50 disabled:cursor-not-allowed transition font-bold text-sm"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+import { MessageSquare } from 'lucide-react';

@@ -12,7 +12,7 @@ export const fetchNotifications = createAsyncThunk(
     try {
       return await notificationService.getAll();
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch notifications');
     }
   }
 );
@@ -21,9 +21,9 @@ export const markAllRead = createAsyncThunk(
   'notification/readAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await notificationService.readAll();
+      return await notificationService.markAllRead();
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to mark notifications as read');
     }
   }
 );

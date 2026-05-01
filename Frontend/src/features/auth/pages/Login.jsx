@@ -13,7 +13,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (user && user.isVerified !== false) {
       if (user.role === "super_admin") {
         navigate("/admin");
       } else {

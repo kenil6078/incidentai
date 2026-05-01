@@ -5,8 +5,9 @@ import { SocketProvider } from "../context/SocketContext";
 import AppShell from "../components/AppShell";
 import { Skeleton } from "../components/ui/skeleton";
 
-export default function Protected({ children }) {
+export default function Protected({ children, allowedRoles }) {
   const { user, loading, isInitialized, handleGetMe } = useAuth();
+  const location = useLocation();
 
   React.useEffect(() => {
     if (!isInitialized) {
@@ -23,9 +24,12 @@ export default function Protected({ children }) {
     );
   }
 
-  const location = useLocation();
-
   if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Handle unverified users
+  if (user.isVerified === false) {
     return <Navigate to="/login" replace />;
   }
 
@@ -34,12 +38,17 @@ export default function Protected({ children }) {
     return <Navigate to="/complete-profile" replace />;
   }
 
-  // Role-based access control
+  // Super Admin restricted access
   if (user.role === 'super_admin' && location.pathname !== '/admin') {
     return <Navigate to="/admin" replace />;
   }
 
   if (user.role !== 'super_admin' && location.pathname === '/admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Specific role-based access control
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
 

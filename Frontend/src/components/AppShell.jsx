@@ -5,7 +5,7 @@ import { useSocket } from "../context/SocketContext";
 import { useNotification } from "../features/notification/hooks/useNotification";
 import {
   LayoutDashboard, AlertTriangle, Activity, Users, BarChart3, Settings, Bell, LogOut,
-  Globe, Plus, Wifi, WifiOff, Menu, X, CreditCard,
+  Globe, Plus, Wifi, WifiOff, Menu, X, CreditCard, MessageSquare,
 } from "lucide-react";
 import { formatRelative } from "../components/Badges";
 import {
@@ -100,6 +100,7 @@ export default function AppShell({ children }) {
             <>
               <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" end onClick={() => setShowSidebar(false)} />
               <NavItem to="/incidents" icon={AlertTriangle} label="Incidents" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/chats" icon={MessageSquare} label="Chat" onClick={() => setShowSidebar(false)} />
               <NavItem to="/services" icon={Activity} label="Services" onClick={() => setShowSidebar(false)} />
               <NavItem to="/team" icon={Users} label="Team" onClick={() => setShowSidebar(false)} />
               <NavItem to="/analytics" icon={BarChart3} label="Analytics" onClick={() => setShowSidebar(false)} />
@@ -139,7 +140,7 @@ export default function AppShell({ children }) {
             >
               <Menu className="w-5 h-5" />
             </button>
-            {user.role !== 'super_admin' && (
+            {user.role === 'admin' && (
               <button
                 onClick={() => navigate("/incidents/new")}
                 className="neo-shadow bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-xs font-bold px-2.5 md:px-3 py-1.5 transition flex items-center gap-1.5"
