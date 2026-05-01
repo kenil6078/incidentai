@@ -39,6 +39,7 @@ export const config = {
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
     GOOGLE_USER: process.env.GOOGLE_USER,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
     FRONTEND_URL: process.env.FRONTEND_URL,

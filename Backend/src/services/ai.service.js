@@ -1,20 +1,60 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold  } from '@google/generative-ai';
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatMistralAI } from "@langchain/mistralai";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { config } from '../config/config.js';
 
-const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
+// ── 1. PRIMARY MODEL: Gemini ─────────────────────────────
+const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-1.5-flash",
-  safetySettings: [
-    {
-      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-    },
-  ],
+  apiKey: config.GEMINI_API_KEY,
+  apiVersion: "v1", // Explicitly using v1 for stability
+  maxRetries: 1,
+  temperature: 0.1,
 });
 
+// ── 2. BACKUP MODEL: Mistral ─────────────────────────────
+const mistralModel = new ChatMistralAI({
+  model: "mistral-large-latest",
+  apiKey: config.MISTRAL_API_KEY,
+  temperature: 0.1,
+});
+
+/**
+ * runAiStream: LangChain based streaming with fallback
+ */
+const runAiStream = async (systemPrompt, userPrompt, onChunk) => {
+  const messages = [
+    new SystemMessage(systemPrompt),
+    new HumanMessage(userPrompt),
+  ];
+
+  try {
+    console.log('Attempting AI generation with Gemini (LangChain)...');
+    const stream = await geminiModel.stream(messages);
+    for await (const chunk of stream) {
+      if (chunk.content) {
+        onChunk(chunk.content);
+      }
+    }
+  } catch (geminiErr) {
+    console.warn('Gemini (LangChain) failed, falling back to Mistral:', geminiErr.message);
+    try {
+      const stream = await mistralModel.stream(messages);
+      for await (const chunk of stream) {
+        if (chunk.content) {
+          onChunk(chunk.content);
+        }
+      }
+    } catch (mistralErr) {
+      console.error('Mistral (LangChain) Backup Failed:', mistralErr.message);
+      throw new Error(`AI generation failed on both Gemini and Mistral providers.`);
+    }
+  }
+};
+
 export const generateSummaryStream = async (incident, timeline, onChunk) => {
-  const prompt = `
-    You are an expert incident responder. Summarize the following incident using professional Markdown.
+  const systemPrompt = `You are an expert incident responder. Summarize the incident using professional Markdown.`;
+  const userPrompt = `
     Title: ${incident.title}
     Description: ${incident.description}
     Severity: ${incident.severity}
@@ -35,11 +75,7 @@ export const generateSummaryStream = async (incident, timeline, onChunk) => {
     (Bulleted list of recommended actions)
   `;
 
-  const result = await model.generateContentStream(prompt);
-  for await (const chunk of result.stream) {
-    const chunkText = chunk.text();
-    onChunk(chunkText);
-  }
+  await runAiStream(systemPrompt, userPrompt, onChunk);
 };
 
 export const generateSummary = async (incident, timeline) => {
@@ -51,8 +87,8 @@ export const generateSummary = async (incident, timeline) => {
 };
 
 export const suggestRootCauseStream = async (incident, timeline, onChunk) => {
-  const prompt = `
-    Analyze the following incident logs and suggest potential root causes using professional Markdown.
+  const systemPrompt = `Analyze incident logs and suggest potential root causes using professional Markdown.`;
+  const userPrompt = `
     Title: ${incident.title}
     Description: ${incident.description}
     
@@ -66,11 +102,7 @@ export const suggestRootCauseStream = async (incident, timeline, onChunk) => {
     - **Fix**: Recommended resolution
   `;
 
-  const result = await model.generateContentStream(prompt);
-  for await (const chunk of result.stream) {
-    const chunkText = chunk.text();
-    onChunk(chunkText);
-  }
+  await runAiStream(systemPrompt, userPrompt, onChunk);
 };
 
 export const suggestRootCause = async (incident, timeline) => {
@@ -82,8 +114,8 @@ export const suggestRootCause = async (incident, timeline) => {
 };
 
 export const generatePostmortemStream = async (incident, timeline, onChunk) => {
-  const prompt = `
-    Generate a professional blameless postmortem report for the following incident using Markdown.
+  const systemPrompt = `Generate a professional blameless postmortem report for the incident using Markdown.`;
+  const userPrompt = `
     Title: ${incident.title}
     Resolved At: ${incident.resolvedAt}
     
@@ -108,11 +140,7 @@ export const generatePostmortemStream = async (incident, timeline, onChunk) => {
     (Checklist of tasks to prevent recurrence)
   `;
 
-  const result = await model.generateContentStream(prompt);
-  for await (const chunk of result.stream) {
-    const chunkText = chunk.text();
-    onChunk(chunkText);
-  }
+  await runAiStream(systemPrompt, userPrompt, onChunk);
 };
 
 export const generatePostmortem = async (incident, timeline) => {

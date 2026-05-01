@@ -428,7 +428,7 @@ export default function IncidentDetail() {
                   <DialogTitle className="text-3xl font-black tracking-tighter capitalize">{aiOutput.kind?.replace('-', ' ')}</DialogTitle>
                 </DialogHeader>
 
-                <div className="mt-8 prose prose-zinc max-w-none prose-sm leading-relaxed overflow-y-auto max-h-[60vh] custom-scrollbar pr-4">
+                <div className="mt-8 prose prose-zinc max-w-none prose-sm leading-relaxed overflow-y-auto overflow-x-hidden max-h-[60vh] custom-scrollbar pr-4">
                   {aiOutput.text ? (
                     <ReactMarkdown>{aiOutput.text}</ReactMarkdown>
                   ) : (
