@@ -1,42 +1,63 @@
-import { useCallback } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  login as loginThunk, 
-  register as registerThunk, 
+  selectCurrentUser, 
+  selectIsAuthenticated, 
+  selectAuthLoading, 
+  setCredentials, 
   logout as logoutAction, 
-  getMe as getMeThunk,
-  selectAuth 
-} from '../redux/authSlice';
+  setLoading 
+} from '../auth.slice';
+import { authApi } from '../service/auth.api';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
-  const { user, isAuthenticated, loading, error, isInitialized } = useSelector(selectAuth);
+  const user = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const loading = useSelector(selectAuthLoading);
 
-  const login = useCallback((credentials) => {
-    return dispatch(loginThunk(credentials));
-  }, [dispatch]);
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const userData = await authApi.getMe();
+        dispatch(setCredentials({ user: userData }));
+      } catch (err) {
+        dispatch(logoutAction());
+      } finally {
+        dispatch(setLoading(false));
+      }
+    };
 
-  const register = useCallback((userData) => {
-    return dispatch(registerThunk(userData));
-  }, [dispatch]);
+    if (!user && isAuthenticated) {
+        initAuth();
+    } else if (!user) {
+        // We might want to check session even if not marked authenticated 
+        // to handle persistence across reloads
+        initAuth();
+    } else {
+        dispatch(setLoading(false));
+    }
+  }, [dispatch, user]);
 
-  const logout = useCallback(() => {
-    dispatch(logoutAction());
-  }, [dispatch]);
-
-  const refreshUser = useCallback(() => {
-    return dispatch(getMeThunk());
-  }, [dispatch]);
-
-  return {
-    user,
-    isAuthenticated,
-    loading,
-    error,
-    isInitialized,
-    login,
-    register,
-    logout,
-    refreshUser
+  const login = async (email, password) => {
+    const data = await authApi.login(email, password);
+    dispatch(setCredentials(data));
+    return data.user;
   };
+
+  const register = async (payload) => {
+    const data = await authApi.register(payload);
+    dispatch(setCredentials(data));
+    return data.user;
+  };
+
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch(e) {}
+    dispatch(logoutAction());
+    window.location.href = "/login";
+  };
+
+  return { user, isAuthenticated, loading, login, register, logout };
 };
