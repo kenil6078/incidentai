@@ -21,10 +21,8 @@ const incidentSchema = new mongoose.Schema({
     ref: "Organization",
     required: true,
   },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  resolvedAt: { type: Date },
-});
+
+}, { timestamps: true });
 
 const incidentModel = mongoose.model("Incident", incidentSchema);
 export default incidentModel;

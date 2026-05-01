@@ -23,7 +23,8 @@ export const inviteMember = async (req, res) => {
       email,
       password: hashedPassword,
       orgId: req.user.orgId._id,
-      role
+      role,
+      isVerified: true
     });
     await user.save();
 

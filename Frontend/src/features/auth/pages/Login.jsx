@@ -8,18 +8,40 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setUnverifiedEmail("");
     try {
       await login(email, password);
       toast.success("Welcome back");
       navigate("/dashboard");
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Login failed");
+      if (err?.response?.data?.unverified) {
+        setUnverifiedEmail(email);
+        toast.error("Please verify your email first.");
+      } else {
+        toast.error(err?.response?.data?.detail || "Login failed");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      // Need to import authApi, wait I will add it at the top later or use a quick import if needed.
+      // Wait, we can use the existing authApi from the service. Let's just import it at the top.
+      const { authApi } = await import("../service/auth.api");
+      const res = await authApi.resendVerification(unverifiedEmail);
+      toast.success(res.detail || "Verification email resent!");
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Failed to resend email.");
     } finally {
       setLoading(false);
     }
@@ -35,53 +57,75 @@ export default function Login() {
           <span className="text-sm font-bold tracking-tight">incident.ai</span>
         </Link>
 
-        <div className="max-w-sm w-full">
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-3">/auth/login</div>
-          <h1 className="text-4xl font-black tracking-tighter text-zinc-950 mb-2">Sign in.</h1>
-          <p className="text-sm text-zinc-600 mb-8">Welcome back to your incident workspace.</p>
-
-          <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white" data-testid="login-form">
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2.5 bg-[#FDE68A] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
-                placeholder="you@company.com"
-                data-testid="login-email-input"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Password</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2.5 bg-[#D4F4E4] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
-                placeholder="••••••••"
-                data-testid="login-password-input"
-              />
-            </div>
+        {unverifiedEmail ? (
+          <div className="max-w-sm w-full neo-card p-6 bg-white border-2 border-black">
+            <h1 className="text-2xl font-black tracking-tighter text-zinc-950 mb-2">Check your email</h1>
+            <p className="text-sm text-zinc-600 mb-6">
+              You need to verify your email (<strong>{unverifiedEmail}</strong>) before you can sign in.
+            </p>
             <button
-              type="submit"
+              onClick={handleResend}
               disabled={loading}
-              className="w-full mt-4 bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              data-testid="login-submit-button"
+              className="w-full bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"} <ArrowRight className="w-4 h-4" strokeWidth={3} />
+              {loading ? "Sending..." : "Resend Verification Email"}
             </button>
-          </form>
+            <button
+              onClick={() => setUnverifiedEmail("")}
+              className="w-full mt-4 bg-white text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all"
+            >
+              Back to Login
+            </button>
+          </div>
+        ) : (
+          <div className="max-w-sm w-full">
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-3">/auth/login</div>
+            <h1 className="text-4xl font-black tracking-tighter text-zinc-950 mb-2">Sign in.</h1>
+            <p className="text-sm text-zinc-600 mb-8">Welcome back to your incident workspace.</p>
 
-          <p className="mt-6 text-xs text-zinc-600">
-            New here?{" "}
-            <Link to="/register" className="font-semibold text-zinc-950 underline underline-offset-2" data-testid="login-go-register">
-              Create a workspace
-            </Link>
-          </p>
-        </div>
+            <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white border-2 border-black" data-testid="login-form">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-[#FDE68A] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
+                  placeholder="you@company.com"
+                  data-testid="login-email-input"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Password</label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-[#D4F4E4] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
+                  placeholder="••••••••"
+                  data-testid="login-password-input"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4 bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                data-testid="login-submit-button"
+              >
+                {loading ? "Signing in..." : "Sign in"} <ArrowRight className="w-4 h-4" strokeWidth={3} />
+              </button>
+            </form>
+
+            <p className="mt-6 text-xs text-zinc-600">
+              New here?{" "}
+              <Link to="/register" className="font-semibold text-zinc-950 underline underline-offset-2" data-testid="login-go-register">
+                Create a workspace
+              </Link>
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="hidden lg:block bg-zinc-950 text-white relative overflow-hidden">

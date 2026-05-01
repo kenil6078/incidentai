@@ -6,8 +6,7 @@ const notificationSchema = new mongoose.Schema({
   message: { type: String, required: true },
   type: { type: String, enum: ['incident_created', 'incident_updated', 'assigned', 'mention'], default: 'incident_updated' },
   read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 const notificationModel = mongoose.model('Notification', notificationSchema);
 export default notificationModel;

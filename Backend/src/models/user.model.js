@@ -18,9 +18,16 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   role: {
-    type: String,
+    type: String, 
     enum: ['admin', 'developer', 'viewer'],
     default: 'admin'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: {
+    type: String,
   },
   avatar: {
     type: String,
@@ -29,9 +36,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean, default: true
   },
 },
-  {
-
-  }
+{
+  
+}
 );
 
 const userModel = mongoose.model('User', userSchema);

@@ -3,29 +3,21 @@ import { createBrowserRouter, Outlet } from "react-router-dom";
 import Protected from "./Protected";
 import ScrollToTop from "../components/ScrollToTop";
 
-// Lazy loading features
-const Landing = lazy(() => import("../features/public/pages/Landing"));
-const Login = lazy(() => import("../features/auth/pages/Login"));
-const Register = lazy(() => import("../features/auth/pages/Register"));
-const Dashboard = lazy(() => import("../features/analytics/pages/Dashboard"));
-const IncidentsList = lazy(() => import("../features/incident/pages/IncidentsList"));
-const IncidentDetail = lazy(() => import("../features/incident/pages/IncidentDetail"));
-const CreateIncident = lazy(() => import("../features/incident/pages/CreateIncident"));
-const Team = lazy(() => import("../features/team/pages/Team"));
-const Analytics = lazy(() => import("../features/analytics/pages/Analytics"));
-const Services = lazy(() => import("../features/services/pages/Services"));
-const Billing = lazy(() => import("../features/billing/pages/Billing"));
-const Settings = lazy(() => import("../features/settings/pages/Settings"));
-const PublicStatus = lazy(() => import("../features/public/pages/PublicStatus"));
-const Pricing = lazy(() => import("../features/public/pages/Pricing"));
-const NotFound = lazy(() => import("../features/public/pages/NotFound"));
-
-// Loading fallback component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-  </div>
-);
+import Landing from "../features/public/pages/Landing";
+import Login from "../features/auth/pages/Login";
+import Register from "../features/auth/pages/Register";
+import Dashboard from "../features/analytics/pages/Dashboard";
+import IncidentsList from "../features/incident/pages/IncidentsList";
+import IncidentDetail from "../features/incident/pages/IncidentDetail";
+import CreateIncident from "../features/incident/pages/CreateIncident";
+import Team from "../features/team/pages/Team";
+import Analytics from "../features/analytics/pages/Analytics";
+import Services from "../features/services/pages/Services";
+import Billing from "../features/billing/pages/Billing";
+import Settings from "../features/settings/pages/Settings";
+import PublicStatus from "../features/public/pages/PublicStatus";
+import NotFound from "../features/public/pages/NotFound";
+import Pricing from "../features/public/pages/Pricing";
 
 function RootLayout() {
   return (
@@ -54,6 +46,10 @@ export const routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/verify-email/:token",
+        element: <VerifyEmail />,
       },
       {
         path: "/pricing",
