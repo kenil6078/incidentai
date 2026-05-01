@@ -111,7 +111,7 @@ export default function ChatWindow() {
       <div className="h-16 border-b-2 border-black flex items-center justify-between px-6 bg-[#D4F4E4]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-zinc-950 text-white border-2 border-black flex items-center justify-center font-bold">
-            {currentChat.type === 'group' ? 'G' : otherParticipant?.name[0].toUpperCase()}
+            {currentChat.type === 'group' ? 'G' : otherParticipant?.name?.[0].toUpperCase() || '?'}
           </div>
           <div>
             <div className="text-sm font-black">{currentChat.type === 'group' ? currentChat.name : otherParticipant?.name}</div>
