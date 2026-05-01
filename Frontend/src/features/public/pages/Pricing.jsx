@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, ArrowLeft, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import RevealText from "../components/RevealText";
+import RevealText from "../../../components/RevealText";
 
 export default function Pricing() {
   const navigate = useNavigate();

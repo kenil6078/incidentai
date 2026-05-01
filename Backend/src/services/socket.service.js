@@ -14,7 +14,13 @@ export const initSocket = (server) => {
   // Socket Authentication Middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+      const cookieHeader = socket.handshake.headers.cookie;
+      let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+      
+      if (!token && cookieHeader) {
+        const match = cookieHeader.match(/token=([^;]+)/);
+        if (match) token = match[1];
+      }
       
       if (!token) {
         return next(new Error('Authentication error: No token provided'));

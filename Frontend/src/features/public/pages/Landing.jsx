@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Zap, Brain, Globe, Activity, Shield, Users, BarChart3, CheckSquare, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
-import RevealText from "../components/RevealText";
+import RevealText from "../../../components/RevealText";
 
 export default function Landing() {
   return (

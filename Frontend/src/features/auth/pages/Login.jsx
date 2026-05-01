@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
 
@@ -29,8 +29,8 @@ export default function Login() {
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA]">
       <div className="flex flex-col justify-center px-8 sm:px-16 py-12">
         <Link to="/" className="flex items-center gap-2 mb-12" data-testid="login-brand">
-          <div className="w-7 h-7 bg-zinc-950 flex items-center justify-center">
-            <span className="text-white font-black text-sm">i</span>
+          <div className="w-7 h-7 bg-[#FF6B6B] border-2 border-black neo-shadow flex items-center justify-center">
+            <span className="text-black font-black text-sm">i</span>
           </div>
           <span className="text-sm font-bold tracking-tight">incident.ai</span>
         </Link>
@@ -40,27 +40,27 @@ export default function Login() {
           <h1 className="text-4xl font-black tracking-tighter text-zinc-950 mb-2">Sign in.</h1>
           <p className="text-sm text-zinc-600 mb-8">Welcome back to your incident workspace.</p>
 
-          <form onSubmit={submit} className="space-y-4" data-testid="login-form">
+          <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white" data-testid="login-form">
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Email</label>
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white border border-zinc-300 focus:outline-none focus:border-zinc-950 text-sm"
+                className="w-full px-3 py-2.5 bg-[#FDE68A] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
                 placeholder="you@company.com"
                 data-testid="login-email-input"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Password</label>
+              <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white border border-zinc-300 focus:outline-none focus:border-zinc-950 text-sm"
+                className="w-full px-3 py-2.5 bg-[#D4F4E4] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
                 placeholder="••••••••"
                 data-testid="login-password-input"
               />
@@ -68,10 +68,10 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-zinc-950 text-white py-2.5 text-sm font-semibold hover:bg-zinc-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-4 bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               data-testid="login-submit-button"
             >
-              {loading ? "Signing in..." : "Sign in"} <ArrowRight className="w-4 h-4" />
+              {loading ? "Signing in..." : "Sign in"} <ArrowRight className="w-4 h-4" strokeWidth={3} />
             </button>
           </form>
 

@@ -28,8 +28,13 @@ export const register = async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
     res.json({ 
-      token, 
       user: { id: user._id, name, email, orgId: organization._id, org_name: orgName, orgName, role: user.role } 
     });
   } catch (err) {
@@ -47,8 +52,13 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ detail: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
     res.json({ 
-      token, 
       user: { 
         id: user._id, 
         name: user.name, 
@@ -80,4 +90,9 @@ export const getMe = async (req, res) => {
   } catch (err) {
     res.status(500).json({ detail: err.message });
   }
+};
+
+export const logout = (req, res) => {
+  res.clearCookie('token');
+  res.json({ success: true });
 };

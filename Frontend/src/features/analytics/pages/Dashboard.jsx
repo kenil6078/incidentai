@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../lib/api";
-import { useSocket } from "../context/SocketContext";
-import { useAuth } from "../context/AuthContext";
-import { SeverityBadge, StatusPill } from "../components/Badges";
-import { formatRelative } from "../lib/Format";
+import api from 'axios';
+import { useSocket } from "../../../context/SocketContext";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { SeverityBadge, StatusPill } from "../../../components/Badges";
+import { formatRelative } from "../../../components/Badges";
 import { Activity, AlertTriangle, CheckCircle2, Timer, Plus, ArrowRight } from "lucide-react";
 
 const Stat = ({ label, value, suffix, icon: Icon, accent = "text-zinc-950", testid }) => (
