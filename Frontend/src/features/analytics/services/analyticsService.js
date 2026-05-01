@@ -1,14 +1,15 @@
+/**
+ * analyticsService.js
+ * Routes:  GET /analytics/overview   GET /analytics/summary
+ */
 import apiClient from '../../../shared/api/apiClient';
 
 const analyticsService = {
-  getStats: async () => {
-    const response = await apiClient.get('/analytics/stats');
-    return response.data;
-  },
-  getIncidentTrends: async () => {
-    const response = await apiClient.get('/analytics/trends');
-    return response.data;
-  }
+  getOverview: () =>
+    apiClient.get('/analytics/overview').then((r) => r.data),
+
+  getSummary: () =>
+    apiClient.get('/analytics/summary').then((r) => r.data),
 };
 
 export default analyticsService;

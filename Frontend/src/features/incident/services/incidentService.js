@@ -1,30 +1,25 @@
+/**
+ * incidentService.js
+ * Routes:  GET /incidents  POST /incidents  GET /incidents/:id
+ *          PUT /incidents/:id  DELETE /incidents/:id
+ */
 import apiClient from '../../../shared/api/apiClient';
 
 const incidentService = {
-  getIncidents: async () => {
-    const response = await apiClient.get('/incidents');
-    return response.data;
-  },
+  getAll: (params = {}) =>
+    apiClient.get('/incidents', { params }).then((r) => r.data),
 
-  createIncident: async (incidentData) => {
-    const response = await apiClient.post('/incidents', incidentData);
-    return response.data;
-  },
+  getById: (id) =>
+    apiClient.get(`/incidents/${id}`).then((r) => r.data),
 
-  getIncidentById: async (id) => {
-    const response = await apiClient.get(`/incidents/${id}`);
-    return response.data;
-  },
+  create: (data) =>
+    apiClient.post('/incidents', data).then((r) => r.data),
 
-  updateIncident: async (id, incidentData) => {
-    const response = await apiClient.put(`/incidents/${id}`, incidentData);
-    return response.data;
-  },
+  update: (id, data) =>
+    apiClient.put(`/incidents/${id}`, data).then((r) => r.data),
 
-  deleteIncident: async (id) => {
-    const response = await apiClient.delete(`/incidents/${id}`);
-    return response.data;
-  },
+  remove: (id) =>
+    apiClient.delete(`/incidents/${id}`).then((r) => r.data),
 };
 
 export default incidentService;

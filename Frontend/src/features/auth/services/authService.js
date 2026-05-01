@@ -1,25 +1,22 @@
+/**
+ * authService.js
+ * All HTTP calls for the auth feature.
+ * Routes: POST /auth/login  POST /auth/register  GET /auth/me  POST /auth/logout
+ */
 import apiClient from '../../../shared/api/apiClient';
 
 const authService = {
-  login: async (credentials) => {
-    const response = await apiClient.post('/auth/login', credentials);
-    return response.data;
-  },
+  login: (credentials) =>
+    apiClient.post('/auth/login', credentials).then((r) => r.data),
 
-  register: async (userData) => {
-    const response = await apiClient.post('/auth/register', userData);
-    return response.data;
-  },
+  register: (userData) =>
+    apiClient.post('/auth/register', userData).then((r) => r.data),
 
-  getMe: async () => {
-    const response = await apiClient.get('/auth/me');
-    return response.data;
-  },
+  getMe: () =>
+    apiClient.get('/auth/me').then((r) => r.data),
 
-  logout: async () => {
-    const response = await apiClient.post('/auth/logout');
-    return response.data;
-  },
+  logout: () =>
+    apiClient.post('/auth/logout').then((r) => r.data),
 };
 
 export default authService;

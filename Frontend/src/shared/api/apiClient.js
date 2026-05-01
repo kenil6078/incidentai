@@ -4,12 +4,14 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor for adding auth token
+// ─── Request Interceptor ───────────────────────────────────────────────────────
+// Attaches JWT token from localStorage to every outgoing request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,24 +20,23 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling errors
+// ─── Response Interceptor ──────────────────────────────────────────────────────
+// Normalizes error messages; clears token on 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'Something went wrong';
-    
-    // Handle unauthorized error (e.g., token expired)
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      'Something went wrong';
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      // You might want to redirect to login here or dispatch a logout action
-      // window.location.href = '/login';
     }
-    
+
     return Promise.reject(message);
   }
 );

@@ -1,27 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { Provider } from 'react-redux'
-import { store } from './app/store'
-import './index.css'
-import App from './App.jsx'
-import axios from 'axios'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from './app/store';
+import './index.css';
+import App from './App.jsx';
 
-axios.defaults.baseURL = '/api';
-axios.defaults.withCredentials = true;
-
-// Handle 401 Unauthorized globally
-axios.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err?.response?.status === 401) {
-      const path = window.location.pathname;
-      if (!path.startsWith("/login") && !path.startsWith("/register") && !path.startsWith("/status") && path !== "/") {
-        window.location.href = "/login";
-      }
-    }
-    return Promise.reject(err);
-  }
-);
+// All HTTP logic is handled by src/shared/api/apiClient.js
+// (Axios instance with token + error interceptors)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -29,5 +14,4 @@ createRoot(document.getElementById('root')).render(
       <App />
     </Provider>
   </StrictMode>,
-)
-
+);
