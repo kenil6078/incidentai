@@ -1,106 +1,83 @@
-/**
- * teamSlice.js
- * Manages: team members | invite | update role | remove
- */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import teamService from '../services/teamService';
 
-// ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchTeam = createAsyncThunk(
-  'team/fetchAll',
+  'team/fetchTeam',
   async (_, { rejectWithValue }) => {
     try {
       return await teamService.getTeam();
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch team' });
     }
   }
 );
 
 export const inviteMember = createAsyncThunk(
   'team/invite',
-  async (payload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue, dispatch }) => {
     try {
-      return await teamService.invite(payload);
+      const data = await teamService.inviteMember(payload);
+      dispatch(fetchTeam());
+      return data;
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to invite member' });
     }
   }
 );
 
 export const updateMemberRole = createAsyncThunk(
   'team/updateRole',
-  async ({ id, role }, { rejectWithValue }) => {
+  async ({ id, role }, { rejectWithValue, dispatch }) => {
     try {
-      return await teamService.updateRole(id, role);
+      const data = await teamService.updateRole(id, role);
+      dispatch(fetchTeam());
+      return data;
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to update role' });
     }
   }
 );
 
 export const removeMember = createAsyncThunk(
   'team/remove',
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
-      await teamService.remove(id);
-      return id;
+      const data = await teamService.removeMember(id);
+      dispatch(fetchTeam());
+      return data;
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to remove member' });
     }
   }
 );
 
-// ─── Slice ─────────────────────────────────────────────────────────────────────
 const initialState = {
   members: [],
   loading: false,
-  actionLoading: false,
   error: null,
 };
 
 const teamSlice = createSlice({
   name: 'team',
   initialState,
-  reducers: {
-    clearTeamError: (state) => { state.error = null; },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      // fetchTeam
-      .addCase(fetchTeam.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchTeam.fulfilled, (state, { payload }) => {
+      .addCase(fetchTeam.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTeam.fulfilled, (state, action) => {
         state.loading = false;
-        state.members = payload;
+        state.members = action.payload;
       })
-      .addCase(fetchTeam.rejected, (state, { payload }) => {
+      .addCase(fetchTeam.rejected, (state, action) => {
         state.loading = false;
-        state.error = payload;
-      })
-      // inviteMember
-      .addCase(inviteMember.pending, (state) => { state.actionLoading = true; })
-      .addCase(inviteMember.fulfilled, (state) => { state.actionLoading = false; })
-      .addCase(inviteMember.rejected, (state, { payload }) => {
-        state.actionLoading = false;
-        state.error = payload;
-      })
-      // updateMemberRole
-      .addCase(updateMemberRole.fulfilled, (state, { payload }) => {
-        const idx = state.members.findIndex((m) => m._id === payload._id);
-        if (idx !== -1) state.members[idx] = payload;
-      })
-      // removeMember
-      .addCase(removeMember.fulfilled, (state, { payload: id }) => {
-        state.members = state.members.filter((m) => m._id !== id);
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearTeamError } = teamSlice.actions;
-
-// Selectors
-export const selectTeam = (state) => state.team.members;
+export const selectTeamMembers = (state) => state.team.members;
 export const selectTeamLoading = (state) => state.team.loading;
-export const selectTeamActionLoading = (state) => state.team.actionLoading;
 
 export default teamSlice.reducer;

@@ -1,10 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchTeam,
+  inviteMember as inviteMemberThunk,
+  updateMemberRole as updateMemberRoleThunk,
+  removeMember as removeMemberThunk,
   selectTeamMembers,
   selectTeamLoading,
-} from '../team.slice';
-import { teamApi } from '../service/team.api';
+} from '../redux/teamSlice';
 
 export const useTeam = () => {
   const dispatch = useDispatch();
@@ -13,23 +15,11 @@ export const useTeam = () => {
 
   const getTeam = () => dispatch(fetchTeam());
 
-  const inviteMember = async (payload) => {
-    const data = await teamApi.inviteMember(payload);
-    getTeam(); // Refresh
-    return data;
-  };
+  const inviteMember = (payload) => dispatch(inviteMemberThunk(payload));
 
-  const updateRole = async (id, role) => {
-    const data = await teamApi.updateRole(id, role);
-    getTeam(); // Refresh
-    return data;
-  };
+  const updateRole = (id, role) => dispatch(updateMemberRoleThunk({ id, role }));
 
-  const removeMember = async (id) => {
-    const data = await teamApi.removeMember(id);
-    getTeam(); // Refresh
-    return data;
-  };
+  const removeMember = (id) => dispatch(removeMemberThunk(id));
 
   return {
     members,

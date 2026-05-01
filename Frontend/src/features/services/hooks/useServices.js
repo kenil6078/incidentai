@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchServices,
+  createService as createServiceThunk,
   selectServices,
   selectServicesLoading,
-} from '../services.slice';
-import { servicesApi } from '../service/services.api';
+} from '../redux/servicesSlice';
 
 export const useServices = () => {
   const dispatch = useDispatch();
@@ -13,30 +13,12 @@ export const useServices = () => {
 
   const getServices = () => dispatch(fetchServices());
 
-  const createService = async (payload) => {
-    const data = await servicesApi.createService(payload);
-    getServices(); // Refresh
-    return data;
-  };
-
-  const updateService = async (id, payload) => {
-    const data = await servicesApi.updateService(id, payload);
-    getServices(); // Refresh
-    return data;
-  };
-
-  const deleteService = async (id) => {
-    const data = await servicesApi.deleteService(id);
-    getServices(); // Refresh
-    return data;
-  };
+  const createService = (payload) => dispatch(createServiceThunk(payload));
 
   return {
     list,
     loading,
     getServices,
     createService,
-    updateService,
-    deleteService,
   };
 };

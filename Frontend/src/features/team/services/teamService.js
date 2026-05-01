@@ -1,22 +1,22 @@
-/**
- * teamService.js
- * Routes:  GET /team   POST /team/invite
- *          PUT /team/:id/role   DELETE /team/:id
- */
-import apiClient from '../../../shared/api/apiClient';
+import apiClient from '../../../lib/api';
 
 const teamService = {
-  getTeam: () =>
-    apiClient.get('/team').then((r) => r.data),
-
-  invite: (payload) =>
-    apiClient.post('/team/invite', payload).then((r) => r.data),
-
-  updateRole: (id, role) =>
-    apiClient.put(`/team/${id}/role`, { role }).then((r) => r.data),
-
-  remove: (id) =>
-    apiClient.delete(`/team/${id}`).then((r) => r.data),
+  getTeam: async () => {
+    const response = await apiClient.get('/team');
+    return response.data;
+  },
+  inviteMember: async (payload) => {
+    const response = await apiClient.post('/team/invite', payload);
+    return response.data;
+  },
+  updateRole: async (id, role) => {
+    const response = await apiClient.patch(`/team/${id}/role`, { role });
+    return response.data;
+  },
+  removeMember: async (id) => {
+    const response = await apiClient.delete(`/team/${id}`);
+    return response.data;
+  },
 };
 
 export default teamService;

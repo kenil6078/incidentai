@@ -6,9 +6,15 @@ import AppShell from "../components/AppShell";
 import { Skeleton } from "../components/ui/skeleton";
 
 export default function Protected({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isInitialized, refreshUser } = useAuth();
 
-  if (loading) {
+  React.useEffect(() => {
+    if (!isInitialized) {
+      refreshUser();
+    }
+  }, [isInitialized, refreshUser]);
+
+  if (loading || !isInitialized) {
     return (
       <div className="min-h-screen flex flex-col p-6 space-y-4">
         <Skeleton className="h-8 w-1/3" />

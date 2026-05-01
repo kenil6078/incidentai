@@ -1,12 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from 'axios';
 import { useSocket } from "../../../context/SocketContext";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { useIncident } from "../hooks/useIncident";
+import { useTimeline } from "../../timeline/hooks/useTimeline";
+import { useAI } from "../../ai/hooks/useAI";
+import { useTeam } from "../../team/hooks/useTeam";
+import { useServices } from "../../services/hooks/useServices";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";
 import { formatRelative, formatAbsolute, STATUS_DOT } from "../../../components/Badges";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Sparkles, FileText, Search as SearchIcon, Loader2, Trash2, Copy, Check, Clock } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, FileText, Search as SearchIcon, Trash2, Copy, Check, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
 import { IncidentDetailSkeleton } from "../../../components/ui/skeleton";
@@ -31,94 +35,80 @@ export default function IncidentDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { subscribe } = useSocket();
-  const [incident, setIncident] = useState(null);
-  const [timeline, setTimeline] = useState([]);
-  const [team, setTeam] = useState([]);
-  const [services, setServices] = useState([]);
+  
+  const { current: incident, getIncident, updateIncident, deleteIncident } = useIncident();
+  const { entries: timeline, getTimeline, addEntry } = useTimeline(id);
+  const { members: team, getTeam } = useTeam();
+  const { list: services, getServices } = useServices();
+  const { loadingKey, generateSummary, generateRootCause, generatePostmortem, summary, rootCause, postmortem } = useAI(id);
+
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState("update");
-  const [aiLoading, setAiLoading] = useState(null);
-  const [aiOutput, setAiOutput] = useState({ kind: null, text: "" });
   const [showAiModal, setShowAiModal] = useState(false);
+  const [aiOutput, setAiOutput] = useState({ kind: null, text: "" });
   const [copying, setCopying] = useState(false);
 
   const canEdit = user?.role !== "viewer";
-  const canDelete = user?.role === "admin";
+  const canDelete = user?.role === "admin" || user?.role === "super_admin";
 
-  const load = useCallback(async () => {
-    try {
-      const [inc, tl, t, s] = await Promise.all([
-        api.get(`/incidents/${id}`),
-        api.get(`/timeline/${id}`).catch(() => ({ data: [] })),
-        api.get("/team").catch(() => ({ data: [] })),
-        api.get("/services").catch(() => ({ data: [] })),
-      ]);
-      setIncident(inc.data);
-      setTimeline(tl.data || []);
-      setTeam(t.data);
-      setServices(s.data);
-    } catch (e) {
-      toast.error("Incident not found");
-      navigate("/incidents");
-    }
-  }, [id, navigate]);
+  const loadData = useCallback(() => {
+    if (!id) return;
+    getIncident(id);
+    getTimeline();
+    getTeam();
+    getServices();
+  }, [id, getIncident, getTimeline, getTeam, getServices]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   useEffect(() => {
     const unsub = subscribe?.((evt) => {
-      if (evt.type === "incident.updated" && (evt.id === id || evt._id === id)) setIncident(evt);
-      if (evt.type === "timeline.added" && (evt.incidentId === id || evt._id === id)) {
-        setTimeline((t) => [...t, evt]);
-      }
+      if (evt.type === "incident.updated" && (evt.id === id || evt._id === id)) getIncident(id);
+      if (evt.type === "timeline.added" && (evt.incidentId === id || evt._id === id)) getTimeline();
       if (evt.type === "incident.deleted" && (evt.incident_id === id || evt.id === id)) {
         toast("Incident was deleted");
         navigate("/incidents");
       }
     });
     return () => unsub && unsub();
-  }, [subscribe, id, navigate]);
+  }, [subscribe, id, navigate, getIncident, getTimeline]);
 
-  const updateStatus = async (status) => {
+  const onUpdateStatus = async (status) => {
     try {
-      const r = await api.put(`/incidents/${id}`, { status: status.toLowerCase() });
-      setIncident(r.data);
+      await updateIncident(id, { status: status.toLowerCase() });
       toast.success(`Status → ${status}`);
     } catch (e) { toast.error("Failed to update status"); }
   };
 
-  const updateSeverity = async (severity) => {
+  const onUpdateSeverity = async (severity) => {
     try {
-      const r = await api.put(`/incidents/${id}`, { severity: severity.toLowerCase() });
-      setIncident(r.data);
+      await updateIncident(id, { severity: severity.toLowerCase() });
       toast.success(`Severity → ${severity}`);
     } catch (e) { toast.error("Failed to update severity"); }
   };
 
-  const addTimeline = async (e) => {
+  const onAddTimeline = async (e) => {
     e.preventDefault();
     if (!msg.trim()) return;
     try {
-      const r = await api.post(`/timeline/${id}`, { message: msg, type: msgType });
-      setTimeline((t) => [...t, r.data]);
+      await addEntry({ message: msg, type: msgType });
       setMsg("");
     } catch (e) { toast.error("Failed to post update"); }
   };
 
   const runAI = async (kind) => {
-    const endpointMap = { summary: "summary", "root-cause": "root-cause", postmortem: "postmortem" };
-    setAiLoading(kind);
-    setAiOutput({ kind, text: "" });
     try {
-      const r = await api.post(`/ai/${endpointMap[kind]}`, { incidentId: id });
-      const text = r.data[kind === 'root-cause' ? 'rootCause' : kind];
+      let result;
+      if (kind === "summary") result = await generateSummary();
+      if (kind === "root-cause") result = await generateRootCause();
+      if (kind === "postmortem") result = await generatePostmortem();
+      
+      const text = result.payload[kind === 'root-cause' ? 'rootCause' : kind];
       setAiOutput({ kind, text });
       setShowAiModal(true);
       toast.success(`AI ${kind} generated`);
     } catch (e) {
-      toast.error(e?.response?.data?.detail || `AI ${kind} failed`);
-    } finally {
-      setAiLoading(null);
+      toast.error(`AI ${kind} failed`);
     }
   };
 
@@ -129,29 +119,28 @@ export default function IncidentDetail() {
     setTimeout(() => setCopying(false), 2000);
   };
 
-  const addToTimeline = async () => {
+  const onAddToTimelineFromAI = async () => {
     try {
-      await api.post(`/timeline/${id}`, { 
+      await addEntry({ 
         message: aiOutput.text, 
         type: "ai",
         createdBy: { name: "AI Assistant" }
       });
       toast.success("Added to timeline");
       setShowAiModal(false);
-      load(); // Refresh timeline
     } catch (e) {
       toast.error("Failed to add to timeline");
     }
   };
 
-  const deleteIncident = async () => {
+  const onDelete = async () => {
     if (!window.confirm("Delete this incident permanently?")) return;
     try {
-      await api.delete(`/incidents/${id}`);
+      await deleteIncident(id);
       toast.success("Incident deleted");
       navigate("/incidents");
     } catch (e) { 
-      toast.error(e?.response?.data?.detail || e.message || "Delete failed"); 
+      toast.error("Delete failed"); 
     }
   };
 
@@ -177,7 +166,7 @@ export default function IncidentDetail() {
           </div>
         </div>
         {canDelete && (
-          <button onClick={deleteIncident} className="flex items-center gap-1 text-xs text-red-700 hover:text-red-900 px-3 py-1.5 border border-red-200 hover:bg-red-50 w-full md:w-auto justify-center" data-testid="incident-delete">
+          <button onClick={onDelete} className="flex items-center gap-1 text-xs text-red-700 hover:text-red-900 px-3 py-1.5 border border-red-200 hover:bg-red-50 w-full md:w-auto justify-center" data-testid="incident-delete">
             <Trash2 className="w-3.5 h-3.5" /> Delete
           </button>
         )}
@@ -207,7 +196,7 @@ export default function IncidentDetail() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${TYPE_COLOR[ev.type] || "text-zinc-700"}`}>{TYPE_LABEL[ev.type] || "UPDATE"}</span>
                     <span className="text-[10px] font-mono text-zinc-500">{ev.createdBy?.name || ev.user || 'System'}</span>
-                    <span className="text-[10px] font-mono text-zinc-400 ml-auto">{formatAbsolute(ev.timestamp)}</span>
+                    <span className="text-[10px] font-mono text-zinc-400 ml-auto">{formatAbsolute(ev.timestamp || ev.createdAt)}</span>
                   </div>
                   <div className="text-sm text-zinc-800 whitespace-pre-wrap">{ev.message || ev.action}</div>
                 </div>
@@ -215,7 +204,7 @@ export default function IncidentDetail() {
             </div>
 
             {canEdit && (
-              <form onSubmit={addTimeline} className="border-t border-zinc-200 p-4 flex gap-2 items-stretch" data-testid="timeline-form">
+              <form onSubmit={onAddTimeline} className="border-t border-zinc-200 p-4 flex gap-2 items-stretch" data-testid="timeline-form">
                 <Select value={msgType} onValueChange={setMsgType}>
                   <SelectTrigger className="w-32 rounded-none" data-testid="timeline-type-select"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-none">
@@ -243,7 +232,7 @@ export default function IncidentDetail() {
           <div className="bg-white border border-zinc-200 p-5 space-y-4">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Severity</div>
-              <Select value={incident.severity} onValueChange={updateSeverity} disabled={!canEdit}>
+              <Select value={incident.severity} onValueChange={onUpdateSeverity} disabled={!canEdit}>
                 <SelectTrigger className="rounded-none" data-testid="detail-severity-select"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-none">
                   <SelectItem value="low">Low</SelectItem>
@@ -256,7 +245,7 @@ export default function IncidentDetail() {
 
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Status</div>
-              <Select value={incident.status} onValueChange={updateStatus} disabled={!canEdit}>
+              <Select value={incident.status} onValueChange={onUpdateStatus} disabled={!canEdit}>
                 <SelectTrigger className="rounded-none" data-testid="detail-status-select"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-none">
                   <SelectItem value="investigating">Investigating</SelectItem>
@@ -287,7 +276,7 @@ export default function IncidentDetail() {
 
           <div className="bg-white border border-zinc-200 relative overflow-hidden" data-testid="ai-panel">
             <div className="absolute left-0 top-0 bottom-0 w-0.5 ai-panel-border" />
-            {aiLoading && (
+            {loadingKey && (
               <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center p-6 text-center animate-in">
                 <div className="w-12 h-12 rounded-full border-2 border-indigo-100 border-t-indigo-600 animate-spin mb-4" />
                 <div className="text-sm font-bold text-zinc-950">AI is thinking...</div>
@@ -303,7 +292,7 @@ export default function IncidentDetail() {
             <div className="p-4 space-y-2">
               <button
                 onClick={() => runAI("summary")}
-                disabled={aiLoading !== null}
+                disabled={loadingKey !== null}
                 className="w-full text-left px-3 py-2 border border-zinc-200 hover:border-zinc-950 hover:bg-zinc-50 disabled:opacity-50 flex items-center gap-2 text-sm transition group"
                 data-testid="ai-summary-btn"
               >
@@ -313,7 +302,7 @@ export default function IncidentDetail() {
               </button>
               <button
                 onClick={() => runAI("root-cause")}
-                disabled={aiLoading !== null}
+                disabled={loadingKey !== null}
                 className="w-full text-left px-3 py-2 border border-zinc-200 hover:border-zinc-950 hover:bg-zinc-50 disabled:opacity-50 flex items-center gap-2 text-sm transition group"
                 data-testid="ai-rootcause-btn"
               >
@@ -323,7 +312,7 @@ export default function IncidentDetail() {
               </button>
               <button
                 onClick={() => runAI("postmortem")}
-                disabled={aiLoading !== null}
+                disabled={loadingKey !== null}
                 className="w-full text-left px-3 py-2 border border-zinc-200 hover:border-zinc-950 hover:bg-zinc-50 disabled:opacity-50 flex items-center gap-2 text-sm transition group"
                 data-testid="ai-postmortem-btn"
               >
@@ -359,7 +348,7 @@ export default function IncidentDetail() {
                     {copying ? "Copied" : "Copy to clipboard"}
                   </button>
                   <button
-                    onClick={addToTimeline}
+                    onClick={onAddToTimelineFromAI}
                     className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-zinc-950 text-white hover:bg-zinc-800 transition"
                   >
                     <Clock className="w-3.5 h-3.5" />

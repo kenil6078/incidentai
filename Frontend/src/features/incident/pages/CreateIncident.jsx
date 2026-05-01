@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from 'axios';
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { useIncident } from "../hooks/useIncident";
+import { useTeam } from "../../team/hooks/useTeam";
+import { useServices } from "../../services/hooks/useServices";
 
 export default function CreateIncident() {
   const navigate = useNavigate();
-  const [team, setTeam] = useState([]);
-  const [services, setServices] = useState([]);
+  const { createIncident } = useIncident();
+  const { members: team, getTeam } = useTeam();
+  const { list: services, getServices } = useServices();
+  
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -20,14 +24,9 @@ export default function CreateIncident() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      api.get("/team").catch(() => ({ data: [] })), 
-      api.get("/services").catch(() => ({ data: [] }))
-    ]).then(([a, b]) => {
-      setTeam(a.data);
-      setServices(b.data);
-    });
-  }, []);
+    getTeam();
+    getServices();
+  }, [getTeam, getServices]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -40,11 +39,12 @@ export default function CreateIncident() {
         assignedTo: form.assigned_to,
         affectedServices: form.affected_services
       };
-      const r = await api.post("/incidents", payload);
+      const result = await createIncident(payload);
+      const data = result.payload;
       toast.success("Incident created");
-      navigate(`/incidents/${r.data.id || r.data._id}`);
+      navigate(`/incidents/${data.id || data._id}`);
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Failed to create incident");
+      toast.error("Failed to create incident");
     } finally {
       setLoading(false);
     }

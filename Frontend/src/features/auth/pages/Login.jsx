@@ -1,35 +1,48 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
+import authService from "../services/authService";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === "super_admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setUnverifiedEmail("");
     try {
-      const user = await login(email, password);
+      const resultAction = await login({ email, password });
+      const data = await resultAction.unwrap();
       toast.success("Welcome back");
-      if (user.role === "super_admin") {
+      if (data.user.role === "super_admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     } catch (err) {
-      if (err?.response?.data?.unverified) {
+      if (err?.unverified) {
         setUnverifiedEmail(email);
         toast.error("Please verify your email first.");
       } else {
-        toast.error(err?.response?.data?.detail || "Login failed");
+        toast.error(err?.detail || "Login failed");
       }
     } finally {
       setLoading(false);
@@ -39,10 +52,7 @@ export default function Login() {
   const handleResend = async () => {
     setLoading(true);
     try {
-      // Need to import authApi, wait I will add it at the top later or use a quick import if needed.
-      // Wait, we can use the existing authApi from the service. Let's just import it at the top.
-      const { authApi } = await import("../service/auth.api");
-      const res = await authApi.resendVerification(unverifiedEmail);
+      const res = await authService.resendVerification(unverifiedEmail);
       toast.success(res.detail || "Verification email resent!");
     } catch (err) {
       toast.error(err?.response?.data?.detail || "Failed to resend email.");

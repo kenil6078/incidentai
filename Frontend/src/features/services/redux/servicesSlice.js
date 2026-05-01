@@ -1,75 +1,57 @@
-/**
- * servicesSlice.js  (monitors feature)
- * Manages: services/monitors list
- */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import monitorService from '../services/monitorService';
+import servicesService from '../services/servicesService';
 
-// ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchServices = createAsyncThunk(
-  'services/fetchAll',
+  'services/fetchServices',
   async (_, { rejectWithValue }) => {
     try {
-      return await monitorService.getAll();
+      return await servicesService.getServices();
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch services' });
     }
   }
 );
 
 export const createService = createAsyncThunk(
   'services/create',
-  async (payload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue, dispatch }) => {
     try {
-      return await monitorService.create(payload);
+      const data = await servicesService.createService(payload);
+      dispatch(fetchServices());
+      return data;
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to create service' });
     }
   }
 );
 
-// ─── Slice ─────────────────────────────────────────────────────────────────────
 const initialState = {
-  items: [],
+  list: [],
   loading: false,
-  createLoading: false,
   error: null,
 };
 
 const servicesSlice = createSlice({
   name: 'services',
   initialState,
-  reducers: {
-    clearServicesError: (state) => { state.error = null; },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchServices.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchServices.fulfilled, (state, { payload }) => {
+      .addCase(fetchServices.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = payload;
+        state.list = action.payload;
       })
-      .addCase(fetchServices.rejected, (state, { payload }) => {
+      .addCase(fetchServices.rejected, (state, action) => {
         state.loading = false;
-        state.error = payload;
-      })
-      .addCase(createService.pending, (state) => { state.createLoading = true; })
-      .addCase(createService.fulfilled, (state, { payload }) => {
-        state.createLoading = false;
-        state.items.push(payload);
-      })
-      .addCase(createService.rejected, (state, { payload }) => {
-        state.createLoading = false;
-        state.error = payload;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearServicesError } = servicesSlice.actions;
-
-// Selectors
-export const selectServices = (state) => state.services.items;
+export const selectServices = (state) => state.services.list;
 export const selectServicesLoading = (state) => state.services.loading;
-export const selectCreateLoading = (state) => state.services.createLoading;
 
 export default servicesSlice.reducer;

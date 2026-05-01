@@ -19,11 +19,12 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     try {
-      await register({ name, email, password, orgName: orgName });
+      const resultAction = await register({ name, email, password, orgName: orgName });
+      await resultAction.unwrap();
       setSuccess(true);
       toast.success("Registration successful!");
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Registration failed");
+      toast.error(err?.detail || "Registration failed");
     } finally {
       setLoading(false);
     }

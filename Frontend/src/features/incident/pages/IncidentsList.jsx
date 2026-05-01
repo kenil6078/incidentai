@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import api from 'axios';
+import { Link, useNavigate } from "react-router-dom";
 import { useSocket } from "../../../context/SocketContext";
+import { useIncident } from "../hooks/useIncident";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";
 import { formatRelative } from "../../../components/Badges";
 import { Plus, Search, ArrowLeft } from "lucide-react";
@@ -9,26 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { IncidentRowSkeleton } from "../../../components/ui/skeleton";
 
 export default function IncidentsList() {
+  const navigate = useNavigate();
   const { subscribe } = useSocket();
-  const [incidents, setIncidents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { list: incidents, loading, getIncidents } = useIncident();
+  
   const [statusF, setStatusF] = useState("All statuses");
   const [sevF, setSevF] = useState("All severities");
   const [q, setQ] = useState("");
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (statusF !== "All statuses") params.status = statusF;
-      if (sevF !== "All severities") params.severity = sevF;
-      const r = await api.get("/incidents", { params });
-      setIncidents(r.data);
-    } catch (err) {
-      console.error("Failed to load incidents", err);
-    } finally {
-      setLoading(false);
-    }
+  const load = () => {
+    const params = {};
+    if (statusF !== "All statuses") params.status = statusF;
+    if (sevF !== "All severities") params.severity = sevF;
+    getIncidents(params);
   };
 
   useEffect(() => { load(); }, [statusF, sevF]);
@@ -44,7 +37,7 @@ export default function IncidentsList() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-7xl">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950" data-testid="incidents-back">
+      <button onClick={() => navigate("/dashboard")} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950" data-testid="incidents-back">
         <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
       </button>
 

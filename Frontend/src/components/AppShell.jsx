@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useSocket } from "../context/SocketContext";
+import { useNotification } from "../features/notification/hooks/useNotification";
 import {
   LayoutDashboard, AlertTriangle, Activity, Users, BarChart3, Settings, Bell, LogOut,
   Globe, Plus, Wifi, WifiOff, Menu, X, CreditCard,
 } from "lucide-react";
-import api from 'axios';
 import { formatRelative } from "../components/Badges";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -35,37 +35,24 @@ const NavItem = ({ to, icon: Icon, label, end, onClick }) => (
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const { connected, subscribe } = useSocket();
+  const { notifications: notifs, unreadCount: unread, getNotifications, readAll: markAllRead } = useNotification();
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
-  const [notifs, setNotifs] = useState([]);
-  const [unread, setUnread] = useState(0);
-
-  const loadNotifs = async () => {
-    try {
-      const r = await api.get("/notifications");
-      setNotifs(r.data);
-      setUnread(r.data.filter((n) => !n.read).length);
-    } catch (e) { /* noop */ }
-  };
 
   useEffect(() => {
-    loadNotifs();
+    if (user) {
+      getNotifications();
+    }
+  }, [user]);
+
+  useEffect(() => {
     const unsub = subscribe?.((evt) => {
       if (evt.type === "incident.created" || evt.type === "incident.updated" || evt.type === "notification") {
-        loadNotifs();
+        getNotifications();
       }
     });
     return () => unsub && unsub();
   }, [subscribe]);
-
-  const markAllRead = async () => {
-    try {
-      await api.post("/notifications/read-all");
-      loadNotifs();
-    } catch (e) {
-      console.error("Failed to mark notifications as read", e);
-    }
-  };
 
   if (!user) return null;
 

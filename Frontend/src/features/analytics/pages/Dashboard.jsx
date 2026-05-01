@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from 'axios';
 import { useSocket } from "../../../context/SocketContext";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { useAnalytics } from "../hooks/useAnalytics";
+import { useIncident } from "../../incident/hooks/useIncident";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";
 import { formatRelative } from "../../../components/Badges";
 import { Activity, AlertTriangle, CheckCircle2, Timer, Plus, ArrowRight } from "lucide-react";
@@ -23,26 +24,18 @@ const Stat = ({ label, value, suffix, icon: Icon, accent = "text-zinc-950", test
 export default function Dashboard() {
   const { user } = useAuth();
   const { subscribe } = useSocket();
-  const [overview, setOverview] = useState(null);
-  const [incidents, setIncidents] = useState([]);
+  const { overview, getOverview } = useAnalytics();
+  const { list: incidents, getIncidents } = useIncident();
 
-  const load = async () => {
-    try {
-      const [a, b] = await Promise.all([
-        api.get("/analytics/overview"),
-        api.get("/incidents"),
-      ]);
-      setOverview(a.data);
-      setIncidents(b.data);
-    } catch (err) {
-      console.error("Dashboard load failed", err);
-    }
+  const loadData = () => {
+    getOverview();
+    getIncidents();
   };
 
   useEffect(() => {
-    load();
+    loadData();
     const unsub = subscribe?.((evt) => {
-      if (evt.type?.startsWith("incident.")) load();
+      if (evt.type?.startsWith("incident.")) loadData();
     });
     return () => unsub && unsub();
   }, [subscribe]);
