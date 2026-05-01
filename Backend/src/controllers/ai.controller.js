@@ -1,12 +1,12 @@
-import aiService from '../services/aiService.js';
-import Incident from '../models/incident.model.js';
-import Timeline from '../models/timeline.model.js';
+import * as aiService from '../services/ai.service.js';
+import incidentModel from '../models/incident.model.js';
+import timelineModel from '../models/timeline.model.js';
 
 export const getSummary = async (req, res) => {
   try {
     const { incidentId } = req.body;
-    const incident = await Incident.findById(incidentId);
-    const timeline = await Timeline.find({ incidentId }).populate('createdBy', 'name');
+    const incident = await incidentModel.findById(incidentId);
+    const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
     
     const summary = await aiService.generateSummary(incident, timeline);
     res.json({ summary });
@@ -18,8 +18,8 @@ export const getSummary = async (req, res) => {
 export const getRootCause = async (req, res) => {
   try {
     const { incidentId } = req.body;
-    const incident = await Incident.findById(incidentId);
-    const timeline = await Timeline.find({ incidentId }).populate('createdBy', 'name');
+    const incident = await incidentModel.findById(incidentId);
+    const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
     
     const rootCause = await aiService.suggestRootCause(incident, timeline);
     res.json({ rootCause });
@@ -31,8 +31,8 @@ export const getRootCause = async (req, res) => {
 export const getPostmortem = async (req, res) => {
   try {
     const { incidentId } = req.body;
-    const incident = await Incident.findById(incidentId);
-    const timeline = await Timeline.find({ incidentId }).populate('createdBy', 'name');
+    const incident = await incidentModel.findById(incidentId);
+    const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
     
     const postmortem = await aiService.generatePostmortem(incident, timeline);
     res.json({ postmortem });

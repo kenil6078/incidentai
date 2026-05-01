@@ -23,14 +23,15 @@ const userSchema = new mongoose.Schema({
     default: 'admin'
   },
   avatar: {
-    type: String
+    type: String,
   },
   active: {
     type: Boolean, default: true
   },
-  createdAt: {
-    type: Date, default: Date.now
-  },
-});
+},
+{
+  
+}
+);
 
 export default mongoose.model('User', userSchema);

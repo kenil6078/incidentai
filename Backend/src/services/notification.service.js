@@ -1,14 +1,15 @@
-import Notification from '../models/notification.model.js';
+import notificationModel from '../models/notification.model.js';
 import { sendEmail } from './email.service.js';
 
-const createNotification = async (userId, orgId, message, type, io) => {
+export const createNotification = async (userId, orgId, message, type, io) => {
   try {
-    const notification = new Notification({
+    const notification = new notificationModel({
       userId,
       orgId,
       message,
       type
     });
+
     await notification.save();
 
     // Emit real-time notification if socket io is provided
@@ -22,7 +23,7 @@ const createNotification = async (userId, orgId, message, type, io) => {
   }
 };
 
-const notifyTeam = async (users, orgId, message, type, io) => {
+export const notifyTeam = async (users, orgId, message, type, io) => {
   for (const user of users) {
     await createNotification(user._id, orgId, message, type, io);
     if (user.email) {
@@ -35,7 +36,3 @@ const notifyTeam = async (users, orgId, message, type, io) => {
   }
 };
 
-export default {
-  createNotification,
-  notifyTeam
-};

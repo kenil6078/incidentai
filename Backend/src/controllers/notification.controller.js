@@ -1,8 +1,8 @@
-import Notification from '../models/notification.model.js';
+import notificationModel from '../models/notification.model.js';
 
 export const getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ 
+    const notifications = await notificationModel.find({ 
       userId: req.user._id,
       orgId: req.user.orgId._id
     })
@@ -17,7 +17,7 @@ export const getNotifications = async (req, res) => {
 
 export const readAll = async (req, res) => {
   try {
-    await Notification.updateMany(
+    await notificationModel.updateMany(
       { userId: req.user._id, read: false },
       { $set: { read: true } }
     );

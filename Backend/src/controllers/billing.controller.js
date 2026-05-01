@@ -1,13 +1,13 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import Organization from '../models/organization.model.js';
-import Incident from '../models/incident.model.js';
+import organizationModel from '../models/organization.model.js';
+import incidentModel from '../models/incident.model.js';
 import { config } from '../config/config.js';
 
-const getBillingInfo = async (req, res) => {
+export const getBillingInfo = async (req, res) => {
   try {
-    const org = await Organization.findById(req.user.orgId);
-    const incidentCount = await Incident.countDocuments({ orgId: req.user.orgId });
+    const org = await organizationModel.findById(req.user.orgId);
+    const incidentCount = await incidentModel.countDocuments({ orgId: req.user.orgId });
 
     const LIMITS = {
       free: 5,
@@ -25,7 +25,7 @@ const getBillingInfo = async (req, res) => {
   }
 };
 
-const createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { planId, amount } = req.body;
 
@@ -51,7 +51,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-const verifyPayment = async (req, res) => {
+export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -64,7 +64,7 @@ const verifyPayment = async (req, res) => {
     }
 
     // Payment is verified, update workspace plan
-    await Organization.findByIdAndUpdate(req.user.orgId, { plan: "pro" });
+    await organizationModel.findByIdAndUpdate(req.user.orgId, { plan: "pro" });
 
     res.json({
       msg: "success",
@@ -77,8 +77,3 @@ const verifyPayment = async (req, res) => {
   }
 };
 
-export default {
-  createOrder,
-  verifyPayment,
-  getBillingInfo,
-};

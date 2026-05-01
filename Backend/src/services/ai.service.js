@@ -12,7 +12,7 @@ const model = genAI.getGenerativeModel({
   ],
 });
 
-const generateSummary = async (incident, timeline) => {
+export const generateSummary = async (incident, timeline) => {
   const prompt = `
     You are an expert incident responder. Summarize the following incident using professional Markdown.
     Title: ${incident.title}
@@ -39,7 +39,7 @@ const generateSummary = async (incident, timeline) => {
   return result.response.text();
 };
 
-const suggestRootCause = async (incident, timeline) => {
+export const suggestRootCause = async (incident, timeline) => {
   const prompt = `
     Analyze the following incident logs and suggest potential root causes using professional Markdown.
     Title: ${incident.title}
@@ -59,7 +59,7 @@ const suggestRootCause = async (incident, timeline) => {
   return result.response.text();
 };
 
-const generatePostmortem = async (incident, timeline) => {
+export const generatePostmortem = async (incident, timeline) => {
   const prompt = `
     Generate a professional blameless postmortem report for the following incident using Markdown.
     Title: ${incident.title}
@@ -90,8 +90,3 @@ const generatePostmortem = async (incident, timeline) => {
   return result.response.text();
 };
 
-export default {
-  generateSummary,
-  suggestRootCause,
-  generatePostmortem
-};

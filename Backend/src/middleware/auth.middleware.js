@@ -1,14 +1,15 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
+import userModel from '../models/user.model.js';
 import { config } from '../config/config.js';
 
-const auth = async (req, res, next) => {
+export const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ detail: 'No token provided' });
 
     const decoded = jwt.verify(token, config.JWT_SECRET);
-    const user = await User.findById(decoded.id).populate('orgId');
+    const user = await userModel.findById(decoded.id).populate('orgId');
+
     
     if (!user) return res.status(401).json({ detail: 'User not found' });
     if (!user.active) return res.status(401).json({ detail: 'User account is disabled' });
@@ -20,7 +21,7 @@ const auth = async (req, res, next) => {
   }
 };
 
-const admin = (req, res, next) => {
+export const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
@@ -28,4 +29,3 @@ const admin = (req, res, next) => {
   }
 };
 
-export default { auth, admin };

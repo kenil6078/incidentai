@@ -1,8 +1,8 @@
-import Incident from '../models/incident.model.js';
-import Timeline from '../models/timeline.model.js';
-import User from '../models/user.model.js';
-import Organization from '../models/organization.model.js';
-import { notifyTeam  } from '../services/notificationService.js';
+import incidentModel from '../models/incident.model.js';
+import timelineModel from '../models/timeline.model.js';
+import userModel from '../models/user.model.js';
+import organizationModel from '../models/organization.model.js';
+import { notifyTeam  } from '../services/notification.service.js';
 
 export const getIncidents = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ export const getIncidents = async (req, res) => {
     if (status) query.status = status.toLowerCase();
     if (severity) query.severity = severity.toLowerCase();
 
-    const incidents = await Incident.find(query)
+    const incidents = await incidentModel.find(query)
       .populate('creator', 'name avatar')
       .populate('assignedTo', 'name avatar')
       .sort({ createdAt: -1 });
@@ -27,8 +27,8 @@ export const createIncident = async (req, res) => {
     const { title, description, severity, assignedTo, affectedServices } = req.body;
 
     // Check plan limits
-    const org = await Organization.findById(req.user.orgId._id);
-    const incidentCount = await Incident.countDocuments({ orgId: req.user.orgId._id });
+    const org = await organizationModel.findById(req.user.orgId._id);
+    const incidentCount = await incidentModel.countDocuments({ orgId: req.user.orgId._id });
 
     const LIMITS = {
       free: 5,
@@ -44,7 +44,7 @@ export const createIncident = async (req, res) => {
       });
     }
 
-    const incident = new Incident({
+    const incident = new incidentModel({
       title,
       description,
       severity,
@@ -56,7 +56,7 @@ export const createIncident = async (req, res) => {
     await incident.save();
 
     // Initial Timeline entry
-    const timeline = new Timeline({
+    const timeline = new timelineModel({
       incidentId: incident._id,
       message: 'Incident created',
       type: 'system',
@@ -65,7 +65,7 @@ export const createIncident = async (req, res) => {
     await timeline.save();
 
     // Notify team
-    const team = await User.find({ orgId: req.user.orgId._id });
+    const team = await userModel.find({ orgId: req.user.orgId._id });
     notifyTeam(team, req.user.orgId._id, `New Incident: ${title}`, 'incident_created', req.app.get('io'));
 
     // Emit socket event
@@ -79,7 +79,7 @@ export const createIncident = async (req, res) => {
 
 export const getIncidentById = async (req, res) => {
   try {
-    const incident = await Incident.findOne({ _id: req.params.id, orgId: req.user.orgId._id })
+    const incident = await incidentModel.findOne({ _id: req.params.id, orgId: req.user.orgId._id })
       .populate('creator', 'name avatar')
       .populate('assignedTo', 'name avatar');
     if (!incident) return res.status(404).json({ detail: 'Incident not found' });
@@ -92,7 +92,7 @@ export const getIncidentById = async (req, res) => {
 export const updateIncident = async (req, res) => {
   try {
     const { title, description, status, severity, assignedTo, affectedServices } = req.body;
-    const incident = await Incident.findOne({ _id: req.params.id, orgId: req.user.orgId._id });
+    const incident = await incidentModel.findOne({ _id: req.params.id, orgId: req.user.orgId._id });
     
     if (!incident) return res.status(404).json({ detail: 'Incident not found' });
 
@@ -118,7 +118,7 @@ export const updateIncident = async (req, res) => {
     await incident.populate('assignedTo', 'name avatar');
 
     for (const msg of updates) {
-      await new Timeline({
+      await new timelineModel({
         incidentId: incident._id,
         message: msg,
         type: 'update',
@@ -131,7 +131,7 @@ export const updateIncident = async (req, res) => {
 
     // Notify team if status or severity changed
     if (updates.length > 0) {
-      const team = await User.find({ orgId: req.user.orgId._id });
+      const team = await userModel.find({ orgId: req.user.orgId._id });
       const msg = updates.join(', ');
       notifyTeam(team, req.user.orgId._id, `[${incident.title}] ${msg}`, 'incident_updated', req.app.get('io'));
     }
@@ -144,10 +144,10 @@ export const updateIncident = async (req, res) => {
 
 export const deleteIncident = async (req, res) => {
   try {
-    const incident = await Incident.findOneAndDelete({ _id: req.params.id, orgId: req.user.orgId._id });
+    const incident = await incidentModel.findOneAndDelete({ _id: req.params.id, orgId: req.user.orgId._id });
     if (!incident) return res.status(404).json({ detail: 'Incident not found' });
     
-    await Timeline.deleteMany({ incidentId: req.params.id });
+    await timelineModel.deleteMany({ incidentId: req.params.id });
 
     req.app.get('io').to(req.user.orgId._id.toString()).emit('incident.deleted', { incident_id: req.params.id });
 
@@ -156,3 +156,4 @@ export const deleteIncident = async (req, res) => {
     res.status(500).json({ detail: err.message });
   }
 };
+

@@ -1,8 +1,8 @@
-import Timeline from '../models/timeline.model.js';
+import timelineModel from '../models/timeline.model.js';
 
 export const getTimeline = async (req, res) => {
   try {
-    const timeline = await Timeline.find({ incidentId: req.params.incidentId })
+    const timeline = await timelineModel.find({ incidentId: req.params.incidentId })
       .populate('createdBy', 'name avatar')
       .sort({ timestamp: 1 });
     res.json(timeline);
@@ -14,12 +14,13 @@ export const getTimeline = async (req, res) => {
 export const addTimelineEntry = async (req, res) => {
   try {
     const { message, type } = req.body;
-    const entry = new Timeline({
+    const entry = new timelineModel({
       incidentId: req.params.incidentId,
       message,
       type,
       createdBy: req.user._id
     });
+
     await entry.save();
     
     // Emit socket event

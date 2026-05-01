@@ -1,8 +1,8 @@
-import Service from '../models/service.model.js';
+import serviceModel from '../models/service.model.js';
 
 export const getServices = async (req, res) => {
   try {
-    const services = await Service.find({ orgId: req.user.orgId._id });
+    const services = await serviceModel.find({ orgId: req.user.orgId._id });
     res.json(services);
   } catch (err) {
     res.status(500).json({ detail: err.message });
@@ -12,7 +12,8 @@ export const getServices = async (req, res) => {
 export const createService = async (req, res) => {
   try {
     const { name, description, status } = req.body;
-    const service = new Service({
+    const service = new serviceModel({
+
       name,
       description,
       status,
