@@ -161,7 +161,7 @@ export default function IncidentDetail() {
     setShowAiModal(true);
     
     try {
-      const response = await fetch(`/api/ai/${kind.replace('-', '')}`, {
+      const response = await fetch(`/api/ai/${kind}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
