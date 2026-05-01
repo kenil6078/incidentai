@@ -12,9 +12,11 @@ import notificationRoutes from './routes/notification.routes.js';
 import billingRoutes from './routes/billing.routes.js';
 
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 
 const app = express();
 
+app.use(morgan('dev'));
 app.use(cors({
   origin: 'http://localhost:5173', // Vite default port
   credentials: true

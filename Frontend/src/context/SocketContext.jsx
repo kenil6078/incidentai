@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return;
 
-    const newSocket = io(BACKEND_URL, {
+    const newSocket = io("/", {
       withCredentials: true,
       transports: ["websocket", "polling"],
     });
