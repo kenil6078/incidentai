@@ -8,4 +8,6 @@ const timelineSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('Timeline', timelineSchema);
+const timelineModel = mongoose.model('Timeline', timelineSchema);
+export default timelineModel;
+

@@ -7,4 +7,6 @@ const organizationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('Organization', organizationSchema);
+const organizationModel = mongoose.model('Organization', organizationSchema);
+export default organizationModel;
+

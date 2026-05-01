@@ -14,4 +14,6 @@ const incidentSchema = new mongoose.Schema({
   resolvedAt: { type: Date },
 });
 
-export default mongoose.model('Incident', incidentSchema);
+const incidentModel = mongoose.model('Incident', incidentSchema);
+export default incidentModel;
+
