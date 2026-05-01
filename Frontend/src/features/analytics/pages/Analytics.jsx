@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../lib/api";
+import api from 'axios';
 import { useNavigate } from "react-router-dom";
 import { BarChart3, TrendingUp, AlertCircle, Clock, ArrowLeft } from "lucide-react";
 

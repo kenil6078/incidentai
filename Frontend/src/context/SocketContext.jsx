@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { BACKEND_URL } from "../lib/api";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../features/auth/hooks/useAuth";
 
 const SocketContext = createContext(null);
 
@@ -12,12 +11,11 @@ export const SocketProvider = ({ children }) => {
   const catchAllListeners = React.useRef(new Set());
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!user || !token) return;
+    if (!user) return;
 
     const newSocket = io(BACKEND_URL, {
-      auth: { token },
-      transports: ["websocket"],
+      withCredentials: true,
+      transports: ["websocket", "polling"],
     });
 
     setSocket(newSocket);

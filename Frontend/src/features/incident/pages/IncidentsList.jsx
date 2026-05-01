@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../lib/api";
-import { useSocket } from "../context/SocketContext";
-import { SeverityBadge, StatusPill } from "../components/Badges";
-import { formatRelative } from "../lib/Format";
+import api from 'axios';
+import { useSocket } from "../../../context/SocketContext";
+import { SeverityBadge, StatusPill } from "../../../components/Badges";
+import { formatRelative } from "../../../components/Badges";
 import { Plus, Search, ArrowLeft } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { IncidentRowSkeleton } from "../components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { IncidentRowSkeleton } from "../../../components/ui/skeleton";
 
 export default function IncidentsList() {
   const { subscribe } = useSocket();

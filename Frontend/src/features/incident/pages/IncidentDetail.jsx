@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../lib/api";
-import { useSocket } from "../context/SocketContext";
-import { useAuth } from "../context/AuthContext";
-import { SeverityBadge, StatusPill } from "../components/Badges";
-import { formatRelative, formatAbsolute, STATUS_DOT } from "../lib/Format";
+import api from 'axios';
+import { useSocket } from "../../../context/SocketContext";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { SeverityBadge, StatusPill } from "../../../components/Badges";
+import { formatRelative, formatAbsolute, STATUS_DOT } from "../../../components/Badges";
 import { toast } from "sonner";
 import { ArrowLeft, Send, Sparkles, FileText, Search as SearchIcon, Loader2, Trash2, Copy, Check, Clock } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
-import { IncidentDetailSkeleton } from "../components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
+import { IncidentDetailSkeleton } from "../../../components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
 
 const TYPE_LABEL = {

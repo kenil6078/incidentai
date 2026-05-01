@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { CreditCard, Check, Zap, ArrowRight, Loader2 } from "lucide-react";
-import api from "../lib/api";
+import api from 'axios';
 import { toast } from "sonner";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Billing() {
   const { user } = useAuth();

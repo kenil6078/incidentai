@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import api, { BACKEND_URL } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import api from 'axios';
+import { useAuth } from "../../auth/hooks/useAuth";
 import { CheckCircle2, AlertTriangle, AlertCircle, Clock, ArrowLeft } from "lucide-react";
-import { formatRelative, SERVICE_STATUS_LABELS, SERVICE_STATUS_COLORS } from "../lib/Format";
+import { formatRelative, SERVICE_STATUS_LABELS, SERVICE_STATUS_COLORS } from "../../../components/Badges";
 
 export default function PublicStatus() {
   const { orgSlug } = useParams();

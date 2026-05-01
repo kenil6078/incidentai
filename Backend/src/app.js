@@ -11,10 +11,16 @@ import publicRoutes from './routes/public.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import billingRoutes from './routes/billing.routes.js';
 
+import cookieParser from 'cookie-parser';
+
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite default port
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../features/auth/hooks/useAuth";
 import { useSocket } from "../context/SocketContext";
 import {
   LayoutDashboard, AlertTriangle, Activity, Users, BarChart3, Settings, Bell, LogOut,
   Globe, Plus, Wifi, WifiOff, Menu, X, CreditCard,
 } from "lucide-react";
-import api from "../lib/api";
-import { formatRelative } from "../lib/Format";
+import api from 'axios';
+import { formatRelative } from "../components/Badges";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -20,10 +20,10 @@ const NavItem = ({ to, icon: Icon, label, end, onClick }) => (
     onClick={onClick}
     data-testid={`nav-${label.toLowerCase().replace(/\s/g, '-')}`}
     className={({ isActive }) =>
-      `flex items-center gap-3 px-3 py-2 text-sm font-medium border-l-2 transition-colors ${
+      `flex items-center gap-3 px-3 py-2 text-sm transition-all mx-2 rounded-none mb-1 ${
         isActive
-          ? "border-zinc-950 bg-zinc-100 text-zinc-950"
-          : "border-transparent text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50"
+          ? "bg-[#FF6B6B] border-2 border-black neo-shadow text-black font-bold"
+          : "border-2 border-transparent hover:border-black text-black hover:bg-white font-semibold"
       }`
     }
   >
@@ -80,13 +80,13 @@ export default function AppShell({ children }) {
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-zinc-200 flex flex-col transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-60 bg-[#D4F4E4] border-r-2 border-black flex flex-col transition-transform duration-300 ease-in-out
         md:relative md:translate-x-0 
         ${showSidebar ? "translate-x-0" : "-translate-x-full"}
       `} data-testid="app-sidebar">
-        <div className="px-5 py-5 border-b border-zinc-200 flex items-center justify-between">
+        <div className="px-5 py-5 border-b-2 border-black flex items-center justify-between">
           <Link to="/dashboard" onClick={() => setShowSidebar(false)} className="flex items-center gap-2 group" data-testid="brand-logo">
-            <div className="w-7 h-7 bg-zinc-950 flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#FF6B6B] border-2 border-black neo-shadow flex items-center justify-center">
               <span className="text-white font-black text-sm">i</span>
             </div>
             <div>
@@ -109,7 +109,7 @@ export default function AppShell({ children }) {
           <NavItem to="/settings" icon={Settings} label="Settings" onClick={() => setShowSidebar(false)} />
         </nav>
 
-        <div className="border-t border-zinc-200 p-3 space-y-2">
+        <div className="border-t-2 border-black p-3 space-y-2 bg-[#FDE68A]">
           <a
             href={`/status/${user.org_name?.toLowerCase().replace(/\s/g, '-')}`}
             // target="_blank"
@@ -130,7 +130,7 @@ export default function AppShell({ children }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 bg-white border-b border-zinc-200 flex items-center justify-between px-4 md:px-6">
+        <header className="h-14 bg-[#FDE68A] border-b-2 border-black flex items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowSidebar(true)} 
@@ -140,10 +140,10 @@ export default function AppShell({ children }) {
             </button>
             <button
               onClick={() => navigate("/incidents/new")}
-              className="bg-zinc-950 text-white text-[10px] md:text-xs font-semibold px-2.5 md:px-3 py-1.5 hover:bg-zinc-800 transition flex items-center gap-1.5"
+              className="neo-shadow bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-xs font-bold px-2.5 md:px-3 py-1.5 transition flex items-center gap-1.5"
               data-testid="new-incident-button-header"
             >
-              <Plus className="w-3.5 h-3.5" /> New Incident
+              <Plus className="w-3.5 h-3.5" strokeWidth={3} /> New Incident
             </button>
           </div>
 

@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { toast } from "sonner";
-import api from "../lib/api";
+import api from 'axios';
 import { Save, User, Shield, Bell, Globe, ArrowLeft } from "lucide-react";
 
 export default function Settings() {
