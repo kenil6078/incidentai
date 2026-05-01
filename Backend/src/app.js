@@ -25,6 +25,21 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { config } from './config/config.js';
+
+app.use(passport.initialize());
+
+passport.use(new GoogleStrategy({
+    clientID: config.GOOGLE_CLIENT_ID,
+    clientSecret: config.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/api/auth/google/callback",
+    proxy: true
+}, (accessToken, refreshToken, profile, done) => {
+    return done(null, profile);
+}));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/incidents', incidentRoutes);

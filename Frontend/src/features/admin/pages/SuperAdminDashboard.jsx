@@ -86,7 +86,7 @@ export default function SuperAdminDashboard() {
             <option value="all">All Roles</option>
             <option value="admin">Admins</option>
             <option value="developer">Developers</option>
-            <option value="viewer">Viewers</option>
+            <option value="normal_user">Normal Users</option>
           </select>
         )}
       </div>

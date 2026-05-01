@@ -12,19 +12,31 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
   password: {
-    type: String, 
-    required: true,
+    type: String,
     select: false
+  },
+  googleId: {
+    type: String
   },
   orgId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Organization',
-    required: true
+    ref: 'Organization'
   },
   role: {
     type: String, 
-    enum: ['admin', 'developer', 'viewer', 'super_admin'],
-    default: 'admin'
+    enum: ['admin', 'developer', 'viewer', 'super_admin', 'normal_user'],
+    default: 'normal_user'
+  },
+  developerStatus: {
+    type: String,
+    enum: ['pending', 'approved']
+  },
+  address: {
+    type: String
+  },
+  profileCompleted: {
+    type: Boolean,
+    default: false
   },
   isVerified: {
     type: Boolean,

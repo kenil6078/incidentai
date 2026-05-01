@@ -29,6 +29,11 @@ export default function Protected({ children }) {
     return <Navigate to="/login" replace />;
   }
 
+  // Handle incomplete Google Auth profiles
+  if (user.profileCompleted === false && location.pathname !== '/complete-profile') {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
   // Role-based access control
   if (user.role === 'super_admin' && location.pathname !== '/admin') {
     return <Navigate to="/admin" replace />;
@@ -36,6 +41,10 @@ export default function Protected({ children }) {
 
   if (user.role !== 'super_admin' && location.pathname === '/admin') {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (location.pathname === '/complete-profile') {
+    return children; 
   }
 
   return (

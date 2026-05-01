@@ -105,7 +105,7 @@ export default function Team() {
                       <SelectContent className="rounded-none">
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="developer">Developer</SelectItem>
-                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="normal_user">Normal User</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -151,7 +151,7 @@ export default function Team() {
                     <SelectContent className="rounded-none">
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="developer">Developer</SelectItem>
-                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="normal_user">Normal User</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (

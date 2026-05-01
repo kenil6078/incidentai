@@ -7,12 +7,12 @@ import { sendEmail } from '../services/email.service.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, orgName } = req.body;
+    const { name, email, password, role, orgName, address, orgId } = req.body;
 
-    if (!name || !email || !password || !orgName) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({ 
         success: false, 
-        message: "All fields (name, email, password, orgName) are required" 
+        message: "Name, email, password and role are required" 
       });
     }
 
@@ -24,39 +24,43 @@ export const register = async (req, res) => {
       });
     }
 
-    // Create Organization
-    const slug = orgName
-      .toLowerCase()
-      .replace(/ /g, "-")
-      .replace(/[^\w-]+/g, "");
-    
-    if (!slug) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid organization name" 
-      });
+    let organization = null;
+    let devStatus = undefined;
+
+    if (role === 'admin') {
+      if (!orgName || !address) {
+        return res.status(400).json({ success: false, message: "Organization name and address are required for admin" });
+      }
+      const slug = orgName.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+      if (!slug) return res.status(400).json({ success: false, message: "Invalid organization name" });
+      
+      const orgExists = await organizationModel.findOne({ slug });
+      if (orgExists) return res.status(400).json({ success: false, message: "Organization name is already taken" });
+      
+      organization = await organizationModel.create({ name: orgName, slug, address });
+    } else if (role === 'developer') {
+      if (!orgId) {
+        return res.status(400).json({ success: false, message: "Organization selection is required for developers" });
+      }
+      organization = await organizationModel.findById(orgId);
+      if (!organization) return res.status(400).json({ success: false, message: "Organization not found" });
+      devStatus = 'pending';
+      // Here a notification would be sent to the organization admin
+      console.log(`Notification: User ${email} requested to join ${organization.name} as a developer.`);
     }
 
-    const orgExists = await organizationModel.findOne({ slug });
-    if (orgExists) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Organization name is already taken" 
-      });
-    }
-
-    const organization = await organizationModel.create({ name: orgName, slug });
-
-    // Create User with Verification Token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
     const user = await userModel.create({
       name,
       email,
       password,
-      orgId: organization._id,
-      role: 'admin',
-      verificationToken
+      role,
+      orgId: organization ? organization._id : undefined,
+      developerStatus: devStatus,
+      verificationToken,
+      address: role === 'admin' ? address : undefined,
+      profileCompleted: true
     });
 
     const verifyUrl = `${config.FRONTEND_URL}/verify-email/${verificationToken}`;
@@ -72,9 +76,9 @@ export const register = async (req, res) => {
               <div style="width: 56px; height: 56px; background-color: #FF6B6B; border: 2px solid #000; border-radius: 8px; margin: 0 auto 32px; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0px #000;">
                  <span style="color: #000; font-weight: 900; font-size: 24px;">i</span>
               </div>
-              <h1 style="color: #000; font-size: 28px; font-weight: 900; margin: 0 0 16px; letter-spacing: -0.05em;">Verify your workspace</h1>
+              <h1 style="color: #000; font-size: 28px; font-weight: 900; margin: 0 0 16px; letter-spacing: -0.05em;">Verify your email</h1>
               <p style="color: #555; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
-                Welcome to <strong>incident.ai</strong>, ${name}. You've created the <strong>${orgName}</strong> workspace. Please verify your email to get started.
+                Welcome to <strong>incident.ai</strong>, ${name}. Please verify your email to get started.
               </p>
               <a href="${verifyUrl}" 
                  style="display: inline-block; background-color: #FF6B6B; color: #000; padding: 16px 40px; border: 2px solid #000; font-size: 16px; font-weight: 700; text-decoration: none; box-shadow: 4px 4px 0px #000;">
@@ -102,10 +106,11 @@ export const register = async (req, res) => {
         id: user._id, 
         name, 
         email, 
-        orgId: organization._id, 
-        orgName, 
-        org_name: orgName, 
-        role: user.role 
+        orgId: organization?._id, 
+        orgName: organization?.name, 
+        org_name: organization?.name, 
+        role: user.role,
+        profileCompleted: user.profileCompleted
       } 
     });
   } catch (err) {
@@ -116,6 +121,111 @@ export const register = async (req, res) => {
       detail: err.message 
     });
   }
+};
+
+export const googleCallback = async (req, res) => {
+    const passportUser = req.user;
+    if (!passportUser) {
+        return res.redirect(`${config.FRONTEND_URL}/login?error=auth_failed`);
+    }
+
+    const { id, displayName, emails, photos } = passportUser;
+    const email = emails[0].value;
+    const profilePic = photos ? photos[0].value : undefined;
+
+    try {
+        let user = await userModel.findOne({ email }).populate('orgId');
+
+        if (!user) {
+            user = await userModel.create({
+                email,
+                googleId: id,
+                name: displayName,
+                avatar: profilePic,
+                isVerified: true, 
+                role: 'normal_user', 
+                profileCompleted: false 
+            });
+        } else if (!user.isVerified) {
+             user.isVerified = true;
+             user.googleId = id;
+             await user.save();
+        }
+
+        const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: config.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.redirect(`${config.FRONTEND_URL}/`);
+    } catch (error) {
+        console.error(error);
+        res.redirect(`${config.FRONTEND_URL}/login?error=server_error`);
+    }
+};
+
+export const finalizeProfile = async (req, res) => {
+    try {
+        const { role, orgName, address, orgId } = req.body;
+        const user = await userModel.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        if (user.profileCompleted) {
+            return res.status(400).json({ success: false, message: "Profile is already complete" });
+        }
+
+        let organization = null;
+        let devStatus = undefined;
+
+        if (role === 'admin') {
+            if (!orgName || !address) {
+                return res.status(400).json({ success: false, message: "Organization name and address are required" });
+            }
+            const slug = orgName.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+            const orgExists = await organizationModel.findOne({ slug });
+            if (orgExists) return res.status(400).json({ success: false, message: "Organization name is already taken" });
+            
+            organization = await organizationModel.create({ name: orgName, slug, address });
+        } else if (role === 'developer') {
+            if (!orgId) return res.status(400).json({ success: false, message: "Organization selection is required" });
+            organization = await organizationModel.findById(orgId);
+            if (!organization) return res.status(400).json({ success: false, message: "Organization not found" });
+            devStatus = 'pending';
+        }
+
+        user.role = role;
+        user.orgId = organization ? organization._id : undefined;
+        user.developerStatus = devStatus;
+        if (role === 'admin') user.address = address;
+        user.profileCompleted = true;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Profile completed successfully",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                orgId: user.orgId,
+                orgName: organization?.name,
+                org_name: organization?.name,
+                profileCompleted: user.profileCompleted
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error", detail: error.message });
+    }
 };
 
 export const login = async (req, res) => {
@@ -148,6 +258,15 @@ export const login = async (req, res) => {
       });
     }
 
+    // Google-only users might not have a password set
+    if (!user.password) {
+        return res.status(400).json({
+            success: false,
+            message: "Please login with Google",
+            err: "no password"
+        });
+    }
+
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ 
@@ -178,7 +297,8 @@ export const login = async (req, res) => {
         orgId: user.orgId?._id,
         orgName: user.orgId?.name, 
         org_name: user.orgId?.name, 
-        role: user.role 
+        role: user.role,
+        profileCompleted: user.profileCompleted
       } 
     });
   } catch (err) {
@@ -213,7 +333,8 @@ export const getMe = async (req, res) => {
         orgId: user.orgId?._id,
         orgName: user.orgId?.name,
         org_name: user.orgId?.name,
-        role: user.role
+        role: user.role,
+        profileCompleted: user.profileCompleted
       }
     });
   } catch (err) {
@@ -300,4 +421,13 @@ export const resendVerification = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
+};
+
+export const getOrganizations = async (req, res) => {
+    try {
+        const orgs = await organizationModel.find({}, '_id name');
+        res.status(200).json({ success: true, organizations: orgs });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Failed to fetch organizations" });
+    }
 };

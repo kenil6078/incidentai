@@ -15,6 +15,9 @@ const organizationSchema = new mongoose.Schema({
     enum: ['free', 'pro', 'enterprise'],
     default: 'free'
   },
+  address: {
+    type: String
+  },
 }, {
   timestamps: true
 
