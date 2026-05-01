@@ -21,7 +21,10 @@ const incidentSchema = new mongoose.Schema({
     ref: "Organization",
     required: true,
   },
-
+  aiSummary: { type: String },
+  aiRootCause: { type: String },
+  aiPostmortem: { type: String },
+  resolvedAt: { type: Date },
 }, { timestamps: true });
 
 const incidentModel = mongoose.model("Incident", incidentSchema);

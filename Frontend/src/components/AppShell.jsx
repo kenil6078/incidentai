@@ -57,7 +57,7 @@ export default function AppShell({ children }) {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAFAFA] flex relative overflow-hidden h-screen">
       {/* Mobile Sidebar Overlay */}
       {showSidebar && (
         <div 
@@ -68,7 +68,7 @@ export default function AppShell({ children }) {
 
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-60 bg-[#D4F4E4] border-r-2 border-black flex flex-col transition-transform duration-300 ease-in-out
-        md:relative md:translate-x-0 
+        md:translate-x-0 
         ${showSidebar ? "translate-x-0" : "-translate-x-full"}
       `} data-testid="app-sidebar">
         <div className="px-5 py-5 border-b-2 border-black flex items-center justify-between">
@@ -93,7 +93,7 @@ export default function AppShell({ children }) {
           </button>
         </div>
 
-        <nav className="flex-1 py-4 space-y-1">
+        <nav className="flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar">
           {user.role === 'super_admin' ? (
             <NavItem to="/admin" icon={LayoutDashboard} label="Admin Dashboard" end onClick={() => setShowSidebar(false)} />
           ) : (
@@ -131,7 +131,7 @@ export default function AppShell({ children }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-60 h-screen">
         <header className="h-14 bg-[#FDE68A] border-b-2 border-black flex items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-3">
             <button 

@@ -11,10 +11,12 @@ export const fetchChats = createAsyncThunk('chat/fetchChats', async (_, { reject
   }
 });
 
-export const fetchMessages = createAsyncThunk('chat/fetchMessages', async (chatId, { rejectWithValue }) => {
+export const fetchMessages = createAsyncThunk('chat/fetchMessages', async ({ chatId, before }, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get(`${API_URL}/${chatId}/messages`);
-    return { chatId, messages: response.data };
+    const response = await apiClient.get(`${API_URL}/${chatId}/messages`, {
+      params: { before, limit: 20 }
+    });
+    return { chatId, messages: response.data, isMore: !!before };
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch messages');
   }
@@ -44,8 +46,10 @@ const chatSlice = createSlice({
     chats: [],
     currentChat: null,
     messages: {}, // { chatId: [messages] }
+    hasMore: {}, // { chatId: boolean }
     users: [],
     loading: false,
+    loadingMore: false,
     error: null,
   },
   reducers: {
@@ -61,9 +65,9 @@ const chatSlice = createSlice({
       // If it's a real message from socket, check for an optimistic placeholder
       if (!optimistic) {
         const senderId = sender?._id || sender;
-        const optimisticIdx = state.messages[chatId].findIndex(m => 
-          m.optimistic && 
-          m.content === content && 
+        const optimisticIdx = state.messages[chatId].findIndex(m =>
+          m.optimistic &&
+          m.content === content &&
           (m.sender?._id === senderId || m.sender === senderId)
         );
 
@@ -81,7 +85,7 @@ const chatSlice = createSlice({
         // Just push optimistic message
         state.messages[chatId].push(action.payload);
       }
-      
+
       // Update last message in chat list
       const chat = state.chats.find(c => c._id === chatId);
       if (chat) {
@@ -97,8 +101,29 @@ const chatSlice = createSlice({
         state.loading = false;
         state.chats = action.payload;
       })
+      .addCase(fetchMessages.pending, (state, action) => {
+        if (action.meta.arg.before) {
+          state.loadingMore = true;
+        } else {
+          state.loading = true;
+        }
+      })
       .addCase(fetchMessages.fulfilled, (state, action) => {
-        state.messages[action.payload.chatId] = action.payload.messages;
+        const { chatId, messages, isMore } = action.payload;
+        state.loading = false;
+        state.loadingMore = false;
+
+        if (isMore) {
+          state.messages[chatId] = [...messages, ...(state.messages[chatId] || [])];
+        } else {
+          state.messages[chatId] = messages;
+        }
+
+        state.hasMore[chatId] = messages.length === 20;
+      })
+      .addCase(fetchMessages.rejected, (state) => {
+        state.loading = false;
+        state.loadingMore = false;
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.users = action.payload;

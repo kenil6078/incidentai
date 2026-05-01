@@ -72,12 +72,35 @@ export default function PublicStatus() {
             <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400">Active Incidents</div>
             <div className="space-y-4">
               {data.active_incidents.map((inc) => (
-                <div key={inc.id || inc._id} className="border border-zinc-200 p-5 space-y-3">
+                <div key={inc.id || inc._id} className="border border-zinc-200 p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-zinc-950">{inc.title}</h3>
                     <span className="text-[10px] font-mono text-zinc-500 uppercase">{formatRelative(inc.created_at || inc.createdAt)}</span>
                   </div>
                   <div className="text-sm text-zinc-600 leading-relaxed">{inc.description}</div>
+                  
+                  {inc.timeline && inc.timeline.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-zinc-100 space-y-4">
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">Updates</div>
+                      <div className="space-y-4 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[1px] before:bg-zinc-100">
+                        {inc.timeline.map((update, idx) => (
+                          <div key={update._id} className="relative pl-6">
+                            <div className="absolute left-0 top-1.5 w-3.5 h-3.5 bg-white border-2 border-zinc-950 rounded-full z-10" />
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-bold text-zinc-950 uppercase tracking-tighter">
+                                {update.type || 'update'}
+                              </span>
+                              <span className="text-[9px] font-mono text-zinc-400 uppercase">
+                                {new Date(update.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className="text-xs text-zinc-600 italic">"{update.message}"</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 pt-2">
                     <span className="px-2 py-0.5 bg-zinc-950 text-white text-[10px] font-mono uppercase font-bold tracking-widest">{inc.status}</span>
                   </div>

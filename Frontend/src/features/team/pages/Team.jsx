@@ -12,16 +12,17 @@ export default function Team() {
   const { user } = useAuth();
   const [team, setTeam] = useState([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "developer", password: "changeme123" });
-  const [tempCred, setTempCred] = useState(null);
-
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const [loading, setLoading] = useState(false);
 
   const load = async () => {
+    setLoading(true);
     try {
       const r = await api.get("/team").catch(() => ({ data: [] }));
       setTeam(r.data);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -134,7 +135,21 @@ export default function Team() {
           </div>
         </div>
         <div className="divide-y divide-zinc-200 min-w-[600px]" data-testid="team-table">
-          {team.map((m) => (
+          {loading && team.length === 0 ? (
+            <>
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="grid grid-cols-12 px-5 py-3 items-center">
+                  <div className="col-span-5 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-zinc-100 animate-pulse" />
+                    <div className="h-4 w-32 bg-zinc-100 animate-pulse" />
+                  </div>
+                  <div className="col-span-4 h-4 w-40 bg-zinc-100 animate-pulse" />
+                  <div className="col-span-2 h-6 w-20 bg-zinc-100 animate-pulse" />
+                  <div className="col-span-1" />
+                </div>
+              ))}
+            </>
+          ) : team.map((m) => (
             <div key={m.id || m._id} className="grid grid-cols-12 px-5 py-3 items-center" data-testid={`team-row-${m.id || m._id}`}>
               <div className="col-span-5 flex items-center gap-3">
                 <div className="w-8 h-8 flex-shrink-0 bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">{m.name?.[0]?.toUpperCase()}</div>

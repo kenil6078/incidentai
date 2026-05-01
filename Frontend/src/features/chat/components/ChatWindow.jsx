@@ -7,23 +7,57 @@ import { ChatWindowSkeleton } from '../../../components/ui/skeleton';
 
 export default function ChatWindow() {
   const dispatch = useDispatch();
-  const { currentChat, messages, loading } = useSelector(state => state.chat);
+  const { currentChat, messages, loading, loadingMore, hasMore } = useSelector(state => state.chat);
   const { user } = useSelector(state => state.auth);
   const { socket } = useSocket();
   const [content, setContent] = useState('');
   const scrollRef = useRef(null);
+  const topRef = useRef(null);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
 
   useEffect(() => {
-    if (currentChat) {
-      dispatch(fetchMessages(currentChat._id));
+    if (currentChat?._id) {
+      dispatch(fetchMessages({ chatId: currentChat._id }));
+      setShouldScrollToBottom(true);
     }
-  }, [currentChat, dispatch]);
+  }, [currentChat?._id, dispatch]);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    if (shouldScrollToBottom && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, currentChat]);
+  }, [messages, shouldScrollToBottom]);
+
+  // Intersection Observer for Infinite Scroll
+  useEffect(() => {
+    if (!currentChat?._id) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore[currentChat._id] && !loadingMore && !loading) {
+          const chatMsgs = messages[currentChat._id] || [];
+          const oldestMsg = chatMsgs[0];
+          if (oldestMsg) {
+            setShouldScrollToBottom(false);
+            const scrollPos = scrollRef.current.scrollHeight - scrollRef.current.scrollTop;
+            
+            dispatch(fetchMessages({ 
+              chatId: currentChat._id, 
+              before: oldestMsg.createdAt 
+            })).then(() => {
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight - scrollPos;
+              }
+            });
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (topRef.current) observer.observe(topRef.current);
+    return () => observer.disconnect();
+  }, [currentChat?._id, hasMore, loadingMore, loading, messages, dispatch]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -38,6 +72,7 @@ export default function ChatWindow() {
       optimistic: true
     };
 
+    setShouldScrollToBottom(true);
     dispatch(addMessage(tempMsg));
 
     socket.emit('send_message', {
@@ -90,11 +125,17 @@ export default function ChatWindow() {
         </button>
       </div>
 
-      {/* Messages */}
       <div 
         ref={scrollRef}
+        onScroll={() => setShouldScrollToBottom(false)}
         className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FAFAFA]"
       >
+        <div ref={topRef} className="h-1" />
+        {loadingMore && (
+          <div className="flex justify-center p-2">
+            <div className="w-6 h-6 border-2 border-black border-t-transparent animate-spin rounded-full" />
+          </div>
+        )}
         {chatMessages.map((msg, i) => {
           const isMe = msg.sender?._id === user._id || msg.sender === user._id;
           return (

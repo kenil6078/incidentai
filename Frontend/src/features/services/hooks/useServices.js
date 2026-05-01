@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchServices,
@@ -11,9 +12,9 @@ export const useServices = () => {
   const list = useSelector(selectServices);
   const loading = useSelector(selectServicesLoading);
 
-  const getServices = () => dispatch(fetchServices());
+  const getServices = useCallback(() => dispatch(fetchServices()), [dispatch]);
 
-  const createService = (payload) => dispatch(createServiceThunk(payload));
+  const createService = useCallback((payload) => dispatch(createServiceThunk(payload)), [dispatch]);
 
   return {
     list,

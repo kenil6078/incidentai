@@ -33,9 +33,17 @@ export const getChats = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const messages = await messageModel.find({ chatId })
+    const { before, limit = 20 } = req.query;
+    
+    const query = { chatId };
+    if (before) {
+      query.createdAt = { $lt: new Date(before) };
+    }
+
+    const messages = await messageModel.find(query)
       .populate('sender', 'name avatar')
-      .sort({ createdAt: 1 });
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
 
     const decryptedMessages = messages.map(msg => {
       const msgObj = msg.toObject();
@@ -43,7 +51,7 @@ export const getMessages = async (req, res) => {
       return msgObj;
     });
 
-    res.status(200).json(decryptedMessages);
+    res.status(200).json(decryptedMessages.reverse());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

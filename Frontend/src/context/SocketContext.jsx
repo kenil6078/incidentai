@@ -40,12 +40,15 @@ export const SocketProvider = ({ children }) => {
     // Handle any event for backward compatibility with raw WebSocket implementation
     newSocket.onAny((eventName, ...args) => {
       const data = args[0];
-      // If data is an object, we can add the eventName as type if it doesn't exist
+      const enrichedData = typeof data === "object" ? { ...data, eventName } : { data, eventName };
+      
+      // If data is an object, we can add the eventName as type if it doesn't exist (for backward compat)
       if (data && typeof data === "object" && !data.type) {
-        data.type = eventName;
+        enrichedData.type = eventName;
       }
+      
       // Notify all catch-all listeners
-      catchAllListeners.current.forEach((fn) => fn(data));
+      catchAllListeners.current.forEach((fn) => fn(enrichedData));
     });
 
     return () => {

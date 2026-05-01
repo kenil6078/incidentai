@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchTeam,
@@ -13,13 +14,13 @@ export const useTeam = () => {
   const members = useSelector(selectTeamMembers);
   const loading = useSelector(selectTeamLoading);
 
-  const getTeam = () => dispatch(fetchTeam());
+  const getTeam = useCallback(() => dispatch(fetchTeam()), [dispatch]);
 
-  const inviteMember = (payload) => dispatch(inviteMemberThunk(payload));
+  const inviteMember = useCallback((payload) => dispatch(inviteMemberThunk(payload)), [dispatch]);
 
-  const updateRole = (id, role) => dispatch(updateMemberRoleThunk({ id, role }));
+  const updateRole = useCallback((id, role) => dispatch(updateMemberRoleThunk({ id, role })), [dispatch]);
 
-  const removeMember = (id) => dispatch(removeMemberThunk(id));
+  const removeMember = useCallback((id) => dispatch(removeMemberThunk(id)), [dispatch]);
 
   return {
     members,

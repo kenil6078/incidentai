@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchIncidents,
@@ -15,12 +16,12 @@ export const useIncident = () => {
   const current = useSelector(selectCurrentIncident);
   const loading = useSelector(selectIncidentLoading);
 
-  const getIncidents = (params) => dispatch(fetchIncidents(params));
-  const getIncident = (id) => dispatch(fetchIncidentDetail(id));
+  const getIncidents = useCallback((params) => dispatch(fetchIncidents(params)), [dispatch]);
+  const getIncident = useCallback((id) => dispatch(fetchIncidentDetail(id)), [dispatch]);
 
-  const createIncident = async (payload) => {
+  const createIncident = useCallback(async (payload) => {
     return dispatch(createIncidentThunk(payload));
-  };
+  }, [dispatch]);
 
   return {
     list,
@@ -29,6 +30,6 @@ export const useIncident = () => {
     getIncidents,
     getIncident,
     createIncident,
-    clearCurrent: () => dispatch(clearCurrentIncident()),
+    clearCurrent: useCallback(() => dispatch(clearCurrentIncident()), [dispatch]),
   };
 };

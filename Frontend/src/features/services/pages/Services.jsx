@@ -94,37 +94,57 @@ export default function Services() {
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {services.length === 0 && (
+        {loading && services.length === 0 ? (
+          <>
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="bg-white border border-zinc-200 p-5 space-y-4">
+                <div className="flex justify-between">
+                  <div className="w-10 h-10 bg-zinc-100 animate-pulse" />
+                  <div className="w-4 h-4 bg-zinc-100 animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-5 w-1/2 bg-zinc-100 animate-pulse" />
+                  <div className="h-3 w-full bg-zinc-100 animate-pulse" />
+                </div>
+                <div className="pt-4 border-t border-zinc-100 flex justify-between">
+                  <div className="h-3 w-20 bg-zinc-100 animate-pulse" />
+                  <div className="h-3 w-16 bg-zinc-100 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </>
+        ) : services.length === 0 ? (
           <div className="col-span-full py-12 text-center border border-dashed border-zinc-300">
             <Activity className="w-8 h-8 text-zinc-300 mx-auto mb-3" />
             <div className="text-sm font-bold text-zinc-950">No services tracked</div>
             <div className="text-xs text-zinc-500 mt-1">Start by adding your first service or API.</div>
           </div>
+        ) : (
+          services.map((s) => (
+            <div key={s.id || s._id} className="bg-white border border-zinc-200 p-5 hover:border-zinc-400 transition group">
+              <div className="flex items-start justify-between mb-4">
+                <div className={`p-2 ${s.status === 'operational' ? 'bg-green-50' : 'bg-red-50'}`}>
+                  {s.status === 'operational' ? <ShieldCheck className="w-5 h-5 text-green-600" /> : <ShieldAlert className="w-5 h-5 text-red-600" />}
+                </div>
+                <button className="text-zinc-400 hover:text-zinc-950 opacity-0 group-hover:opacity-100 transition">
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="text-lg font-bold text-zinc-950 mb-1">{s.name}</div>
+              <div className="text-xs text-zinc-500 mb-4 h-8 line-clamp-2">{s.description || "No description provided."}</div>
+              
+              <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${SERVICE_STATUS_COLORS[s.status] || 'bg-zinc-300'} pulse-dot`} />
+                  <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-zinc-700">
+                    {SERVICE_STATUS_LABELS[s.status] || s.status}
+                  </span>
+                </div>
+                <div className="text-[10px] font-mono text-zinc-400">99.9% uptime</div>
+              </div>
+            </div>
+          ))
         )}
-        {services.map((s) => (
-          <div key={s.id || s._id} className="bg-white border border-zinc-200 p-5 hover:border-zinc-400 transition group">
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-2 ${s.status === 'operational' ? 'bg-green-50' : 'bg-red-50'}`}>
-                {s.status === 'operational' ? <ShieldCheck className="w-5 h-5 text-green-600" /> : <ShieldAlert className="w-5 h-5 text-red-600" />}
-              </div>
-              <button className="text-zinc-400 hover:text-zinc-950 opacity-0 group-hover:opacity-100 transition">
-                <MoreVertical className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="text-lg font-bold text-zinc-950 mb-1">{s.name}</div>
-            <div className="text-xs text-zinc-500 mb-4 h-8 line-clamp-2">{s.description || "No description provided."}</div>
-            
-            <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${SERVICE_STATUS_COLORS[s.status] || 'bg-zinc-300'} pulse-dot`} />
-                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-zinc-700">
-                  {SERVICE_STATUS_LABELS[s.status] || s.status}
-                </span>
-              </div>
-              <div className="text-[10px] font-mono text-zinc-400">99.9% uptime</div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
