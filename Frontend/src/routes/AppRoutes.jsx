@@ -19,6 +19,7 @@ import Settings from "../features/settings/pages/Settings";
 import PublicStatus from "../features/public/pages/PublicStatus";
 import NotFound from "../features/public/pages/NotFound";
 import Pricing from "../features/public/pages/Pricing";
+import SuperAdminDashboard from "../features/admin/pages/SuperAdminDashboard";
 
 function RootLayout() {
   return (
@@ -93,6 +94,10 @@ export const routes = createBrowserRouter([
       {
         path: "/settings",
         element: <Protected><Settings /></Protected>,
+      },
+      {
+        path: "/admin",
+        element: <Protected><SuperAdminDashboard /></Protected>,
       },
       {
         path: "*",

@@ -19,13 +19,12 @@ export const register = async (req, res) => {
     await organization.save();
 
     // Create User with Verification Token
-    const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
     user = new userModel({
       name,
       email,
-      password: hashedPassword,
+      password,
       orgId: organization._id,
       role: 'admin',
       isVerified: false,
@@ -106,10 +105,10 @@ export const resendVerification = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email }).populate('orgId');
+    const user = await userModel.findOne({ email }).select('+password').populate('orgId');
     if (!user) return res.status(400).json({ detail: 'Invalid credentials' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(400).json({ detail: 'Invalid credentials' });
 
     if (!user.isVerified) {

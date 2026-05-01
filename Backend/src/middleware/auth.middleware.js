@@ -22,10 +22,18 @@ export const auth = async (req, res, next) => {
 };
 
 export const admin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
     next();
   } else {
     res.status(403).json({ detail: 'Access denied: Admin role required' });
+  }
+};
+
+export const superAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'super_admin') {
+    next();
+  } else {
+    res.status(403).json({ detail: 'Access denied: Super Admin role required' });
   }
 };
 
