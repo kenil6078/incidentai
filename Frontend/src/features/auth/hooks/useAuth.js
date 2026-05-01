@@ -6,7 +6,7 @@ import {
   logout as logoutAction, 
   getMe as getMeThunk,
   selectAuth 
-} from '../redux/authSlice';
+} from '../auth.slice';
 
 export const useAuth = () => {
   const dispatch = useDispatch();

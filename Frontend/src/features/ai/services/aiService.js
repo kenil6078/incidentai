@@ -1,8 +1,3 @@
-/**
- * aiService.js
- * Routes:  POST /ai/summary   POST /ai/root-cause   POST /ai/postmortem
- */
-import apiClient from '../../../shared/api/apiClient';
 
 const aiService = {
   getSummary: (incidentId) =>

@@ -1,36 +1,108 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { authApi } from './service/auth.api';
+
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      return await authApi.login(credentials.email, credentials.password);
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Login failed' });
+    }
+  }
+);
+
+export const register = createAsyncThunk(
+  'auth/register',
+  async (userData, { rejectWithValue }) => {
+    try {
+      return await authApi.register(userData);
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Registration failed' });
+    }
+  }
+);
+
+export const getMe = createAsyncThunk(
+  'auth/getMe',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await authApi.getMe();
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Session expired' });
+    }
+  }
+);
+
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (_, { dispatch }) => {
+    try {
+      await authApi.logout();
+    } catch (e) {}
+    dispatch(authSlice.actions.clearAuth());
+  }
+);
 
 const initialState = {
   user: null,
   isAuthenticated: false,
-  loading: true, // Start true to check session on first load
+  loading: false,
+  error: null,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-    setCredentials: (state, action) => {
-      state.user = action.payload.user;
-      state.isAuthenticated = true;
-    },
-    logout: (state) => {
+    clearAuth: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-    },
-    updateUser: (state, action) => {
-      state.user = { ...state.user, ...action.payload };
+      state.loading = false;
+      state.error = null;
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Login
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.detail;
+      })
+      // Register
+      .addCase(register.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+      })
+      // Get Me
+      .addCase(getMe.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+        state.isInitialized = true;
+      })
+      .addCase(getMe.rejected, (state) => {
+        state.loading = false;
+        state.isInitialized = true;
+        state.isAuthenticated = false;
+        state.user = null;
+      });
   },
 });
 
-export const { setCredentials, logout, setLoading, updateUser } = authSlice.actions;
-
-export const selectCurrentUser = (state) => state.auth.user;
-export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
-export const selectAuthLoading = (state) => state.auth.loading;
-
+export const { clearAuth } = authSlice.actions;
+export const selectAuth = (state) => state.auth;
 export default authSlice.reducer;
