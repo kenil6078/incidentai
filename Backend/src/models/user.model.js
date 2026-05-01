@@ -19,8 +19,15 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String, 
-    enum: ['admin', 'developer', 'viewer'],
+    enum: ['super_admin', 'admin', 'developer', 'viewer'],
     default: 'admin'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: {
+    type: String,
   },
   avatar: {
     type: String,
@@ -30,7 +37,7 @@ const userSchema = new mongoose.Schema({
   },
 },
 {
-  
+  timestamps: true
 }
 );
 

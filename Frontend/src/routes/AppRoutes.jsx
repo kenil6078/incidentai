@@ -6,6 +6,7 @@ import ScrollToTop from "../components/ScrollToTop";
 import Landing from "../features/public/pages/Landing";
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
+import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import Dashboard from "../features/analytics/pages/Dashboard";
 import IncidentsList from "../features/incident/pages/IncidentsList";
 import IncidentDetail from "../features/incident/pages/IncidentDetail";
@@ -44,6 +45,10 @@ export const routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/verify-email/:token",
+        element: <VerifyEmail />,
       },
       {
         path: "/pricing",
