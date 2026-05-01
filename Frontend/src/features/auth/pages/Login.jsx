@@ -17,9 +17,13 @@ export default function Login() {
     setLoading(true);
     setUnverifiedEmail("");
     try {
-      await login(email, password);
+      const user = await login(email, password);
       toast.success("Welcome back");
-      navigate("/dashboard");
+      if (user.role === "super_admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       if (err?.response?.data?.unverified) {
         setUnverifiedEmail(email);

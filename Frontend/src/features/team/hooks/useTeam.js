@@ -1,32 +1,42 @@
-/**
- * useTeam.js
- * Custom hook — wraps team Redux state and thunks.
- */
-import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchTeam,
-  inviteMember,
-  updateMemberRole,
-  removeMember,
-  selectTeam,
+  selectTeamMembers,
   selectTeamLoading,
-  selectTeamActionLoading,
-} from '../redux/teamSlice';
+} from '../team.slice';
+import { teamApi } from '../service/team.api';
 
 export const useTeam = () => {
   const dispatch = useDispatch();
-  const members = useSelector(selectTeam);
+  const members = useSelector(selectTeamMembers);
   const loading = useSelector(selectTeamLoading);
-  const actionLoading = useSelector(selectTeamActionLoading);
 
-  const getTeam = useCallback(() => dispatch(fetchTeam()), [dispatch]);
-  const invite = useCallback((payload) => dispatch(inviteMember(payload)), [dispatch]);
-  const updateRole = useCallback(
-    (id, role) => dispatch(updateMemberRole({ id, role })),
-    [dispatch]
-  );
-  const remove = useCallback((id) => dispatch(removeMember(id)), [dispatch]);
+  const getTeam = () => dispatch(fetchTeam());
 
-  return { members, loading, actionLoading, getTeam, invite, updateRole, remove };
+  const inviteMember = async (payload) => {
+    const data = await teamApi.inviteMember(payload);
+    getTeam(); // Refresh
+    return data;
+  };
+
+  const updateRole = async (id, role) => {
+    const data = await teamApi.updateRole(id, role);
+    getTeam(); // Refresh
+    return data;
+  };
+
+  const removeMember = async (id) => {
+    const data = await teamApi.removeMember(id);
+    getTeam(); // Refresh
+    return data;
+  };
+
+  return {
+    members,
+    loading,
+    getTeam,
+    inviteMember,
+    updateRole,
+    removeMember,
+  };
 };

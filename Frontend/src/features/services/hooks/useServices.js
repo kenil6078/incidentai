@@ -1,25 +1,42 @@
-/**
- * useServices.js
- * Custom hook — wraps services/monitors Redux state and thunks.
- */
-import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchServices,
-  createService,
   selectServices,
   selectServicesLoading,
-  selectCreateLoading,
-} from '../redux/servicesSlice';
+} from '../services.slice';
+import { servicesApi } from '../service/services.api';
 
 export const useServices = () => {
   const dispatch = useDispatch();
-  const services = useSelector(selectServices);
+  const list = useSelector(selectServices);
   const loading = useSelector(selectServicesLoading);
-  const createLoading = useSelector(selectCreateLoading);
 
-  const getServices = useCallback(() => dispatch(fetchServices()), [dispatch]);
-  const addService = useCallback((payload) => dispatch(createService(payload)), [dispatch]);
+  const getServices = () => dispatch(fetchServices());
 
-  return { services, loading, createLoading, getServices, addService };
+  const createService = async (payload) => {
+    const data = await servicesApi.createService(payload);
+    getServices(); // Refresh
+    return data;
+  };
+
+  const updateService = async (id, payload) => {
+    const data = await servicesApi.updateService(id, payload);
+    getServices(); // Refresh
+    return data;
+  };
+
+  const deleteService = async (id) => {
+    const data = await servicesApi.deleteService(id);
+    getServices(); // Refresh
+    return data;
+  };
+
+  return {
+    list,
+    loading,
+    getServices,
+    createService,
+    updateService,
+    deleteService,
+  };
 };

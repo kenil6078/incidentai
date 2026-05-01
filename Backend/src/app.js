@@ -10,6 +10,7 @@ import serviceRoutes from './routes/service.routes.js';
 import publicRoutes from './routes/public.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import billingRoutes from './routes/billing.routes.js';
+import adminRoutes from './routes/super_admin.routes.js';
 
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
@@ -35,5 +36,6 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/admin', adminRoutes);
 
 export default app;

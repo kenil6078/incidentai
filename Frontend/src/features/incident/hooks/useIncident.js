@@ -1,55 +1,49 @@
-/**
- * useIncident.js
- * Custom hook — wraps incident Redux state and thunks.
- */
-import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchIncidents,
-  fetchIncidentById,
-  createIncident,
-  updateIncident,
-  deleteIncident,
+  fetchIncidentDetail,
   selectIncidents,
   selectCurrentIncident,
   selectIncidentLoading,
-} from '../redux/incidentSlice';
+  clearCurrentIncident,
+} from '../incident.slice';
+import { incidentApi } from '../service/incident.api';
 
 export const useIncident = () => {
   const dispatch = useDispatch();
-  const incidents = useSelector(selectIncidents);
-  const currentIncident = useSelector(selectCurrentIncident);
+  const list = useSelector(selectIncidents);
+  const current = useSelector(selectCurrentIncident);
   const loading = useSelector(selectIncidentLoading);
 
-  const getIncidents = useCallback(
-    (params) => dispatch(fetchIncidents(params)),
-    [dispatch]
-  );
-  const getById = useCallback(
-    (id) => dispatch(fetchIncidentById(id)),
-    [dispatch]
-  );
-  const create = useCallback(
-    (data) => dispatch(createIncident(data)),
-    [dispatch]
-  );
-  const update = useCallback(
-    (id, data) => dispatch(updateIncident({ id, data })),
-    [dispatch]
-  );
-  const remove = useCallback(
-    (id) => dispatch(deleteIncident(id)),
-    [dispatch]
-  );
+  const getIncidents = () => dispatch(fetchIncidents());
+  const getIncident = (id) => dispatch(fetchIncidentDetail(id));
+
+  const createIncident = async (payload) => {
+    const data = await incidentApi.createIncident(payload);
+    getIncidents(); // Refresh list
+    return data;
+  };
+
+  const updateIncident = async (id, payload) => {
+    const data = await incidentApi.updateIncident(id, payload);
+    getIncident(id); // Refresh detail
+    return data;
+  };
+
+  const deleteIncident = async (id) => {
+    await incidentApi.deleteIncident(id);
+    getIncidents(); // Refresh list
+  };
 
   return {
-    incidents,
-    currentIncident,
+    list,
+    current,
     loading,
     getIncidents,
-    getById,
-    create,
-    update,
-    remove,
+    getIncident,
+    createIncident,
+    updateIncident,
+    deleteIncident,
+    clearCurrent: () => dispatch(clearCurrentIncident()),
   };
 };

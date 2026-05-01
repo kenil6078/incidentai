@@ -17,11 +17,10 @@ export const inviteMember = async (req, res) => {
     let user = await userModel.findOne({ email });
     if (user) return res.status(400).json({ detail: 'User already exists' });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     user = new userModel({
       name,
       email,
-      password: hashedPassword,
+      password,
       orgId: req.user.orgId._id,
       role,
       isVerified: true

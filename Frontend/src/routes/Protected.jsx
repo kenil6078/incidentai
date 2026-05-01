@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { SocketProvider } from "../context/SocketContext";
 import AppShell from "../components/AppShell";
@@ -17,8 +17,19 @@ export default function Protected({ children }) {
     );
   }
 
+  const location = useLocation();
+
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Role-based access control
+  if (user.role === 'super_admin' && location.pathname !== '/admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (user.role !== 'super_admin' && location.pathname === '/admin') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

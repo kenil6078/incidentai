@@ -85,13 +85,20 @@ export default function AppShell({ children }) {
         ${showSidebar ? "translate-x-0" : "-translate-x-full"}
       `} data-testid="app-sidebar">
         <div className="px-5 py-5 border-b-2 border-black flex items-center justify-between">
-          <Link to="/dashboard" onClick={() => setShowSidebar(false)} className="flex items-center gap-2 group" data-testid="brand-logo">
+          <Link 
+            to={user.role === 'super_admin' ? '/admin' : '/dashboard'} 
+            onClick={() => setShowSidebar(false)} 
+            className="flex items-center gap-2 group" 
+            data-testid="brand-logo"
+          >
             <div className="w-7 h-7 bg-[#FF6B6B] border-2 border-black neo-shadow flex items-center justify-center">
               <span className="text-white font-black text-sm">i</span>
             </div>
             <div>
               <div className="text-sm font-bold tracking-tight text-zinc-950">incident.ai</div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-mono">{user.org_name}</div>
+              <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-mono">
+                {user.role === 'super_admin' ? 'Platform Control' : user.org_name}
+              </div>
             </div>
           </Link>
           <button onClick={() => setShowSidebar(false)} className="md:hidden text-zinc-500 hover:text-zinc-950">
@@ -100,25 +107,32 @@ export default function AppShell({ children }) {
         </div>
 
         <nav className="flex-1 py-4 space-y-1">
-          <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" end onClick={() => setShowSidebar(false)} />
-          <NavItem to="/incidents" icon={AlertTriangle} label="Incidents" onClick={() => setShowSidebar(false)} />
-          <NavItem to="/services" icon={Activity} label="Services" onClick={() => setShowSidebar(false)} />
-          <NavItem to="/team" icon={Users} label="Team" onClick={() => setShowSidebar(false)} />
-          <NavItem to="/analytics" icon={BarChart3} label="Analytics" onClick={() => setShowSidebar(false)} />
-          <NavItem to="/billing" icon={CreditCard} label="Billing" onClick={() => setShowSidebar(false)} />
-          <NavItem to="/settings" icon={Settings} label="Settings" onClick={() => setShowSidebar(false)} />
+          {user.role === 'super_admin' ? (
+            <NavItem to="/admin" icon={LayoutDashboard} label="Admin Dashboard" end onClick={() => setShowSidebar(false)} />
+          ) : (
+            <>
+              <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" end onClick={() => setShowSidebar(false)} />
+              <NavItem to="/incidents" icon={AlertTriangle} label="Incidents" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/services" icon={Activity} label="Services" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/team" icon={Users} label="Team" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/analytics" icon={BarChart3} label="Analytics" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/billing" icon={CreditCard} label="Billing" onClick={() => setShowSidebar(false)} />
+              <NavItem to="/settings" icon={Settings} label="Settings" onClick={() => setShowSidebar(false)} />
+            </>
+          )}
         </nav>
 
         <div className="border-t-2 border-black p-3 space-y-2 bg-[#FDE68A]">
-          <a
-            href={`/status/${user.org_name?.toLowerCase().replace(/\s/g, '-')}`}
-            // target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs text-zinc-600 hover:text-zinc-950 px-2 py-1"
-            data-testid="public-status-link"
-          >
-            <Globe className="w-3 h-3" /> Public Status Page
-          </a>
+          {user.role !== 'super_admin' && (
+            <a
+              href={`/status/${user.org_name?.toLowerCase().replace(/\s/g, '-')}`}
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-zinc-600 hover:text-zinc-950 px-2 py-1"
+              data-testid="public-status-link"
+            >
+              <Globe className="w-3 h-3" /> Public Status Page
+            </a>
+          )}
           <div className="flex items-center gap-2 px-2 py-1 text-xs font-mono text-zinc-500">
             {connected ? (
               <><Wifi className="w-3 h-3 text-green-600" /> realtime: ON</>
@@ -138,13 +152,15 @@ export default function AppShell({ children }) {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <button
-              onClick={() => navigate("/incidents/new")}
-              className="neo-shadow bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-xs font-bold px-2.5 md:px-3 py-1.5 transition flex items-center gap-1.5"
-              data-testid="new-incident-button-header"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={3} /> New Incident
-            </button>
+            {user.role !== 'super_admin' && (
+              <button
+                onClick={() => navigate("/incidents/new")}
+                className="neo-shadow bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-xs font-bold px-2.5 md:px-3 py-1.5 transition flex items-center gap-1.5"
+                data-testid="new-incident-button-header"
+              >
+                <Plus className="w-3.5 h-3.5" strokeWidth={3} /> New Incident
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
