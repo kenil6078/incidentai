@@ -166,11 +166,19 @@ export default function Team() {
                   <td className="px-6 py-4">
                     <div className="text-sm text-zinc-600 font-medium font-mono truncate">{m.email}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    {/* As requested: Only role name as text, no dropdown */}
-                    <span className="inline-flex px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-100 border-2 border-black">
+                  <td className="px-6 py-4 flex flex-col gap-1.5">
+                    <span className="inline-flex w-fit px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-100 border-2 border-black">
                       {m.role}
                     </span>
+                    {m.isVerified ? (
+                      <span className="text-[9px] font-black text-green-600 flex items-center gap-1 uppercase">
+                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full" /> Verified
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-black text-amber-500 flex items-center gap-1 uppercase">
+                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" /> Pending Verification
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-right">
                     {/* Only allow removing if Admin is viewing a Developer, or SuperAdmin is viewing anyone else */}

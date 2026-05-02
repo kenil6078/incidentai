@@ -117,19 +117,19 @@ export default function CreateIncident() {
           </div>
         </div>
 
-        {team.length > 0 && (
+        {team.filter(m => m.isVerified).length > 0 ? (
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Assign team members</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Assign team members (Verified only)</label>
             <div className="flex flex-wrap gap-2">
-              {team.map((m) => (
+              {team.filter(m => m.isVerified).map((m) => (
                 <button
                   type="button"
                   key={m.id || m._id}
                   onClick={() => toggle("assigned_to", m.id || m._id)}
-                  className={`px-3 py-1.5 text-xs border transition ${
+                  className={`px-3 py-1.5 text-xs border-2 transition ${
                     form.assigned_to.includes(m.id || m._id)
-                      ? "bg-zinc-950 text-white border-zinc-950"
-                      : "bg-white text-zinc-700 border-zinc-300 hover:border-zinc-950"
+                      ? "bg-zinc-950 text-white border-black"
+                      : "bg-white text-zinc-700 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none"
                   }`}
                   data-testid={`assign-${m.id || m._id}`}
                 >
@@ -137,6 +137,13 @@ export default function CreateIncident() {
                 </button>
               ))}
             </div>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Assign team members</label>
+            <p className="text-xs text-amber-600 font-bold bg-amber-50 p-3 border-2 border-dashed border-amber-200">
+              No verified developers found. Please ensure your team members have verified their emails.
+            </p>
           </div>
         )}
 
