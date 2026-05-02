@@ -26,16 +26,16 @@ const NotFoundContent = () => {
       </div>
       
       <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-black mb-4 uppercase italic">
-        Out of Bounds
+        Page Not Found
       </h1>
       
       <div className="inline-flex items-center gap-2 text-[10px] md:text-xs font-mono uppercase tracking-[0.4em] text-zinc-500 mb-10 bg-zinc-100 px-4 py-1.5 border-2 border-black neo-shadow-sm">
         <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        Error: Resource_Not_Discovered
+        Error: Page_Not_Found
       </div>
 
       <p className="max-w-md text-base md:text-lg text-zinc-700 mb-12 font-bold leading-tight">
-        The coordinate you're looking for doesn't exist in our system. <br className="hidden md:block" />
+        The Page you're looking for doesn't exist in our system. <br className="hidden md:block" />
         It might have been moved, deleted, or never existed.
       </p>
 
@@ -60,7 +60,7 @@ const NotFoundContent = () => {
       <div className="mt-24 flex flex-col items-center gap-4 opacity-50">
         <div className="w-32 h-1 bg-black"></div>
         <p className="text-[10px] font-mono text-black uppercase tracking-[0.6em] font-bold">
-          incident.ai // sys_err_404
+          incident.ai // Opps ! We Lost The Page
         </p>
       </div>
     </div>
