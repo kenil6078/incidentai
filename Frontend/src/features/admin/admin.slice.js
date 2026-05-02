@@ -56,5 +56,6 @@ const adminSlice = createSlice({
 export const selectAdminOrganizations = (state) => state.admin.organizations;
 export const selectAdminUsers = (state) => state.admin.users;
 export const selectAdminLoading = (state) => state.admin.loading;
+export const selectAdminError = (state) => state.admin.error;
 
 export default adminSlice.reducer;

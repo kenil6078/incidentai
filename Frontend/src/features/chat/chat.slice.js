@@ -33,6 +33,15 @@ export const fetchUsers = createAsyncThunk('chat/fetchUsers', async (_, { reject
   }
 });
 
+export const deleteChat = createAsyncThunk('chat/deleteChat', async (chatId, { rejectWithValue }) => {
+  try {
+    await chatApi.deleteChat(chatId);
+    return chatId;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || err.message || 'Failed to delete chat');
+  }
+});
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -119,7 +128,8 @@ const chatSlice = createSlice({
         state.loadingMore = false;
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.users = action.payload;
+        const data = action.payload;
+        state.users = Array.isArray(data) ? data : (data.users || []);
       })
       .addCase(createChat.fulfilled, (state, action) => {
         const exists = state.chats.find(c => c._id === action.payload._id);
@@ -127,6 +137,12 @@ const chatSlice = createSlice({
           state.chats.unshift(action.payload);
         }
         state.currentChat = action.payload;
+      })
+      .addCase(deleteChat.fulfilled, (state, action) => {
+        state.chats = state.chats.filter(c => c._id !== action.payload);
+        if (state.currentChat?._id === action.payload) {
+          state.currentChat = null;
+        }
       });
   }
 });

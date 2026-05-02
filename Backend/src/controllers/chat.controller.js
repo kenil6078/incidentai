@@ -89,10 +89,24 @@ export const createChat = async (req, res) => {
 
 export const getOrgUsers = async (req, res) => {
   try {
-    const users = await userModel.find({ 
-      orgId: req.user.orgId,
+    const isSuperAdmin = req.user.role === 'super_admin';
+    const myOrgId = req.user.orgId?._id || req.user.orgId;
+    
+    const query = {
       _id: { $ne: req.user._id }
-    }).select('name email avatar role');
+    };
+
+    if (!isSuperAdmin) {
+      if (!myOrgId) {
+        return res.status(200).json([]);
+      }
+      query.orgId = myOrgId;
+    }
+
+    const users = await userModel.find(query)
+      .select('name email avatar role orgId')
+      .populate('orgId', 'name');
+      
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });

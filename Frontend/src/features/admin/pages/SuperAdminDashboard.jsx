@@ -6,8 +6,14 @@ import { Users, Building2, ShieldCheck, Search, ArrowUpRight, UserCheck, ShieldA
 export default function SuperAdminDashboard() {
   const { organizations, users, loading, getOrganizations, getUsers } = useAdmin();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [view, setView] = useState("organizations"); // 'organizations' or 'users'
   const [roleFilter, setRoleFilter] = useState("all");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     getOrganizations();
@@ -15,13 +21,13 @@ export default function SuperAdminDashboard() {
   }, []);
 
   const filteredOrgs = organizations.filter(org => 
-    org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.slug.toLowerCase().includes(searchTerm.toLowerCase())
+    org.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    org.slug.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   );
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+                         user.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });

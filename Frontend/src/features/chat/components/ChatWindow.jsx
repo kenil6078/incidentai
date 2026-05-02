@@ -13,7 +13,16 @@ export default function ChatWindow() {
   const [content, setContent] = useState('');
   const scrollRef = useRef(null);
   const topRef = useRef(null);
+  const throttleRef = useRef(0);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+
+  const handleScroll = () => {
+    const now = Date.now();
+    if (now - throttleRef.current > 100) {
+      setShouldScrollToBottom(false);
+      throttleRef.current = now;
+    }
+  };
 
   useEffect(() => {
     if (currentChat?._id) {
@@ -127,13 +136,24 @@ export default function ChatWindow() {
 
       <div 
         ref={scrollRef}
-        onScroll={() => setShouldScrollToBottom(false)}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FAFAFA]"
       >
         <div ref={topRef} className="h-1" />
         {loadingMore && (
           <div className="flex justify-center p-2">
             <div className="w-6 h-6 border-2 border-black border-t-transparent animate-spin rounded-full" />
+          </div>
+        )}
+        {chatMessages.length === 0 && !loading && (
+          <div className="h-full flex flex-col items-center justify-center text-center p-8">
+            <div className="w-16 h-16 bg-white border-2 border-black neo-shadow flex items-center justify-center mb-4">
+              <MessageSquare className="w-8 h-8 text-zinc-400" />
+            </div>
+            <h4 className="text-lg font-black uppercase tracking-tight">No messages yet</h4>
+            <p className="text-xs text-zinc-500 max-w-[200px] mt-1 font-medium italic">
+              Break the ice! Send a message to start the conversation.
+            </p>
           </div>
         )}
         {chatMessages.map((msg, i) => {

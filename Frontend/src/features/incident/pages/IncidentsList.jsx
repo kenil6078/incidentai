@@ -19,6 +19,12 @@ export default function IncidentsList() {
   const [statusF, setStatusF] = useState("All statuses");
   const [sevF, setSevF] = useState("All severities");
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQ(q), 400);
+    return () => clearTimeout(timer);
+  }, [q]);
 
   const load = () => {
     const params = {};
@@ -36,7 +42,7 @@ export default function IncidentsList() {
     return () => unsub && unsub();
   }, [subscribe]);
 
-  const visible = incidents.filter((i) => !q || i.title?.toLowerCase().includes(q.toLowerCase()) || i.description?.toLowerCase().includes(q.toLowerCase()));
+  const visible = incidents.filter((i) => !debouncedQ || i.title?.toLowerCase().includes(debouncedQ.toLowerCase()) || i.description?.toLowerCase().includes(debouncedQ.toLowerCase()));
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-7xl">

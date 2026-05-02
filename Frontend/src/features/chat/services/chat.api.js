@@ -26,3 +26,8 @@ export async function fetchUsers() {
     const response = await chatApiInstance.get("/users")
     return response.data
 }
+
+export async function deleteChat(chatId) {
+    const response = await chatApiInstance.delete(`/${chatId}`)
+    return response.data
+}
