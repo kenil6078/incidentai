@@ -74,6 +74,7 @@ const chatSlice = createSlice({
     messages: {},       // { [chatId]: Message[] }
     hasMore: {},        // { [chatId]: boolean }
     typingUsers: {},    // { [chatId]: { userId, userName, timeout } }
+    unreadCounts: {},   // { [chatId]: number }
     users: [],
     loading: false,
     loadingMore: false,
@@ -82,6 +83,27 @@ const chatSlice = createSlice({
   reducers: {
     setCurrentChat: (state, action) => {
       state.currentChat = action.payload;
+      if (action.payload?._id) {
+        state.unreadCounts[action.payload._id] = 0;
+      }
+    },
+
+    /**
+     * incrementUnread — increases the badge count for a chat
+     */
+    incrementUnread: (state, action) => {
+      const chatId = action.payload;
+      if (!state.currentChat || state.currentChat._id !== chatId) {
+        state.unreadCounts[chatId] = (state.unreadCounts[chatId] || 0) + 1;
+      }
+    },
+
+    /**
+     * clearUnread — clears the badge count
+     */
+    clearUnread: (state, action) => {
+      const chatId = action.payload;
+      state.unreadCounts[chatId] = 0;
     },
 
     /**
@@ -252,6 +274,8 @@ export const {
   setTypingUser,
   clearTypingUser,
   clearMessages,
+  incrementUnread,
+  clearUnread,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

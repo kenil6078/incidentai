@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export default function ChatSidebar() {
   const dispatch = useDispatch();
-  const { chats, users, currentChat, loading } = useSelector(state => state.chat);
+  const { chats, users, currentChat, unreadCounts, loading } = useSelector(state => state.chat);
   const { user } = useSelector(state => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -136,6 +136,13 @@ export default function ChatSidebar() {
                   >
                     <div className="w-12 h-12 bg-zinc-200 border-2 border-black flex items-center justify-center font-black relative flex-shrink-0">
                       {chat.type === 'group' ? <Users className="w-6 h-6" /> : otherParticipant?.name?.[0]?.toUpperCase() || '?'}
+                      
+                      {/* ── Unread Badge ───────────────────────── */}
+                      {unreadCounts[chat._id] > 0 && (
+                        <div className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 bg-[#FF6B6B] border-2 border-black flex items-center justify-center text-[10px] font-black px-1 neo-shadow-sm z-10 animate-in fade-in zoom-in">
+                          {unreadCounts[chat._id]}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">

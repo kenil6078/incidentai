@@ -3,7 +3,7 @@ import ChatSidebar from '../components/ChatSidebar';
 import ChatWindow from '../components/ChatWindow';
 import { useSocket } from '../../../context/SocketContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessage, setTypingUser, clearTypingUser } from '../chat.slice';
+import { addMessage, setTypingUser, clearTypingUser, incrementUnread } from '../chat.slice';
 
 /**
  * ChatPage — the single source of truth for all chat socket events.
@@ -24,6 +24,9 @@ export default function ChatPage() {
 
     const handleReceiveMessage = (msg) => {
       dispatch(addMessage(msg));
+      if (msg.chatId) {
+        dispatch(incrementUnread(msg.chatId));
+      }
     };
 
     const handleTyping = ({ chatId, userId, userName }) => {

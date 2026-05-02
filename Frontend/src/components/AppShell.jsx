@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useSocket } from "../context/SocketContext";
 import { useNotification } from "../features/notification/hooks/useNotification";
@@ -34,6 +35,7 @@ const NavItem = ({ to, icon: Icon, label, end, onClick }) => (
 
 export default function AppShell({ children }) {
   const { user, handleLogout } = useAuth();
+  const { unreadCounts } = useSelector((state) => state.chat);
   const { connected, subscribe } = useSocket();
   const { notifications: notifs, unreadCount: unread, getNotifications, readAll: markAllRead, addNotification } = useNotification();
   const navigate = useNavigate();
@@ -102,7 +104,12 @@ export default function AppShell({ children }) {
             <>
               <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" end onClick={() => setShowSidebar(false)} />
               <NavItem to="/incidents" icon={AlertTriangle} label="Incidents" onClick={() => setShowSidebar(false)} />
-              <NavItem to="/chats" icon={MessageSquare} label="Chat" onClick={() => setShowSidebar(false)} />
+              <div className="relative">
+                <NavItem to="/chats" icon={MessageSquare} label="Chat" onClick={() => setShowSidebar(false)} />
+                {Object.values(unreadCounts || {}).reduce((a, b) => a + b, 0) > 0 && (
+                  <span className="absolute left-[38px] top-2 w-2 h-2 bg-[#FF6B6B] border border-black rounded-full z-10" />
+                )}
+              </div>
               <NavItem to="/services" icon={Activity} label="Services" onClick={() => setShowSidebar(false)} />
               <NavItem to="/team" icon={Users} label="Team" onClick={() => setShowSidebar(false)} />
               <NavItem to="/analytics" icon={BarChart3} label="Analytics" onClick={() => setShowSidebar(false)} />
