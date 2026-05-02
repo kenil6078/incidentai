@@ -101,8 +101,9 @@ export const getOrgUsers = async (req, res) => {
         return res.status(200).json([]);
       }
       query.orgId = myOrgId;
-      // Regular users should not see super_admins
+      // Regular users should not see super_admins and only verified teammates
       query.role = { $in: ['admin', 'developer'] };
+      query.isVerified = true;
     }
 
     const users = await userModel.find(query)

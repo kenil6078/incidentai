@@ -10,6 +10,7 @@ import {
   selectNotifications,
   selectUnreadCount,
   selectNotificationLoading,
+  pushNotification
 } from '../notification.slice';
 
 export const useNotification = () => {
@@ -20,6 +21,7 @@ export const useNotification = () => {
 
   const getNotifications = useCallback(() => dispatch(fetchNotifications()), [dispatch]);
   const readAll = useCallback(() => dispatch(markAllRead()), [dispatch]);
+  const addNotification = useCallback((payload) => dispatch(pushNotification(payload)), [dispatch]);
 
-  return { notifications, unreadCount, loading, getNotifications, readAll };
+  return { notifications, unreadCount, loading, getNotifications, readAll, addNotification };
 };

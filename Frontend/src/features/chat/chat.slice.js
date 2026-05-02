@@ -11,7 +11,8 @@ export const fetchChats = createAsyncThunk('chat/fetchChats', async (_, { reject
 
 export const fetchMessages = createAsyncThunk('chat/fetchMessages', async ({ chatId, before }, { rejectWithValue }) => {
   try {
-    return await chatApi.fetchMessages(chatId, before);
+    const messages = await chatApi.fetchMessages(chatId, before);
+    return { chatId, messages, isMore: !!before };
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch messages');
   }

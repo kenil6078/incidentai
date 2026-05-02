@@ -35,7 +35,7 @@ const NavItem = ({ to, icon: Icon, label, end, onClick }) => (
 export default function AppShell({ children }) {
   const { user, handleLogout } = useAuth();
   const { connected, subscribe } = useSocket();
-  const { notifications: notifs, unreadCount: unread, getNotifications, readAll: markAllRead } = useNotification();
+  const { notifications: notifs, unreadCount: unread, getNotifications, readAll: markAllRead, addNotification } = useNotification();
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -47,12 +47,14 @@ export default function AppShell({ children }) {
 
   useEffect(() => {
     const unsub = subscribe?.((evt) => {
-      if (evt.type === "incident.created" || evt.type === "incident.updated" || evt.type === "notification") {
+      if (evt.type === "notification" || evt.eventName === "notification") {
+        addNotification(evt.data || evt);
+      } else if (evt.type === "incident.created" || evt.type === "incident.updated") {
         getNotifications();
       }
     });
     return () => unsub && unsub();
-  }, [subscribe]);
+  }, [subscribe, addNotification, getNotifications]);
 
   if (!user) return null;
 
@@ -181,7 +183,10 @@ export default function AppShell({ children }) {
                     notifs.map((n) => (
                       <DropdownMenuItem
                         key={n.id || n._id}
-                        onClick={() => n.incident_id && navigate(`/incidents/${n.incident_id}`)}
+                        onClick={() => {
+                          const targetId = n.incidentId || n.incident_id;
+                          if (targetId) navigate(`/incidents/${targetId}`);
+                        }}
                         className="flex flex-col items-start gap-1 py-2"
                         data-testid={`notif-${n.id || n._id}`}
                       >

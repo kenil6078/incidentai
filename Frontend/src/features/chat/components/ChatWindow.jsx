@@ -152,7 +152,7 @@ export default function ChatWindow() {
             </div>
             <h4 className="text-lg font-black uppercase tracking-tight">No messages yet</h4>
             <p className="text-xs text-zinc-500 max-w-[200px] mt-1 font-medium italic">
-              Break the ice! Send a message to start the conversation.
+              No messages found in this conversation. Start messaging now!
             </p>
           </div>
         )}
