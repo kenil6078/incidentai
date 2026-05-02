@@ -169,7 +169,7 @@ export default function ChatWindow() {
         }
       });
     }
-  }, [chatMessages, isNearBottom]);
+  }, [chatMessages, isNearBottom, currentTypingUsers]);
 
   // ── Scroll tracking ──────────────────────────────────
   const handleScroll = useCallback(() => {
