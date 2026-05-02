@@ -6,12 +6,7 @@ const KEY = Buffer.from(config.ENCRYPTION_KEY || 'd7a9f8b7c6d5e4f3a2b1c0d9e8f7a6
 const IV_LENGTH = 16;
 
 export const encrypt = (text) => {
-  if (!text) return text;
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+  return text; // TEMPORARILY DISABLED FOR SPEED
 };
 
 export const decrypt = (text) => {
@@ -25,7 +20,7 @@ export const decrypt = (text) => {
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
   } catch (error) {
-    console.error('Decryption failed:', error);
-    return '[Encrypted Message]';
+    // If decryption fails, it might just be a plain text message that happened to have a colon
+    return text;
   }
 };

@@ -115,3 +115,19 @@ export const getOrgUsers = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteChat = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    
+    // Delete the chat
+    await chatModel.findByIdAndDelete(chatId);
+    
+    // Delete all messages associated with the chat
+    await messageModel.deleteMany({ chatId });
+    
+    res.status(200).json({ success: true, message: 'Chat deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

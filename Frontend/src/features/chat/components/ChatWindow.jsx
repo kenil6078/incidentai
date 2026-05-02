@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMessages, addMessage } from '../chat.slice';
 import { useSocket } from '../../../context/SocketContext';
-import { Send, Paperclip, MoreVertical, Shield } from 'lucide-react';
+import { Send, Paperclip, MoreVertical, Shield, Trash2, MessageSquare } from 'lucide-react';
 import { ChatWindowSkeleton } from '../../../components/ui/skeleton';
+import { toast } from 'sonner';
 
 export default function ChatWindow() {
   const dispatch = useDispatch();
@@ -93,6 +94,20 @@ export default function ChatWindow() {
     setContent('');
   };
 
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleDeleteChat = async () => {
+    if (window.confirm("Are you sure you want to delete this chat? This will remove all messages for everyone.")) {
+      try {
+        await dispatch(deleteChat(currentChat._id)).unwrap();
+        toast.success("Chat deleted successfully");
+        setShowMenu(false);
+      } catch (err) {
+        toast.error(err || "Failed to delete chat");
+      }
+    }
+  };
+
   if (!currentChat) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-zinc-50 p-8 text-center">
@@ -117,7 +132,7 @@ export default function ChatWindow() {
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative">
       {/* Header */}
-      <div className="h-16 border-b-2 border-black flex items-center justify-between px-6 bg-[#D4F4E4]">
+      <div className="h-16 border-b-2 border-black flex items-center justify-between px-6 bg-[#D4F4E4] relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-zinc-950 text-white border-2 border-black flex items-center justify-center font-bold">
             {currentChat.type === 'group' ? 'G' : otherParticipant?.name?.[0].toUpperCase() || '?'}
@@ -129,9 +144,25 @@ export default function ChatWindow() {
             </div>
           </div>
         </div>
-        <button className="p-2 hover:bg-black/5 rounded-none">
-          <MoreVertical className="w-5 h-5" />
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 hover:bg-black/5 rounded-none border-2 border-transparent active:border-black transition-all"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+          
+          {showMenu && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white border-2 border-black neo-shadow p-1 z-50">
+              <button 
+                onClick={handleDeleteChat}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors text-left"
+              >
+                <Trash2 className="w-4 h-4" /> Delete Chat
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div 
@@ -187,9 +218,9 @@ export default function ChatWindow() {
       {/* Input */}
       <div className="p-4 border-t-2 border-black bg-white">
         <form onSubmit={handleSendMessage} className="flex gap-3">
-          <button type="button" className="p-2 border-2 border-black neo-shadow bg-zinc-100 hover:bg-zinc-200">
+          {/* <button type="button" className="p-2 border-2 border-black neo-shadow bg-zinc-100 hover:bg-zinc-200">
             <Paperclip className="w-4 h-4" />
-          </button>
+          </button> */}
           <input 
             type="text"
             placeholder="Type a message..."
@@ -210,4 +241,4 @@ export default function ChatWindow() {
   );
 }
 
-import { MessageSquare } from 'lucide-react';
+// End of file
