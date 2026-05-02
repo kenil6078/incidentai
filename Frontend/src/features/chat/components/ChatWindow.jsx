@@ -139,7 +139,14 @@ export default function ChatWindow() {
 
   const chatId = currentChat?._id;
   const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
-  const currentTypingUsers = typingUsers[chatId] || {};
+  
+  // Filter out the current user from typing indicators
+  const currentTypingUsers = useMemo(() => {
+    const list = typingUsers[chatId] || {};
+    const filtered = { ...list };
+    if (user?._id) delete filtered[user._id];
+    return filtered;
+  }, [typingUsers, chatId, user?._id]);
 
   // ── Fetch messages when chat changes ─────────────────
   useEffect(() => {
@@ -218,10 +225,10 @@ export default function ChatWindow() {
     // Clear previous timeout
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
-    // Auto-stop typing after 2s of no input
+    // Auto-stop typing after 1.5s of no input
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit('typing_stop', { chatId });
-    }, 2000);
+    }, 1500);
   }, [socket, chatId]);
 
   const handleInputChange = useCallback((e) => {

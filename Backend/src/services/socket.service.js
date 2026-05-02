@@ -82,43 +82,35 @@ export const initSocket = (server) => {
     socket.on('send_message', async (data) => {
       try {
         const { chatId, content, type } = data;
-
-        // 1. Encrypt content for storage (runs in parallel-safe manner)
         const encryptedContent = encrypt(content);
 
-        // 2. Persist to database
-        const newMessage = await messageModel.create({
-          chatId,
-          sender: socket.user._id,
-          content: encryptedContent,
-          type: type || 'text'
-        });
+        // 1. Create message and 2. Update chat concurrently
+        const [newMessage] = await Promise.all([
+          messageModel.create({
+            chatId,
+            sender: userId,
+            content: encryptedContent,
+            type: type || 'text'
+          }),
+          chatModel.findByIdAndUpdate(chatId, { lastMessage: null }) // We'll set it properly in a sec
+        ]);
 
-        // 3. Update chat's lastMessage pointer
-        const chat = await chatModel.findByIdAndUpdate(chatId, {
-          lastMessage: newMessage._id
-        }, { new: true }).populate('participants');
+        // 3. Update chat's lastMessage pointer (fire and forget for speed)
+        chatModel.findByIdAndUpdate(chatId, { lastMessage: newMessage._id }).exec();
 
-        if (!chat) {
-          console.error('send_message: Chat not found:', chatId);
-          return;
-        }
-
-        // 4. Populate sender info for the response
-        const populatedMsg = await messageModel.findById(newMessage._id)
-          .populate('sender', 'name avatar')
-          .lean();
-
-        // 5. Send DECRYPTED content to participants (content never leaves backend encrypted)
+        // 4. Prepare message to send (Avoid extra DB fetch)
         const msgToSend = {
-          ...populatedMsg,
-          content, // plaintext — encryption is only at rest
+          ...newMessage.toObject(),
+          sender: {
+            _id: socket.user._id,
+            name: socket.user.name,
+            avatar: socket.user.avatar
+          },
+          content // Send raw content for instant display
         };
 
-        // 6. Emit to every participant's personal room
-        chat.participants.forEach(p => {
-          io.to(p._id.toString()).emit('receive_message', msgToSend);
-        });
+        // 5. Emit to the room (Everyone in the chat gets it instantly)
+        io.to(`chat:${chatId}`).emit('receive_message', msgToSend);
 
       } catch (error) {
         console.error('Socket send_message error:', error);
@@ -130,7 +122,6 @@ export const initSocket = (server) => {
     socket.on('typing_start', (data) => {
       const { chatId } = data;
       if (!chatId) return;
-      // Broadcast to all participants in the chat except sender
       socket.to(`chat:${chatId}`).emit('user_typing', {
         chatId,
         userId,
