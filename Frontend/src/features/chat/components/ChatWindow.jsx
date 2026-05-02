@@ -32,11 +32,31 @@ export default function ChatWindow() {
     }
   }, [currentChat?._id, dispatch]);
 
+  // 🔴 Real-time: listen for incoming messages via socket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleIncomingMessage = (msg) => {
+      // Only process messages meant for the current chat
+      dispatch(addMessage({ ...msg, chatId: msg.chatId }));
+      // If message is for the currently open chat, scroll to bottom
+      if (msg.chatId === currentChat?._id) {
+        setShouldScrollToBottom(true);
+      }
+    };
+
+    socket.on('receive_message', handleIncomingMessage);
+    return () => {
+      socket.off('receive_message', handleIncomingMessage);
+    };
+  }, [socket, currentChat?._id, dispatch]);
+
   useEffect(() => {
     if (shouldScrollToBottom && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, shouldScrollToBottom]);
+
 
   // Intersection Observer for Infinite Scroll
   useEffect(() => {
