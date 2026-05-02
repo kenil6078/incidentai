@@ -109,6 +109,32 @@ export default function Landing() {
         </div>
       </motion.section>
 
+      {/* Impact Stats Section */}
+      <section className="bg-[#FDE68A] border-t-4 border-black py-12 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { label: "Reduction in MTTR", value: "32%", detail: "Mean Time To Resolve" },
+              { label: "Success Rate", value: "99.9%", detail: "SLA Adherence" },
+              { label: "AI Accuracy", value: "94%", detail: "Root Cause Detection" },
+            ].map((s, i) => (
+              <motion.div 
+                key={i}
+                initial={{ y: 50, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white border-4 border-black p-6 neo-shadow text-center"
+              >
+                <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-2">{s.label}</div>
+                <div className="text-5xl font-black text-black tracking-tighter mb-1">{s.value}</div>
+                <div className="text-xs font-bold text-zinc-600 uppercase">{s.detail}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <motion.section 
         className="border-t-4 border-black bg-white"
       >
@@ -135,6 +161,85 @@ export default function Landing() {
           </div>
         </div>
       </motion.section>
+
+      {/* Incident Lifecycle Section */}
+      <section className="bg-white border-t-4 border-black py-24 relative overflow-hidden">
+        <div className="absolute inset-0 grid-bg opacity-5" />
+        <div className="max-w-7xl mx-auto px-6 relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <div className="max-w-2xl">
+              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-4 font-bold">Workflow</div>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-black leading-none">
+                <RevealText>From detection to postmortem.</RevealText>
+              </h2>
+            </div>
+            <div className="text-sm font-bold text-zinc-600 max-w-xs">
+              A structured, opinionated flow that forces high-quality incident management.
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              { step: "01", title: "Declare", desc: "Instantly create a dedicated incident channel and invite the right people.", color: "bg-[#FF6B6B]" },
+              { step: "02", title: "Coordinate", desc: "Use realtime timelines to track progress, assign roles, and share updates.", color: "bg-[#FDE68A]" },
+              { step: "03", title: "Retrospect", desc: "Auto-generate AI postmortems and track action items to closure.", color: "bg-[#D4F4E4]" },
+            ].map((s, i) => (
+              <motion.div 
+                key={i}
+                initial={{ x: -20, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                transition={{ delay: i * 0.2 }}
+                viewport={{ once: true }}
+                className="relative"
+              >
+                <div className={`text-6xl font-black ${s.color} text-black border-4 border-black inline-block px-4 py-2 neo-shadow mb-6`}>
+                  {s.step}
+                </div>
+                <h3 className="text-2xl font-black text-black mb-4">{s.title}</h3>
+                <p className="text-base font-bold text-zinc-700">{s.desc}</p>
+                {i < 2 && (
+                  <div className="hidden lg:block absolute top-10 -right-8">
+                    <ArrowRight className="w-8 h-8 text-black" strokeWidth={3} />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-[#D4F4E4] border-t-4 border-black py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+             <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-4 font-bold">Social Proof</div>
+             <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-black">Loved by SREs.</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { quote: "This platform replaced three disparate tools for us. The AI postmortems alone are worth the price.", author: "Sarah Chen", role: "VP Engineering" },
+              { quote: "Neo-brutalist UI that actually makes sense. It's fast, focused, and powerful.", author: "Marcus Thorne", role: "SRE Lead" },
+              { quote: "The status pages are so easy to set up, our support team actually enjoys using them.", author: "Elena Rossi", role: "Head of Operations" },
+            ].map((t, i) => (
+              <motion.div 
+                key={i}
+                initial={{ scale: 0.9, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white border-4 border-black p-8 neo-shadow flex flex-col justify-between"
+              >
+                <div className="text-lg font-bold text-black italic mb-8">"{t.quote}"</div>
+                <div>
+                  <div className="text-base font-black text-black">{t.author}</div>
+                  <div className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest">{t.role}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="bg-black text-white border-t-4 border-black">
         <div className="max-w-7xl mx-auto px-6 py-24 text-center">
