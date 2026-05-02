@@ -11,12 +11,27 @@ export default function PublicStatus() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    api.get(`/public/status/${orgSlug}`).then((r) => setData(r.data)).catch(() => {});
+    api.get(`/api/public/status/${orgSlug}`)
+      .then((r) => setData(r.data))
+      .catch((err) => {
+        console.error("Failed to fetch public status:", err);
+        setData({ error: true });
+      });
   }, [orgSlug]);
 
   if (!data) return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-zinc-500">Connecting to status page...</div>;
+  if (data.error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <h1 className="text-xl font-black mb-2">Organization Not Found</h1>
+      <p className="text-sm text-zinc-500 mb-6">The status page you're looking for doesn't exist or has been moved.</p>
+      <Link to="/" className="px-4 py-2 bg-zinc-950 text-white text-xs font-bold neo-shadow border-2 border-black">Go Home</Link>
+    </div>
+  );
 
-  const isAllOk = data.services.every((s) => s.status === "operational");
+  const services = data.services || [];
+  const activeIncidents = data.active_incidents || [];
+  const pastIncidents = data.past_incidents || [];
+  const isAllOk = services.length > 0 ? services.every((s) => s.status === "operational") : true;
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,7 +68,7 @@ export default function PublicStatus() {
         <div className="space-y-4">
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400">Current Service Status</div>
           <div className="divide-y divide-zinc-100 border border-zinc-100">
-            {data.services.map((s) => (
+            {services.map((s) => (
               <div key={s.id || s._id} className="flex items-center justify-between p-4">
                 <span className="text-sm font-medium text-zinc-900">{s.name}</span>
                 <div className="flex items-center gap-2">
@@ -66,12 +81,12 @@ export default function PublicStatus() {
             ))}
           </div>
         </div>
-
-        {data.active_incidents.length > 0 && (
+ 
+        {activeIncidents.length > 0 && (
           <div className="space-y-4">
             <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400">Active Incidents</div>
             <div className="space-y-4">
-              {data.active_incidents.map((inc) => (
+              {activeIncidents.map((inc) => (
                 <div key={inc.id || inc._id} className="border border-zinc-200 p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-zinc-950">{inc.title}</h3>
@@ -103,6 +118,27 @@ export default function PublicStatus() {
 
                   <div className="flex items-center gap-3 pt-2">
                     <span className="px-2 py-0.5 bg-zinc-950 text-white text-[10px] font-mono uppercase font-bold tracking-widest">{inc.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {pastIncidents.length > 0 && (
+          <div className="space-y-4 pt-4">
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400">Past Incidents (Last 7 Days)</div>
+            <div className="space-y-6">
+              {pastIncidents.map((inc) => (
+                <div key={inc.id || inc._id} className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-zinc-100">
+                  <div className="absolute left-[-3px] top-1.5 w-2 h-2 bg-zinc-300 rounded-full" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-bold text-sm text-zinc-900">{inc.title}</h3>
+                    <span className="text-[9px] font-mono bg-green-50 text-green-700 px-1.5 py-0.5 rounded uppercase font-bold border border-green-200">Resolved</span>
+                  </div>
+                  <p className="text-xs text-zinc-500 mb-3">{inc.description}</p>
+                  <div className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider">
+                    Resolved {new Date(inc.resolvedAt).toLocaleDateString()}
                   </div>
                 </div>
               ))}

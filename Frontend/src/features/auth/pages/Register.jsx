@@ -101,13 +101,6 @@ export default function Register() {
               >
                 Developer
               </button>
-              <button
-                type="button"
-                onClick={() => setRole("normal_user")}
-                className={`flex-1 py-2 text-xs font-bold border-2 border-black neo-shadow transition-all ${role === "normal_user" ? "bg-[#FDE68A] shadow-none translate-y-0.5" : "bg-white"}`}
-              >
-                User
-              </button>
             </div>
 
             <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white border-2 border-black" data-testid="register-form">
@@ -220,7 +213,7 @@ export default function Register() {
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6">// what you get</div>
           <ul className="space-y-3 text-sm">
             <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> Multi-tenant workspace, isolated data</li>
-            <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> Admin / Developer / Viewer roles</li>
+            <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> Admin / Developer / SuperAdmin roles</li>
             <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> Realtime incident timeline</li>
             <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> AI summaries, root-cause, postmortems</li>
             <li className="flex gap-3"><span className="text-green-400 font-mono">✓</span> Public status page out of the box</li>

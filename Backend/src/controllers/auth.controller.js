@@ -144,7 +144,7 @@ export const googleCallback = async (req, res) => {
                 name: displayName,
                 avatar: profilePic,
                 isVerified: true, 
-                role: 'normal_user', 
+                role: 'admin', 
                 profileCompleted: false 
             });
         } else if (!user.isVerified) {

@@ -11,27 +11,44 @@ export const getPublicStatus = async (req, res) => {
     if (!organization) return res.status(404).json({ detail: 'Organization not found' });
 
     const services = await serviceModel.find({ orgId: organization._id });
-    const raw_incidents = await incidentModel.find({ 
+    
+    // Active incidents (investigating, identified, monitoring)
+    const raw_active = await incidentModel.find({ 
       orgId: organization._id, 
-      status: { $ne: 'resolved' } 
+      status: { $in: ['investigating', 'identified', 'monitoring'] } 
     }).sort({ createdAt: -1 });
 
-    const active_incidents = [];
-    for (const inc of raw_incidents) {
-      const timeline = await timelineModel.find({ incidentId: inc._id })
-        .populate('createdBy', 'name')
-        .sort({ createdAt: -1 });
-      
-      active_incidents.push({
-        ...inc.toObject(),
-        timeline
-      });
-    }
+    // Past incidents (resolved) - last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const raw_past = await incidentModel.find({ 
+      orgId: organization._id, 
+      status: 'resolved',
+      resolvedAt: { $gte: sevenDaysAgo }
+    }).sort({ resolvedAt: -1 });
+
+    const processIncidents = async (incidents) => {
+      const results = [];
+      for (const inc of incidents) {
+        const timeline = await timelineModel.find({ incidentId: inc._id })
+          .populate('createdBy', 'name')
+          .sort({ createdAt: -1 });
+        
+        results.push({
+          ...inc.toObject(),
+          timeline
+        });
+      }
+      return results;
+    };
+
+    const active_incidents = await processIncidents(raw_active);
+    const past_incidents = await processIncidents(raw_past);
 
     res.json({
       org_name: organization.name,
       services,
-      active_incidents
+      active_incidents,
+      past_incidents
     });
   } catch (err) {
     res.status(500).json({ detail: err.message });
