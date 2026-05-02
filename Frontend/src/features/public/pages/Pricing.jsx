@@ -90,7 +90,9 @@ export default function Pricing() {
                 <h3 className="text-3xl font-black tracking-tighter text-black mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
                   <span className="text-5xl font-black tracking-tighter text-black">{plan.price}</span>
-                  {plan.price !== "Custom" && <span className="text-sm text-black/60 font-bold">/month</span>}
+                  {plan.price !== "Custom" && <span className="text-sm text-black/60 font-bold">/{
+                  plan.price === "₹0" ? "month" : "year"
+                }</span>}
                 </div>
                 <p className="mt-4 text-base font-bold text-black/70 leading-tight">{plan.desc}</p>
               </div>
