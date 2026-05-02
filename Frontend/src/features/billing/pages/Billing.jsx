@@ -38,7 +38,7 @@ export default function Billing() {
       amount: 4499,
       features: [
         "250+ Incident Creations",
-        "Gemini 1.5 Pro AI Support",
+        "Gemini 3.1 Pro AI Support",
         "Mistral Large 2 Fallback",
         "Community & Priority Support",
         "Advanced Postmortems",
@@ -201,7 +201,9 @@ export default function Billing() {
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-5xl font-black tracking-tighter text-zinc-950 font-mono">{p.price}</span>
-                <span className="text-sm text-zinc-500 font-bold uppercase tracking-tighter">/ month</span>
+                <span className="text-sm text-zinc-500 font-bold uppercase tracking-tighter">/ {
+                  p.id === "free" ? "month" : "year"
+              }</span>
               </div>
             </div>
 
