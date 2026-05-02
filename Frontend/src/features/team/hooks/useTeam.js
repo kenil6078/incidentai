@@ -7,7 +7,7 @@ import {
   removeMember as removeMemberThunk,
   selectTeamMembers,
   selectTeamLoading,
-} from '../redux/teamSlice';
+} from '../team.slice';
 
 export const useTeam = () => {
   const dispatch = useDispatch();

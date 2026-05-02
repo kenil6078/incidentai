@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import analyticsService from '../services/analyticsService';
+import * as analyticsApi from './services/analytics.api';
 
 export const fetchOverview = createAsyncThunk(
   'analytics/fetchOverview',
   async (_, { rejectWithValue }) => {
     try {
-      return await analyticsService.getOverview();
+      return await analyticsApi.getOverview();
     } catch (err) {
       return rejectWithValue(err.response?.data || { detail: 'Failed to fetch overview' });
     }
@@ -16,7 +16,7 @@ export const fetchIncidentTrends = createAsyncThunk(
   'analytics/fetchIncidentTrends',
   async (_, { rejectWithValue }) => {
     try {
-      return await analyticsService.getIncidentTrends();
+      return await analyticsApi.getIncidentTrends();
     } catch (err) {
       return rejectWithValue(err.response?.data || { detail: 'Failed to fetch trends' });
     }

@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { incidentApi } from './service/incident.api';
+import * as incidentApi from './services/incident.api';
 
 export const fetchIncidents = createAsyncThunk(
   'incident/fetchIncidents',
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      return await incidentApi.getIncidents();
+      return await incidentApi.getIncidents(params);
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch incidents');
     }
   }
 );
@@ -18,7 +18,20 @@ export const fetchIncidentDetail = createAsyncThunk(
     try {
       return await incidentApi.getIncident(id);
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch incident detail');
+    }
+  }
+);
+
+export const createIncident = createAsyncThunk(
+  'incident/create',
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await incidentApi.createIncident(payload);
+      dispatch(fetchIncidents());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to create incident');
     }
   }
 );
@@ -42,6 +55,7 @@ const incidentSlice = createSlice({
     builder
       .addCase(fetchIncidents.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
         state.loading = false;
@@ -51,15 +65,24 @@ const incidentSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchIncidentDetail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchIncidentDetail.fulfilled, (state, action) => {
+        state.loading = false;
         state.current = action.payload;
+      })
+      .addCase(fetchIncidentDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
 export const { clearCurrentIncident } = incidentSlice.actions;
-export default incidentSlice.reducer;
-
 export const selectIncidents = (state) => state.incident.list;
 export const selectCurrentIncident = (state) => state.incident.current;
 export const selectIncidentLoading = (state) => state.incident.loading;
+
+export default incidentSlice.reducer;

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { teamApi } from './service/team.api';
+import * as teamApi from './services/team.api';
 
 export const fetchTeam = createAsyncThunk(
   'team/fetchTeam',
@@ -7,7 +7,46 @@ export const fetchTeam = createAsyncThunk(
     try {
       return await teamApi.getTeam();
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch team' });
+    }
+  }
+);
+
+export const inviteMember = createAsyncThunk(
+  'team/invite',
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await teamApi.inviteMember(payload);
+      dispatch(fetchTeam());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to invite member' });
+    }
+  }
+);
+
+export const updateMemberRole = createAsyncThunk(
+  'team/updateRole',
+  async ({ id, role }, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await teamApi.updateRole(id, role);
+      dispatch(fetchTeam());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to update role' });
+    }
+  }
+);
+
+export const removeMember = createAsyncThunk(
+  'team/remove',
+  async (id, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await teamApi.removeMember(id);
+      dispatch(fetchTeam());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to remove member' });
     }
   }
 );
@@ -38,7 +77,7 @@ const teamSlice = createSlice({
   },
 });
 
-export default teamSlice.reducer;
-
 export const selectTeamMembers = (state) => state.team.members;
 export const selectTeamLoading = (state) => state.team.loading;
+
+export default teamSlice.reducer;

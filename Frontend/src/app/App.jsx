@@ -3,7 +3,7 @@ import "./App.css";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { routes } from "../routes/AppRoutes";
-import { useAuth } from "../features/auth/hook/useAuth";
+import { useAuth } from "../features/auth/hooks/useAuth";
 
 function App() {
   const { handleGetMe, isInitialized } = useAuth();

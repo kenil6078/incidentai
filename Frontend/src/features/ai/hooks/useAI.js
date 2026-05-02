@@ -8,7 +8,7 @@ import {
   selectRootCause,
   selectPostmortem,
   selectAILoadingKey,
-} from '../redux/aiSlice';
+} from '../ai.slice';
 
 export const useAI = (incidentId) => {
   const dispatch = useDispatch();

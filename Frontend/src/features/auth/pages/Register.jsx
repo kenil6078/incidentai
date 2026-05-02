@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../hook/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
-import apiClient from "../../../lib/api";
+import * as authApi from '../services/auth.api';
 
 export default function Register() {
   const [role, setRole] = useState("admin"); // 'admin', 'developer', 'normal_user'
@@ -22,7 +22,7 @@ export default function Register() {
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
-        const res = await apiClient.get('/auth/organizations');
+        const res = await authApi.getOrganizations();
         if (res.data.success) {
           setOrganizations(res.data.organizations);
         }

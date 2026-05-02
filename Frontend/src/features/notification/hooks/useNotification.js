@@ -10,7 +10,7 @@ import {
   selectNotifications,
   selectUnreadCount,
   selectNotificationLoading,
-} from '../redux/notificationSlice';
+} from '../notification.slice';
 
 export const useNotification = () => {
   const dispatch = useDispatch();

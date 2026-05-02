@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../features/auth/hook/useAuth";
+import { useAuth } from "../features/auth/hooks/useAuth";
 import { useSocket } from "../context/SocketContext";
 import { useNotification } from "../features/notification/hooks/useNotification";
 import {

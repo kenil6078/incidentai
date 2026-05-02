@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../features/auth/hook/useAuth";
+import { useAuth } from "../features/auth/hooks/useAuth";
 import { SocketProvider } from "../context/SocketContext";
 import AppShell from "../components/AppShell";
 import { Skeleton } from "../components/ui/skeleton";

@@ -3,14 +3,14 @@
  * Manages: billingInfo | createOrder | verifyPayment
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import billingService from '../services/billingService';
+import * as billingApi from './services/billing.api';
 
 // ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchBillingInfo = createAsyncThunk(
   'billing/fetchInfo',
   async (_, { rejectWithValue }) => {
     try {
-      return await billingService.getInfo();
+      return await billingApi.getInfo();
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -21,7 +21,7 @@ export const createOrder = createAsyncThunk(
   'billing/createOrder',
   async (payload, { rejectWithValue }) => {
     try {
-      return await billingService.createOrder(payload);
+      return await billingApi.createOrder(payload);
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -32,7 +32,7 @@ export const verifyPayment = createAsyncThunk(
   'billing/verifyPayment',
   async (payload, { rejectWithValue }) => {
     try {
-      return await billingService.verifyPayment(payload);
+      return await billingApi.verifyPayment(payload);
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -10,7 +10,7 @@ import {
   verifyPayment,
   selectBilling,
   selectBillingLoading,
-} from '../redux/billingSlice';
+} from '../billing.slice';
 
 export const useBilling = () => {
   const dispatch = useDispatch();

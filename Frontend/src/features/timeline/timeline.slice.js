@@ -3,14 +3,14 @@
  * Manages: timeline entries per incident
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import timelineService from '../services/timelineService';
+import * as timelineApi from './services/timeline.api';
 
 // ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchTimeline = createAsyncThunk(
   'timeline/fetch',
   async (incidentId, { rejectWithValue }) => {
     try {
-      return await timelineService.getByIncident(incidentId);
+      return await timelineApi.getByIncident(incidentId);
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch timeline');
     }
@@ -21,7 +21,7 @@ export const addTimelineEntry = createAsyncThunk(
   'timeline/add',
   async ({ incidentId, payload }, { rejectWithValue }) => {
     try {
-      return await timelineService.addEntry(incidentId, payload);
+      return await timelineApi.addEntry(incidentId, payload);
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message || 'Failed to add timeline entry');
     }

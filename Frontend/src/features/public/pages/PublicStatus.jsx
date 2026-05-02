@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from 'axios';
-import { useAuth } from "../../auth/hook/useAuth";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { CheckCircle2, AlertTriangle, AlertCircle, Clock, ArrowLeft } from "lucide-react";
 import { formatRelative, SERVICE_STATUS_LABELS, SERVICE_STATUS_COLORS } from "../../../components/Badges";
 

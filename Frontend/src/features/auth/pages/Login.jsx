@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../hook/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
 

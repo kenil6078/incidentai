@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { verifyEmail as verifyEmailApi } from "../service/auth.api";
+import { verifyEmail as verifyEmailApi } from "../services/auth.api";
 
 export default function VerifyEmail() {
   const { token } = useParams();

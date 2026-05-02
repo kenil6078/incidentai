@@ -5,7 +5,7 @@ import {
   createService as createServiceThunk,
   selectServices,
   selectServicesLoading,
-} from '../redux/servicesSlice';
+} from '../services.slice';
 
 export const useServices = () => {
   const dispatch = useDispatch();

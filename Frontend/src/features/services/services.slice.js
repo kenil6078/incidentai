@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { servicesApi } from './service/services.api';
+import * as servicesApi from './services/services.api';
 
 export const fetchServices = createAsyncThunk(
   'services/fetchServices',
@@ -7,7 +7,20 @@ export const fetchServices = createAsyncThunk(
     try {
       return await servicesApi.getServices();
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch services' });
+    }
+  }
+);
+
+export const createService = createAsyncThunk(
+  'services/create',
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await servicesApi.createService(payload);
+      dispatch(fetchServices());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to create service' });
     }
   }
 );
@@ -38,7 +51,7 @@ const servicesSlice = createSlice({
   },
 });
 
-export default servicesSlice.reducer;
-
 export const selectServices = (state) => state.services.list;
 export const selectServicesLoading = (state) => state.services.loading;
+
+export default servicesSlice.reducer;

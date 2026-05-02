@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from 'axios';
 import { toast } from "sonner";
-import { useAuth } from "../../auth/hook/useAuth";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";

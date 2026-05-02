@@ -3,14 +3,14 @@
  * Manages: notifications list | read-all
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import notificationService from '../services/notificationService';
+import * as notificationApi from './services/notification.api';
 
 // ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchNotifications = createAsyncThunk(
   'notification/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await notificationService.getAll();
+      return await notificationApi.getAll();
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch notifications');
     }
@@ -21,7 +21,7 @@ export const markAllRead = createAsyncThunk(
   'notification/readAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await notificationService.markAllRead();
+      return await notificationApi.markAllRead();
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message || 'Failed to mark notifications as read');
     }

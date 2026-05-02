@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { adminApi } from './service/admin.api';
+import * as adminApi from './services/admin.api';
 
 export const fetchOrganizations = createAsyncThunk(
   'admin/fetchOrganizations',
@@ -7,7 +7,7 @@ export const fetchOrganizations = createAsyncThunk(
     try {
       return await adminApi.getOrganizations();
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch organizations' });
     }
   }
 );
@@ -18,7 +18,7 @@ export const fetchAllUsers = createAsyncThunk(
     try {
       return await adminApi.getUsers();
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || { detail: 'Failed to fetch users' });
     }
   }
 );
@@ -53,9 +53,8 @@ const adminSlice = createSlice({
   },
 });
 
-export default adminSlice.reducer;
-
 export const selectAdminOrganizations = (state) => state.admin.organizations;
 export const selectAdminUsers = (state) => state.admin.users;
 export const selectAdminLoading = (state) => state.admin.loading;
-export const selectAdminError = (state) => state.admin.error;
+
+export default adminSlice.reducer;

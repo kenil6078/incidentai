@@ -6,7 +6,7 @@ import {
   selectOverview,
   selectIncidentTrends,
   selectAnalyticsLoading,
-} from '../redux/analyticsSlice';
+} from '../analytics.slice';
 
 export const useAnalytics = () => {
   const dispatch = useDispatch();

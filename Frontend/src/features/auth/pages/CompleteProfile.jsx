@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hook/useAuth";
-import apiClient from "../../../lib/api";
+import { useAuth } from "../hooks/useAuth";
+import * as authApi from '../services/auth.api';
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default function CompleteProfile() {
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
-        const res = await apiClient.get('/auth/organizations');
+        const res = await authApi.getOrganizations();
         if (res.data.success) {
           setOrganizations(res.data.organizations);
         }
@@ -50,7 +50,7 @@ export default function CompleteProfile() {
         payload.orgId = orgId;
       }
 
-      await apiClient.post('/auth/finalize-profile', payload);
+      await authApi.finalizeProfile(payload);
       await handleGetMe(); // Refresh user state
       toast.success("Profile completed successfully!");
       navigate("/dashboard");

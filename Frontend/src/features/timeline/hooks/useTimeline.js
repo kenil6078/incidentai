@@ -5,7 +5,7 @@ import {
   addTimelineEntry,
   selectTimelineByIncident,
   selectTimelineLoading,
-} from '../redux/timelineSlice';
+} from '../timeline.slice';
 
 export const useTimeline = (incidentId) => {
   const dispatch = useDispatch();

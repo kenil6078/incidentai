@@ -1,11 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../../lib/api';
-const API_URL = '/chats';
+import * as chatApi from './services/chat.api';
 
 export const fetchChats = createAsyncThunk('chat/fetchChats', async (_, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get(API_URL);
-    return response.data;
+    return await chatApi.fetchChats();
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch chats');
   }
@@ -13,10 +11,7 @@ export const fetchChats = createAsyncThunk('chat/fetchChats', async (_, { reject
 
 export const fetchMessages = createAsyncThunk('chat/fetchMessages', async ({ chatId, before }, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get(`${API_URL}/${chatId}/messages`, {
-      params: { before, limit: 20 }
-    });
-    return { chatId, messages: response.data, isMore: !!before };
+    return await chatApi.fetchMessages(chatId, before);
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch messages');
   }
@@ -24,8 +19,7 @@ export const fetchMessages = createAsyncThunk('chat/fetchMessages', async ({ cha
 
 export const createChat = createAsyncThunk('chat/createChat', async (data, { rejectWithValue }) => {
   try {
-    const response = await apiClient.post(API_URL, data);
-    return response.data;
+    return await chatApi.createChat(data);
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to create chat');
   }
@@ -33,8 +27,7 @@ export const createChat = createAsyncThunk('chat/createChat', async (data, { rej
 
 export const fetchUsers = createAsyncThunk('chat/fetchUsers', async (_, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get(`${API_URL}/users`);
-    return response.data;
+    return await chatApi.fetchUsers();
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch users');
   }

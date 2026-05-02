@@ -4,14 +4,14 @@
  * Each is keyed by incidentId to avoid refetching unnecessarily.
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import aiService from '../services/aiService';
+import * as aiApi from './services/ai.api';
 
 // ─── Thunks ────────────────────────────────────────────────────────────────────
 export const fetchAISummary = createAsyncThunk(
   'ai/summary',
   async (incidentId, { rejectWithValue }) => {
     try {
-      const data = await aiService.getSummary(incidentId);
+      const data = await aiApi.getSummary(incidentId);
       return { incidentId, ...data };
     } catch (err) {
       return rejectWithValue(err);
@@ -23,7 +23,7 @@ export const fetchRootCause = createAsyncThunk(
   'ai/rootCause',
   async (incidentId, { rejectWithValue }) => {
     try {
-      const data = await aiService.getRootCause(incidentId);
+      const data = await aiApi.getRootCause(incidentId);
       return { incidentId, ...data };
     } catch (err) {
       return rejectWithValue(err);
@@ -35,7 +35,7 @@ export const fetchPostmortem = createAsyncThunk(
   'ai/postmortem',
   async (incidentId, { rejectWithValue }) => {
     try {
-      const data = await aiService.getPostmortem(incidentId);
+      const data = await aiApi.getPostmortem(incidentId);
       return { incidentId, ...data };
     } catch (err) {
       return rejectWithValue(err);

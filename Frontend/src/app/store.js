@@ -6,15 +6,15 @@ import { configureStore } from '@reduxjs/toolkit';
 
 // Feature reducers
 import authReducer         from '../features/auth/auth.slice';
-import adminReducer        from '../features/admin/redux/adminSlice';
-import incidentReducer     from '../features/incident/redux/incidentSlice';
-import teamReducer         from '../features/team/redux/teamSlice';
-import servicesReducer     from '../features/services/redux/servicesSlice';
-import billingReducer      from '../features/billing/redux/billingSlice';
-import notificationReducer from '../features/notification/redux/notificationSlice';
-import timelineReducer     from '../features/timeline/redux/timelineSlice';
-import aiReducer           from '../features/ai/redux/aiSlice';
-import analyticsReducer    from '../features/analytics/redux/analyticsSlice';
+import adminReducer        from '../features/admin/admin.slice';
+import incidentReducer     from '../features/incident/incident.slice';
+import teamReducer         from '../features/team/team.slice';
+import servicesReducer     from '../features/services/services.slice';
+import billingReducer      from '../features/billing/billing.slice';
+import notificationReducer from '../features/notification/notification.slice';
+import timelineReducer     from '../features/timeline/timeline.slice';
+import aiReducer           from '../features/ai/ai.slice';
+import analyticsReducer    from '../features/analytics/analytics.slice';
 import chatReducer         from '../features/chat/chat.slice';
 
 export const store = configureStore({

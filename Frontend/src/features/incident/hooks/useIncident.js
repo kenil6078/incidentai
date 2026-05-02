@@ -8,7 +8,7 @@ import {
   selectCurrentIncident,
   selectIncidentLoading,
   clearCurrentIncident,
-} from '../redux/incidentSlice';
+} from '../incident.slice';
 
 export const useIncident = () => {
   const dispatch = useDispatch();

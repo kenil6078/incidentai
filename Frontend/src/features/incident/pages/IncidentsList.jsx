@@ -8,7 +8,7 @@ import { Plus, Search, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { IncidentRowSkeleton } from "../../../components/ui/skeleton";
 
-import { useAuth } from "../../auth/hook/useAuth";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function IncidentsList() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { register, login, getMe, logout, resendVerificationEmail } from "../service/auth.api";
+import { register, login, getMe, logout, resendVerificationEmail } from "../services/auth.api";
 import { setUser, setLoading, setError, clearError, selectAuth } from "../auth.slice";
 import { useCallback } from "react";
 
