@@ -59,8 +59,11 @@ export const SelectTrigger = ({ className, value, onClick }) => (
 export const SelectValue = ({ placeholder }) => null; // Not needed in this simple implementation
 
 export const SelectContent = ({ children, onSelect, className }) => (
-  <div className={cn("absolute z-50 mt-1 max-h-60 w-full overflow-auto border border-zinc-200 bg-white shadow-md", className)}>
-    <div className="p-1">
+  <div className={cn(
+    "absolute z-50 mt-2 max-h-60 w-full overflow-hidden border-2 border-black bg-white neo-shadow-md animate-in fade-in slide-in-from-top-2 duration-200", 
+    className
+  )}>
+    <div className="p-1.5 bg-grid-bg">
       {React.Children.map(children, (child) => {
         if (child.type === SelectItem) {
           return React.cloneElement(child, { onSelect });
@@ -76,7 +79,7 @@ export const SelectItem = ({ children, value, onSelect, className }) => (
     type="button"
     onClick={() => onSelect(value)}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center py-1.5 px-2 text-sm outline-none hover:bg-zinc-100 focus:bg-zinc-100",
+      "relative flex w-full cursor-pointer select-none items-center py-2 px-3 text-sm outline-none transition-colors hover:bg-zinc-950 hover:text-white focus:bg-zinc-950 focus:text-white font-bold",
       className
     )}
   >

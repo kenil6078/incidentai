@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { useAuth } from "../../auth/hooks/useAuth";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, UserPlus, User, Mail, Key, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "../../../components/ui/dialog";
 import { fetchTeam, inviteMember, removeMember, selectTeamMembers, selectTeamLoading } from "../team.slice";
 
@@ -79,48 +79,110 @@ export default function Team() {
         {(isSuperAdmin || isAdmin) && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <button className="bg-zinc-950 text-white text-sm font-bold px-4 py-2.5 hover:bg-zinc-800 flex items-center gap-2 neo-shadow" data-testid="team-invite-button">
-                <Plus className="w-4 h-4" /> Add developer
+              <button className="bg-zinc-950 text-white text-sm font-bold px-5 py-2.5 hover:bg-zinc-800 flex items-center gap-2 neo-shadow transition-all hover:-translate-y-0.5" data-testid="team-invite-button">
+                <Plus className="w-4 h-4 stroke-[3]" /> Add developer
               </button>
             </DialogTrigger>
-            <DialogContent className="rounded-none border-2 border-black neo-shadow">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-black tracking-tight uppercase">Add new developer</DialogTitle>
-              </DialogHeader>
-              
-              {tempCred ? (
-                <div className="space-y-4" data-testid="invite-success">
-                  <div className="text-sm font-bold text-green-600">Developer added successfully!</div>
-                  <div className="bg-zinc-50 p-4 border-2 border-dashed border-black font-mono text-xs space-y-2">
-                    <div>Email: <span className="font-bold text-black select-all">{tempCred.email}</span></div>
-                    <div>Password: <span className="font-bold text-black select-all">{tempCred.password}</span></div>
+            <DialogContent className="p-0 overflow-hidden border-3 border-black neo-shadow-lg max-w-lg">
+              <div className="bg-[#4FD1C5] p-6 border-b-3 border-black relative">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white border-2 border-black neo-shadow-sm">
+                    <UserPlus className="w-6 h-6 text-black" />
                   </div>
-                  <button onClick={() => { setTempCred(null); setOpen(false); }} className="bg-zinc-950 text-white px-4 py-3 text-sm font-bold w-full neo-shadow" data-testid="invite-done">Done</button>
+                  <div>
+                    <DialogTitle className="text-2xl font-black tracking-tight text-black uppercase">Add new developer</DialogTitle>
+                    <p className="text-xs font-bold text-black/60 uppercase tracking-wider">Expand your technical team</p>
+                  </div>
                 </div>
-              ) : (
-                <form onSubmit={handleInvite} className="space-y-4" data-testid="invite-form">
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 font-bold mb-1.5">Full Name</label>
-                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:bg-zinc-50 text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 font-bold mb-1.5">Email Address</label>
-                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:bg-zinc-50 text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 font-bold mb-1.5">Initial password</label>
-                    <input required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:bg-zinc-50 text-sm font-mono" />
-                  </div>
-                  <DialogFooter className="pt-2">
-                    <button type="submit" disabled={submitting} className="bg-zinc-950 text-white px-4 py-3 text-sm font-bold w-full neo-shadow">
-                      {submitting ? "Adding..." : "Add Developer"}
+              </div>
+              
+              <div className="bg-white p-6">
+                {tempCred ? (
+                  <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300" data-testid="invite-success">
+                    <div className="flex items-center gap-2 text-sm font-black text-emerald-600 uppercase">
+                      <CheckCircle2 className="w-5 h-5" /> Developer added successfully!
+                    </div>
+                    <div className="bg-zinc-50 p-5 border-2 border-black neo-shadow-sm font-mono text-xs space-y-3 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-2 opacity-10">
+                        <Key className="w-12 h-12" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[10px] text-zinc-400 font-bold uppercase">Email Address</div>
+                        <div className="font-black text-sm text-black select-all bg-white px-2 py-1 border border-zinc-200 inline-block">{tempCred.email}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[10px] text-zinc-400 font-bold uppercase">Initial Password</div>
+                        <div className="font-black text-sm text-black select-all bg-white px-2 py-1 border border-zinc-200 inline-block">{tempCred.password}</div>
+                      </div>
+                      <div className="pt-2 text-[10px] text-rose-500 font-bold italic">* Please share these credentials securely.</div>
+                    </div>
+                    <button 
+                      onClick={() => { setTempCred(null); setOpen(false); }} 
+                      className="bg-zinc-950 text-white px-4 py-4 text-sm font-black w-full neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all active:scale-[0.98]" 
+                      data-testid="invite-done"
+                    >
+                      Got it, close
                     </button>
-                  </DialogFooter>
-                </form>
-              )}
+                  </div>
+                ) : (
+                  <form onSubmit={handleInvite} className="space-y-5" data-testid="invite-form">
+                    <div className="space-y-1.5 group">
+                      <label className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-zinc-900 font-black">
+                        <User className="w-3.5 h-3.5" /> Full Name
+                      </label>
+                      <input 
+                        required 
+                        value={form.name} 
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-0 focus:bg-zinc-50 text-sm neo-shadow-sm transition-all focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-none" 
+                        placeholder="e.g. John Doe"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-zinc-900 font-black">
+                        <Mail className="w-3.5 h-3.5" /> Email Address
+                      </label>
+                      <input 
+                        required 
+                        type="email" 
+                        value={form.email} 
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-0 focus:bg-zinc-50 text-sm neo-shadow-sm transition-all focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-none font-mono" 
+                        placeholder="john@organization.com"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-zinc-900 font-black">
+                        <Key className="w-3.5 h-3.5" /> Initial Password
+                      </label>
+                      <input 
+                        required 
+                        value={form.password} 
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-0 focus:bg-zinc-50 text-sm neo-shadow-sm transition-all focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-none font-mono" 
+                      />
+                    </div>
+
+                    <DialogFooter className="pt-2">
+                      <button 
+                        type="submit" 
+                        disabled={submitting} 
+                        className="bg-zinc-950 text-white px-6 py-4 text-sm font-black w-full neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        {submitting ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <UserPlus className="w-4 h-4" /> Add Developer
+                          </>
+                        )}
+                      </button>
+                    </DialogFooter>
+                  </form>
+                )}
+              </div>
             </DialogContent>
           </Dialog>
         )}

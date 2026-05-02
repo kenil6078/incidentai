@@ -14,13 +14,13 @@ export const Dialog = ({ children, open, onOpenChange }) => {
         }
         if (child.type === DialogContent && open) {
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="bg-white border border-zinc-200 shadow-xl w-full max-w-md p-6 relative">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="w-full max-w-md relative animate-in zoom-in-95 duration-200">
                 <button 
                   onClick={() => onOpenChange(false)}
-                  className="absolute right-4 top-4 text-zinc-400 hover:text-zinc-950"
+                  className="absolute -right-3 -top-3 z-10 bg-white border-2 border-black p-1.5 neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all active:scale-90"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 stroke-[3]" />
                 </button>
                 {child}
               </div>
