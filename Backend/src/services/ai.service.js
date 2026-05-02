@@ -13,11 +13,14 @@ const geminiModel = new ChatGoogleGenerativeAI({
 });
 
 // ── 2. BACKUP MODEL: Mistral ─────────────────────────────
-const mistralModel = new ChatMistralAI({
-  model: "mistral-large-latest",
-  apiKey: config.MISTRAL_API_KEY,
-  temperature: 0.1,
-});
+const mistralModel = config.MISTRAL_API_KEY 
+  ? new ChatMistralAI({
+      model: "mistral-large-latest",
+      apiKey: config.MISTRAL_API_KEY,
+      temperature: 0.1,
+    })
+  : null;
+
 
 /**
  * runAiStream: LangChain based streaming with fallback
@@ -39,6 +42,9 @@ const runAiStream = async (systemPrompt, userPrompt, onChunk) => {
   } catch (geminiErr) {
     console.warn('Gemini (LangChain) failed, falling back to Mistral:', geminiErr.message);
     try {
+      if (!mistralModel) {
+        throw new Error('Mistral backup model is not configured (missing API key).');
+      }
       const stream = await mistralModel.stream(messages);
       for await (const chunk of stream) {
         if (chunk.content) {
@@ -47,9 +53,10 @@ const runAiStream = async (systemPrompt, userPrompt, onChunk) => {
       }
     } catch (mistralErr) {
       console.error('Mistral (LangChain) Backup Failed:', mistralErr.message);
-      throw new Error(`AI generation failed on both Gemini and Mistral providers.`);
+      throw new Error(`AI generation failed on both Gemini and Mistral providers. Error: ${mistralErr.message}`);
     }
   }
+
 };
 
 export const generateSummaryStream = async (incident, timeline, onChunk) => {
