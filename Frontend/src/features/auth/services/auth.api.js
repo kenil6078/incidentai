@@ -45,7 +45,12 @@ export async function finalizeProfile(payload) {
     return response.data
 }
 
-export async function updateProfile(profileData) {
-    const response = await authApiInstance.put("/update-profile", profileData)
+export async function updateProfile(payload) {
+    const response = await authApiInstance.put("/me", payload)
+    return response.data
+}
+
+export async function updatePassword(payload) {
+    const response = await authApiInstance.put("/password", payload)
     return response.data
 }

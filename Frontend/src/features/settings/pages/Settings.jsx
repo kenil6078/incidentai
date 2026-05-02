@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { toast } from "sonner";
-import api from "axios";
-import { Save, User, Shield, Bell, Globe, ArrowLeft } from "lucide-react";
+import * as authApi from "../../auth/services/auth.api";
+import { Save, User, Shield, Bell, Globe, ArrowLeft, CreditCard, Eye, EyeOff } from "lucide-react";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -14,16 +14,45 @@ export default function Settings() {
   });
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("Profile");
+  const [securityForm, setSecurityForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const save = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const r = await api.put("/auth/me", form);
-      setUser(r.data);
+      const r = await authApi.updateProfile(form);
+      setUser(r.user);
       toast.success("Profile updated");
     } catch (e) {
-      toast.error("Update failed");
+      toast.error(e.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (securityForm.newPassword !== securityForm.confirmPassword) {
+      return toast.error("New passwords do not match");
+    }
+    setLoading(true);
+    try {
+      const r = await authApi.updatePassword({
+        currentPassword: securityForm.currentPassword,
+        newPassword: securityForm.newPassword,
+      });
+      setUser(r.user);
+      toast.success("Password updated successfully");
+      setSecurityForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Password update failed");
     } finally {
       setLoading(false);
     }
@@ -77,39 +106,39 @@ export default function Settings() {
           {activeTab === "Profile" && (
             <form
               onSubmit={save}
-              className="bg-white border border-zinc-200 p-6 space-y-4"
+              className="bg-white border-2 border-black neo-shadow p-6 space-y-4"
             >
-              <h2 className="text-lg font-bold text-zinc-950 mb-4">
+              <h2 className="text-lg font-black tracking-tight text-zinc-950 mb-4 uppercase">
                 Personal Information
               </h2>
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5 font-bold">
                   Full Name
                 </label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-300 focus:outline-none focus:border-zinc-950 text-sm"
+                  className="w-full px-3 py-2.5 border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm font-medium"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+                <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5 font-bold">
                   Email Address
                 </label>
                 <input
                   value={form.email}
                   disabled
-                  className="w-full px-3 py-2 border border-zinc-300 bg-zinc-50 text-zinc-500 text-sm cursor-not-allowed"
+                  className="w-full px-3 py-2.5 border-2 border-black bg-zinc-100 text-zinc-500 text-sm cursor-not-allowed font-medium"
                 />
-                <p className="text-[10px] text-zinc-400 mt-1">
+                <p className="text-[10px] text-zinc-400 mt-1 italic font-medium">
                   Contact admin to change your email.
                 </p>
               </div>
-              <div className="pt-4 border-t border-zinc-100 flex justify-end">
+              <div className="pt-4 border-t-2 border-zinc-100 flex justify-end">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-zinc-950 text-white px-4 py-2 text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50 flex items-center gap-2"
+                  className="bg-[#FF6B6B] text-black border-2 border-black px-6 py-2 text-sm font-black neo-shadow hover:translate-x-0.5 hover:translate-y-0.5 hover:neo-shadow-none disabled:opacity-50 flex items-center gap-2 transition-all"
                 >
                   <Save className="w-4 h-4" />{" "}
                   {loading ? "Saving..." : "Save changes"}
@@ -119,23 +148,26 @@ export default function Settings() {
           )}
 
           {activeTab === "Organization" && (
-            <div className="bg-white border border-zinc-200 p-6">
-              <h2 className="text-lg font-bold text-zinc-950 mb-1">
+            <div className="bg-white border-2 border-black neo-shadow p-6">
+              <h2 className="text-lg font-black tracking-tight text-zinc-950 mb-1 uppercase">
                 Organization
               </h2>
-              <p className="text-sm text-zinc-500 mb-4">
-                Your current active workspace.
+              <p className="text-xs text-zinc-500 mb-6 font-medium italic">
+                Your current active workspace and team affiliation.
               </p>
-              <div className="flex items-center gap-4 p-4 bg-zinc-50 border border-zinc-200">
-                <div className="w-12 h-12 bg-zinc-950 flex items-center justify-center text-white font-black text-xl uppercase">
+              <div className="flex items-center gap-6 p-6 bg-[#FDE68A] border-2 border-black neo-shadow-sm">
+                <div className="w-16 h-16 bg-zinc-950 border-2 border-black flex items-center justify-center text-white font-black text-3xl uppercase">
                   {user?.org_name?.[0]}
                 </div>
                 <div>
-                  <div className="font-bold text-zinc-950">
+                  <div className="text-xl font-black text-zinc-950 uppercase tracking-tighter">
                     {user?.org_name}
                   </div>
-                  <div className="text-xs text-zinc-500 font-mono">
-                    Workspace ID: {user?.id?.slice(-8) || "N/A"}
+                  <div className="text-[10px] text-zinc-700 font-mono font-bold mt-1">
+                    WORKSPACE ID: {user?.orgId || "N/A"}
+                  </div>
+                  <div className="mt-2 inline-block px-2 py-0.5 bg-white border border-black text-[9px] font-bold uppercase tracking-widest">
+                    Active Subscription
                   </div>
                 </div>
               </div>
@@ -143,48 +175,140 @@ export default function Settings() {
           )}
 
           {activeTab === "Security" && (
-            <div className="bg-white border border-zinc-200 p-6">
-              <h2 className="text-lg font-bold text-zinc-950 mb-1">
-                Security Settings
-              </h2>
-              <p className="text-sm text-zinc-500 mb-4">
-                Manage your password and security preferences.
-              </p>
-              <div className="text-sm text-zinc-600">
-                Password management is handled by your organization's SSO
-                provider.
+            <form 
+              onSubmit={handleUpdatePassword}
+              className="bg-white border-2 border-black neo-shadow p-6 space-y-6"
+            >
+              <div>
+                <h2 className="text-lg font-black tracking-tight text-zinc-950 mb-1 uppercase">
+                  Security Settings
+                </h2>
+                <p className="text-xs text-zinc-500 mb-4 font-medium italic">
+                  {user?.hasPassword 
+                    ? "Update your password to keep your account secure." 
+                    : "You logged in with Google. Set a password to enable manual login."}
+                </p>
               </div>
-            </div>
+
+              <div className="space-y-4">
+                {user?.hasPassword === true && (
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5 font-bold">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        required
+                        value={securityForm.currentPassword}
+                        onChange={(e) => setSecurityForm({ ...securityForm, currentPassword: e.target.value })}
+                        className="w-full px-3 py-2.5 border-2 border-black focus:outline-none focus:bg-[#FDE68A] text-sm font-medium pr-10"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-950"
+                      >
+                        {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5 font-bold">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        minLength={6}
+                        value={securityForm.newPassword}
+                        onChange={(e) => setSecurityForm({ ...securityForm, newPassword: e.target.value })}
+                        className="w-full px-3 py-2.5 border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm font-medium pr-10"
+                        placeholder="Minimum 6 characters"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-950"
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5 font-bold">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        minLength={6}
+                        value={securityForm.confirmPassword}
+                        onChange={(e) => setSecurityForm({ ...securityForm, confirmPassword: e.target.value })}
+                        className="w-full px-3 py-2.5 border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm font-medium pr-10"
+                        placeholder="Re-type new password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-950"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t-2 border-zinc-100 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-[#FF6B6B] text-black border-2 border-black px-6 py-2 text-sm font-black neo-shadow hover:translate-x-0.5 hover:translate-y-0.5 hover:neo-shadow-none disabled:opacity-50 flex items-center gap-2 transition-all"
+                >
+                  <Shield className="w-4 h-4" />{" "}
+                  {loading ? "Updating..." : user?.hasPassword ? "Update Password" : "Set Password"}
+                </button>
+              </div>
+            </form>
           )}
 
           {activeTab === "Notifications" && (
-            <div className="bg-white border border-zinc-200 p-6">
-              <h2 className="text-lg font-bold text-zinc-950 mb-1">
+            <div className="bg-white border-2 border-black neo-shadow p-6">
+              <h2 className="text-lg font-black tracking-tight text-zinc-950 mb-1 uppercase">
                 Notification Preferences
               </h2>
-              <p className="text-sm text-zinc-500 mb-4">
-                Choose how you want to be notified.
+              <p className="text-xs text-zinc-500 mb-6 font-medium italic">
+                Choose how you want to be notified about incident updates.
               </p>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3">
+              <div className="space-y-4">
+                <label className="flex items-center gap-4 p-4 border-2 border-black bg-[#FAFAFA] cursor-pointer hover:bg-white transition-colors group">
                   <input
                     type="checkbox"
                     defaultChecked
-                    className="w-4 h-4 text-zinc-950"
+                    className="w-5 h-5 border-2 border-black text-black rounded-none focus:ring-0"
                   />
-                  <span className="text-sm text-zinc-800">
-                    Email me when I am assigned to an incident
-                  </span>
+                  <div>
+                    <span className="text-sm font-black text-zinc-950 uppercase block">Incident Assignments</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">Email me immediately when I'm assigned as a responder.</span>
+                  </div>
                 </label>
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-4 p-4 border-2 border-black bg-[#FAFAFA] cursor-pointer hover:bg-white transition-colors group">
                   <input
                     type="checkbox"
                     defaultChecked
-                    className="w-4 h-4 text-zinc-950"
+                    className="w-5 h-5 border-2 border-black text-black rounded-none focus:ring-0"
                   />
-                  <span className="text-sm text-zinc-800">
-                    Email me when a critical incident is created
-                  </span>
+                  <div>
+                    <span className="text-sm font-black text-zinc-950 uppercase block">Critical Alerts</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">Notify me about any critical priority incidents in my org.</span>
+                  </div>
                 </label>
               </div>
             </div>

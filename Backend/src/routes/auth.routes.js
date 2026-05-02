@@ -11,6 +11,8 @@ router.post('/resend-verification', authController.resendVerification);
 router.post('/login', authController.login);
 router.post('/logout', auth, authController.logout);
 router.get('/me', auth, authController.getMe);
+router.put('/me', auth, authController.updateProfile);
+router.put('/password', auth, authController.updatePassword);
 router.post('/finalize-profile', auth, authController.finalizeProfile);
 router.get('/organizations', authController.getOrganizations);
 

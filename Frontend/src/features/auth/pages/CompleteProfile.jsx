@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import * as authApi from '../services/auth.api';
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 
 export default function CompleteProfile() {
   const { user, handleGetMe } = useAuth();
@@ -15,6 +15,11 @@ export default function CompleteProfile() {
   const [orgId, setOrgId] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (user && user.profileCompleted) {
@@ -40,6 +45,9 @@ export default function CompleteProfile() {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!user?.hasPassword && password !== confirmPassword) {
+      return toast.error("Passwords do not match!");
+    }
     setLoading(true);
     try {
       const payload = { role };
@@ -48,6 +56,10 @@ export default function CompleteProfile() {
         payload.address = address;
       } else if (role === "developer") {
         payload.orgId = orgId;
+      }
+
+      if (!user?.hasPassword && password) {
+        payload.password = password;
       }
 
       await authApi.finalizeProfile(payload);
@@ -93,6 +105,51 @@ export default function CompleteProfile() {
           </div>
 
           <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white border-2 border-black">
+            {!user?.hasPassword && (
+              <React.Fragment>
+                <div className="p-3 bg-[#FDE68A] border-2 border-black mb-2">
+                  <p className="text-[10px] font-bold leading-tight uppercase italic">Secure your account by setting a manual login password.</p>
+                </div>
+                <div className="relative">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">New Password</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm neo-shadow pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-[34px] text-zinc-500 hover:text-zinc-950"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Confirm Password</label>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm neo-shadow pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-[34px] text-zinc-500 hover:text-zinc-950"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="border-b-2 border-black my-4 opacity-10"></div>
+              </React.Fragment>
+            )}
+
             {role === "admin" && (
               <React.Fragment>
                 <div>

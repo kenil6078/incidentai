@@ -111,7 +111,8 @@ export const register = async (req, res) => {
         org_name: organization?.name, 
         role: user.role,
         isVerified: user.isVerified || false,
-        profileCompleted: user.profileCompleted
+        profileCompleted: user.profileCompleted,
+        hasPassword: !!user.password
       } 
     });
   } catch (err) {
@@ -162,7 +163,8 @@ export const googleCallback = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        res.redirect(`${config.FRONTEND_URL}/`);
+        const redirectUrl = user.profileCompleted ? `${config.FRONTEND_URL}/` : `${config.FRONTEND_URL}/complete-profile`;
+        res.redirect(redirectUrl);
     } catch (error) {
         console.error(error);
         res.redirect(`${config.FRONTEND_URL}/login?error=server_error`);
@@ -171,8 +173,8 @@ export const googleCallback = async (req, res) => {
 
 export const finalizeProfile = async (req, res) => {
     try {
-        const { role, orgName, address, orgId } = req.body;
-        const user = await userModel.findById(req.user.id);
+        const { role, orgName, address, orgId, password } = req.body;
+        const user = await userModel.findById(req.user.id).select('+password');
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
@@ -205,6 +207,7 @@ export const finalizeProfile = async (req, res) => {
         user.orgId = organization ? organization._id : undefined;
         user.developerStatus = devStatus;
         if (role === 'admin') user.address = address;
+        if (password) user.password = password; // Set password if provided
         user.profileCompleted = true;
 
         await user.save();
@@ -221,7 +224,8 @@ export const finalizeProfile = async (req, res) => {
                 orgId: user.orgId,
                 orgName: organization?.name,
                 org_name: organization?.name,
-                profileCompleted: user.profileCompleted
+                profileCompleted: user.profileCompleted,
+                hasPassword: !!(user.password && user.password.startsWith('$2'))
             }
         });
     } catch (error) {
@@ -301,7 +305,8 @@ export const login = async (req, res) => {
         org_name: user.orgId?.name, 
         role: user.role,
         isVerified: user.isVerified,
-        profileCompleted: user.profileCompleted
+        profileCompleted: user.profileCompleted,
+        hasPassword: !!user.password
       } 
     });
   } catch (err) {
@@ -318,7 +323,8 @@ export const getMe = async (req, res) => {
   try {
     const user = await userModel
       .findById(req.user.id)
-      .populate("orgId");
+      .populate("orgId")
+      .select('+password');
 
     if (!user) {
       return res.status(404).json({ 
@@ -338,7 +344,8 @@ export const getMe = async (req, res) => {
         org_name: user.orgId?.name,
         role: user.role,
         isVerified: user.isVerified,
-        profileCompleted: user.profileCompleted
+        profileCompleted: user.profileCompleted,
+        hasPassword: !!(user.password && user.password.startsWith('$2'))
       }
     });
   } catch (err) {
@@ -424,6 +431,97 @@ export const resendVerification = async (req, res) => {
     res.status(200).json({ success: true, message: 'Verification email resent!' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const user = await userModel.findById(req.user.id).populate('orgId').select('+password');
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (name) user.name = name;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        orgId: user.orgId?._id,
+        orgName: user.orgId?.name,
+        org_name: user.orgId?.name,
+        isVerified: user.isVerified,
+        profileCompleted: user.profileCompleted,
+        hasPassword: !!(user.password && user.password.startsWith('$2'))
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to update profile", detail: err.message });
+  }
+};
+
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await userModel.findById(req.user.id).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Hashed passwords (bcrypt) typically start with $2a$ or $2b$
+    const hasExistingPassword = !!(user.password && user.password.startsWith('$2'));
+    
+    console.log(`[UpdatePassword] Debug: Email=${user.email}, GoogleId=${user.googleId ? 'Present' : 'Absent'}, PwdStart=${user.password ? user.password.substring(0, 4) : 'null'}, hasExistingPassword=${hasExistingPassword}`);
+
+    // If user has a password (manual user), verify current one
+    if (hasExistingPassword) {
+      // If no current password provided
+      if (!currentPassword) {
+        // If it's a Google user, check if they are just setting their first password (empty hash check)
+        if (user.googleId) {
+          const isEmptyHash = await user.comparePassword("");
+          if (isEmptyHash) {
+            console.log(`[UpdatePassword] Google user with default empty hash detected. Allowing first password set.`);
+          } else {
+            console.log(`[UpdatePassword] Google user has a real password set. Current password required.`);
+            return res.status(400).json({ success: false, message: "Current password is required to change your existing password" });
+          }
+        } else {
+          return res.status(400).json({ success: false, message: "Current password is required" });
+        }
+      } else {
+        // Current password provided, verify it
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+          console.log(`[UpdatePassword] Incorrect current password for user ${user.email}`);
+          return res.status(400).json({ success: false, message: "Incorrect current password" });
+        }
+      }
+    }
+
+    // Set or update the password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Password updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        orgId: user.orgId?._id,
+        orgName: user.orgId?.name,
+        org_name: user.orgId?.name,
+        isVerified: user.isVerified,
+        profileCompleted: user.profileCompleted,
+        hasPassword: true
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to update password", detail: err.message });
   }
 };
 

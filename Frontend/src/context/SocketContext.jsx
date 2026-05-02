@@ -14,10 +14,11 @@ export const SocketProvider = ({ children }) => {
     if (!user) return;
 
     const newSocket = io("/", {
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       timeout: 20000,
+      withCredentials: true
     });
 
     setSocket(newSocket);

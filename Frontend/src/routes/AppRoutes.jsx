@@ -124,7 +124,7 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/billing",
-        element: <Protected><Billing /></Protected>,
+        element: <Protected allowedRoles={['admin', 'super_admin']}><Billing /></Protected>,
       },
       {
         path: "/settings",
