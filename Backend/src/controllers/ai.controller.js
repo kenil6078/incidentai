@@ -1,12 +1,14 @@
 import * as aiService from '../services/ai.service.js';
 import incidentModel from '../models/incident.model.js';
 import timelineModel from '../models/timeline.model.js';
+import organizationModel from '../models/organization.model.js';
 
 export const getSummary = async (req, res) => {
   try {
     const { incidentId } = req.body;
     const incident = await incidentModel.findById(incidentId);
     const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
+    const org = await organizationModel.findById(req.user.orgId._id || req.user.orgId);
     
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -16,7 +18,7 @@ export const getSummary = async (req, res) => {
     await aiService.generateSummaryStream(incident, timeline, (chunk) => {
       fullText += chunk;
       res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-    });
+    }, org.plan);
 
     // Save to database after stream completes
     incident.aiSummary = fullText;
@@ -36,6 +38,7 @@ export const getRootCause = async (req, res) => {
     const { incidentId } = req.body;
     const incident = await incidentModel.findById(incidentId);
     const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
+    const org = await organizationModel.findById(req.user.orgId._id || req.user.orgId);
     
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -45,7 +48,7 @@ export const getRootCause = async (req, res) => {
     await aiService.suggestRootCauseStream(incident, timeline, (chunk) => {
       fullText += chunk;
       res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-    });
+    }, org.plan);
 
     // Save to database
     incident.aiRootCause = fullText;
@@ -64,6 +67,7 @@ export const getPostmortem = async (req, res) => {
     const { incidentId } = req.body;
     const incident = await incidentModel.findById(incidentId);
     const timeline = await timelineModel.find({ incidentId }).populate('createdBy', 'name');
+    const org = await organizationModel.findById(req.user.orgId._id || req.user.orgId);
     
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -73,7 +77,7 @@ export const getPostmortem = async (req, res) => {
     await aiService.generatePostmortemStream(incident, timeline, (chunk) => {
       fullText += chunk;
       res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-    });
+    }, org.plan);
 
     // Save to database
     incident.aiPostmortem = fullText;

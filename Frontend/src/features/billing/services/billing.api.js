@@ -10,12 +10,17 @@ export async function getInfo() {
     return response.data
 }
 
-export async function createOrder(planId) {
-    const response = await billingApiInstance.post("/create-order", { planId })
+export async function createOrder(payload) {
+    const response = await billingApiInstance.post("/create-order", payload)
     return response.data
 }
 
 export async function verifyPayment(paymentData) {
     const response = await billingApiInstance.post("/verify-payment", paymentData)
+    return response.data
+}
+
+export async function getTransactions() {
+    const response = await billingApiInstance.get("/transactions")
     return response.data
 }

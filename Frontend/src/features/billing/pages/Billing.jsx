@@ -1,39 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { CreditCard, Check, Zap, ArrowRight, Loader2, ShieldCheck, History } from "lucide-react";
+import { CreditCard, Check, Zap, ArrowRight, Loader2, ShieldCheck, History, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../auth/hooks/useAuth";
-import { fetchBillingInfo, createOrder, verifyPayment, selectBilling } from "../billing.slice";
+import { fetchBillingInfo, createOrder, verifyPayment, fetchTransactions, selectBilling, selectTransactions } from "../billing.slice";
 
 export default function Billing() {
   const dispatch = useDispatch();
   const { user } = useAuth();
   const { plan, incidentCount, limit, loading, orderLoading, verifying } = useSelector(selectBilling);
+  const transactions = useSelector(selectTransactions) || [];
   const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchBillingInfo());
+    dispatch(fetchTransactions());
   }, [dispatch]);
 
   const plans = [
     {
-      id: "starter",
+      id: "free",
       name: "Starter",
       price: "₹0",
       amount: 0,
-      features: ["5 Teammates", "Public Status Page", "Realtime Timeline", "Community Support"]
+      features: [
+        "5 Incident Creations",
+        "AI Assistant (Minimal - Gemini 1.5 Flash)",
+        "Customer Support",
+        "Basic Analytics",
+        "Public Status Page"
+      ]
     },
     {
       id: "pro",
       name: "Pro",
       price: "₹4,499",
       amount: 4499,
-      features: ["Unlimited Teammates", "AI Assistant (Gemini 1.5)", "Advanced Analytics", "Custom Domains", "Priority Support"]
+      features: [
+        "250+ Incident Creations",
+        "Gemini 1.5 Pro AI Support",
+        "Mistral Large 2 Fallback",
+        "Community & Priority Support",
+        "Advanced Postmortems",
+        "Custom Domains"
+      ]
     }
   ];
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
@@ -43,7 +62,7 @@ export default function Billing() {
   };
 
   const handleUpgrade = async (selectedPlan) => {
-    if (selectedPlan.id === plan || (selectedPlan.id === 'starter' && plan === 'free')) {
+    if (selectedPlan.id === plan) {
       toast.info(`You are already on the ${selectedPlan.name} plan`);
       return;
     }
@@ -64,11 +83,12 @@ export default function Billing() {
 
     try {
       const order = await dispatch(createOrder({
-        planId: selectedPlan.id,
-        amount: selectedPlan.amount
+        planId: selectedPlan.id
       })).unwrap();
 
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      // Use the key returned from the backend if available, or fallback to env
+      const razorpayKey = order.key || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      
       if (!razorpayKey) {
         toast.error("Razorpay configuration missing.");
         setLocalLoading(false);
@@ -87,12 +107,16 @@ export default function Billing() {
             await dispatch(verifyPayment(response)).unwrap();
             toast.success("Workspace upgraded successfully!");
             dispatch(fetchBillingInfo());
+            dispatch(fetchTransactions());
           } catch (err) {
             toast.error("Payment verification failed.");
           }
         },
         modal: {
-          ondismiss: () => setLocalLoading(false)
+          ondismiss: () => {
+            setLocalLoading(false);
+            toast.info("Payment cancelled.");
+          }
         },
         prefill: {
           name: user?.name || "",
@@ -163,7 +187,7 @@ export default function Billing() {
           <div 
             key={p.id} 
             className={`p-8 border-2 flex flex-col transition-all group ${
-              p.id === plan || (p.id === 'starter' && plan === 'free')
+              p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))
                 ? "border-black bg-zinc-50 opacity-80" 
                 : p.id === "pro" 
                   ? "border-black bg-white neo-shadow-lg scale-[1.02]" 
@@ -194,7 +218,7 @@ export default function Billing() {
 
             <button
               onClick={() => handleUpgrade(p)}
-              disabled={localLoading || p.id === plan || (p.id === 'starter' && (plan === 'free' || plan === 'starter'))}
+              disabled={localLoading || p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))}
               className={`w-full py-4 text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:translate-x-1 active:translate-y-1 active:neo-shadow-none ${
                 p.id === "pro" 
                   ? "bg-zinc-950 text-white hover:bg-zinc-800 neo-shadow" 
@@ -202,8 +226,8 @@ export default function Billing() {
               } disabled:opacity-50 disabled:neo-shadow-none disabled:translate-y-0`}
             >
               {localLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-               (p.id === plan || (p.id === 'starter' && (plan === 'free' || plan === 'starter'))) ? "Active Plan" : `Select ${p.name}`}
-              {!(p.id === plan || (p.id === 'starter' && (plan === 'free' || plan === 'starter'))) && !localLoading && <ArrowRight className="w-5 h-5" />}
+               (p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))) ? "Active Plan" : `Select ${p.name}`}
+              {!(p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))) && !localLoading && <ArrowRight className="w-5 h-5" />}
             </button>
           </div>
         ))}
@@ -215,15 +239,51 @@ export default function Billing() {
             <History className="w-6 h-6" /> Payment History
           </h3>
         </div>
-        <div className="bg-white border-2 border-black neo-shadow overflow-hidden">
-          <div className="p-12 text-center space-y-3">
-            <div className="w-16 h-16 bg-zinc-100 border-2 border-dashed border-black mx-auto flex items-center justify-center">
-              <CreditCard className="w-8 h-8 text-zinc-400" />
+        
+        {transactions.length === 0 ? (
+          <div className="bg-white border-2 border-black neo-shadow overflow-hidden">
+            <div className="p-12 text-center space-y-3">
+              <div className="w-16 h-16 bg-zinc-100 border-2 border-dashed border-black mx-auto flex items-center justify-center">
+                <CreditCard className="w-8 h-8 text-zinc-400" />
+              </div>
+              <div className="text-sm font-bold text-zinc-950 uppercase tracking-widest">No transaction history</div>
+              <p className="text-xs text-zinc-500 max-w-xs mx-auto">Your invoices and payment records will be listed here once you upgrade.</p>
             </div>
-            <div className="text-sm font-bold text-zinc-950 uppercase tracking-widest">No transaction history</div>
-            <p className="text-xs text-zinc-500 max-w-xs mx-auto">Your invoices and payment records will be listed here once you upgrade.</p>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white border-2 border-black neo-shadow overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b-2 border-black bg-zinc-50 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+                  <th className="px-6 py-4 font-bold">Order ID</th>
+                  <th className="px-6 py-4 font-bold">Plan</th>
+                  <th className="px-6 py-4 font-bold">Amount</th>
+                  <th className="px-6 py-4 font-bold">Status</th>
+                  <th className="px-6 py-4 font-bold">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y-2 divide-zinc-200">
+                {transactions.map((t) => (
+                  <tr key={t._id} className="text-sm font-bold uppercase tracking-tight">
+                    <td className="px-6 py-4 font-mono text-xs">{t.razorpayOrderId}</td>
+                    <td className="px-6 py-4">{t.planId}</td>
+                    <td className="px-6 py-4">₹{t.amount}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 border-2 border-black text-[10px] font-mono ${
+                        t.status === 'captured' ? 'bg-[#D4F4E4]' : 'bg-[#FF6B6B]'
+                      }`}>
+                        {t.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-500 font-mono text-xs">
+                      {new Date(t.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

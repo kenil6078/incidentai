@@ -39,12 +39,24 @@ export const verifyPayment = createAsyncThunk(
   }
 );
 
+export const fetchTransactions = createAsyncThunk(
+  'billing/fetchTransactions',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await billingApi.getTransactions();
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 // ─── Slice ─────────────────────────────────────────────────────────────────────
 const initialState = {
   plan: null,
   incidentCount: 0,
   limit: 5,
   order: null,
+  transactions: [],
   loading: false,
   orderLoading: false,
   verifying: false,
@@ -86,13 +98,17 @@ const billingSlice = createSlice({
       })
       // verifyPayment
       .addCase(verifyPayment.pending, (state) => { state.verifying = true; })
-      .addCase(verifyPayment.fulfilled, (state) => {
+      .addCase(verifyPayment.fulfilled, (state, { payload }) => {
         state.verifying = false;
-        state.plan = 'pro'; // optimistic update
+        state.plan = payload.plan || 'pro'; 
       })
       .addCase(verifyPayment.rejected, (state, { payload }) => {
         state.verifying = false;
         state.error = payload;
+      })
+      // fetchTransactions
+      .addCase(fetchTransactions.fulfilled, (state, { payload }) => {
+        state.transactions = payload;
       });
   },
 });
@@ -101,6 +117,7 @@ export const { clearBillingError } = billingSlice.actions;
 
 // Selectors
 export const selectBilling = (state) => state.billing;
+export const selectTransactions = (state) => state.billing.transactions;
 export const selectBillingPlan = (state) => state.billing.plan;
 export const selectBillingLoading = (state) => state.billing.loading;
 
