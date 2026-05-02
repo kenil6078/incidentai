@@ -36,6 +36,30 @@ export const createIncident = createAsyncThunk(
   }
 );
 
+export const updateIncident = createAsyncThunk(
+  'incident/update',
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      return await incidentApi.updateIncident(id, payload);
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to update incident');
+    }
+  }
+);
+
+export const deleteIncident = createAsyncThunk(
+  'incident/delete',
+  async (id, { rejectWithValue, dispatch }) => {
+    try {
+      await incidentApi.deleteIncident(id);
+      dispatch(fetchIncidents());
+      return id;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to delete incident');
+    }
+  }
+);
+
 const initialState = {
   list: [],
   current: null,
@@ -76,6 +100,18 @@ const incidentSlice = createSlice({
       .addCase(fetchIncidentDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(updateIncident.fulfilled, (state, action) => {
+        state.current = action.payload;
+        // Also update in list if present
+        const index = state.list.findIndex(i => i._id === action.payload._id);
+        if (index !== -1) state.list[index] = action.payload;
+      })
+      .addCase(deleteIncident.fulfilled, (state, action) => {
+        state.list = state.list.filter(i => (i._id || i.id) !== action.payload);
+        if (state.current && (state.current._id === action.payload || state.current.id === action.payload)) {
+          state.current = null;
+        }
       });
   },
 });

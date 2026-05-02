@@ -21,7 +21,7 @@ export async function createIncident(payload) {
 }
 
 export async function updateIncident(id, payload) {
-    const response = await incidentApiInstance.patch(`/${id}`, payload)
+    const response = await incidentApiInstance.put(`/${id}`, payload)
     return response.data
 }
 

@@ -4,6 +4,8 @@ import {
   fetchIncidents,
   fetchIncidentDetail,
   createIncident as createIncidentThunk,
+  updateIncident as updateIncidentThunk,
+  deleteIncident as deleteIncidentThunk,
   selectIncidents,
   selectCurrentIncident,
   selectIncidentLoading,
@@ -23,6 +25,14 @@ export const useIncident = () => {
     return dispatch(createIncidentThunk(payload));
   }, [dispatch]);
 
+  const updateIncident = useCallback(async (id, payload) => {
+    return dispatch(updateIncidentThunk({ id, payload }));
+  }, [dispatch]);
+
+  const deleteIncident = useCallback(async (id) => {
+    return dispatch(deleteIncidentThunk(id));
+  }, [dispatch]);
+
   return {
     list,
     current,
@@ -30,6 +40,8 @@ export const useIncident = () => {
     getIncidents,
     getIncident,
     createIncident,
+    updateIncident,
+    deleteIncident,
     clearCurrent: useCallback(() => dispatch(clearCurrentIncident()), [dispatch]),
   };
 };
