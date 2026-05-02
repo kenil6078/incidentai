@@ -335,8 +335,8 @@ export default function IncidentDetail() {
           <div className="bg-white border-2 border-black neo-shadow p-5 space-y-4">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Severity</div>
-              <Select value={incident.severity} onValueChange={onUpdateSeverity} disabled={!canEdit}>
-                <SelectTrigger className="rounded-none border-2 border-black font-bold"><SelectValue /></SelectTrigger>
+              <Select value={incident.severity} onValueChange={onUpdateSeverity} disabled={!canEdit || incident.status === 'resolved'}>
+                <SelectTrigger className="rounded-none border-2 border-black font-bold disabled:bg-zinc-50 disabled:cursor-not-allowed"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-none border-2 border-black">
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
@@ -348,8 +348,8 @@ export default function IncidentDetail() {
 
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">Status</div>
-              <Select value={incident.status} onValueChange={onUpdateStatus} disabled={!canEdit}>
-                <SelectTrigger className="rounded-none border-2 border-black font-bold"><SelectValue /></SelectTrigger>
+              <Select value={incident.status} onValueChange={onUpdateStatus} disabled={!canEdit || incident.status === 'resolved'}>
+                <SelectTrigger className="rounded-none border-2 border-black font-bold disabled:bg-zinc-50 disabled:cursor-not-allowed"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-none border-2 border-black">
                   <SelectItem value="investigating">Investigating</SelectItem>
                   <SelectItem value="identified">Identified</SelectItem>
@@ -357,6 +357,9 @@ export default function IncidentDetail() {
                   <SelectItem value="resolved">Resolved</SelectItem>
                 </SelectContent>
               </Select>
+              {incident.status === 'resolved' && (
+                <div className="mt-2 text-[10px] font-bold text-green-600 uppercase tracking-tighter">Incident is locked</div>
+              )}
             </div>
 
             <div>

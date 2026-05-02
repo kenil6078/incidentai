@@ -96,6 +96,10 @@ export const updateIncident = async (req, res) => {
     
     if (!incident) return res.status(404).json({ detail: 'Incident not found' });
 
+    if (incident.status === 'resolved' && status && status !== 'resolved') {
+      return res.status(400).json({ detail: 'Resolved incidents cannot be reopened or moved to another status.' });
+    }
+
     // Track changes for timeline
     const updates = [];
     if (status && status !== incident.status) {
