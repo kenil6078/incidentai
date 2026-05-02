@@ -42,7 +42,7 @@ const servicesSlice = createSlice({
       })
       .addCase(fetchServices.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
+        state.list = Array.isArray(action.payload) ? action.payload : (action.payload.services || []);
       })
       .addCase(fetchServices.rejected, (state, action) => {
         state.loading = false;

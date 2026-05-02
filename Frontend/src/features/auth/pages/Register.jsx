@@ -23,8 +23,8 @@ export default function Register() {
     const fetchOrgs = async () => {
       try {
         const res = await authApi.getOrganizations();
-        if (res.data.success) {
-          setOrganizations(res.data.organizations);
+        if (res.success) {
+          setOrganizations(res.organizations);
         }
       } catch (err) {
         console.error("Failed to load organizations");

@@ -59,7 +59,7 @@ const incidentSlice = createSlice({
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
+        state.list = Array.isArray(action.payload) ? action.payload : (action.payload.incidents || action.payload.data || []);
       })
       .addCase(fetchIncidents.rejected, (state, action) => {
         state.loading = false;
