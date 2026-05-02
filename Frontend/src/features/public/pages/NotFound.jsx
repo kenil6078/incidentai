@@ -25,7 +25,7 @@ const NotFoundContent = () => {
         <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-black border-2 border-white rounded-full"></div>
       </div>
       
-      <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-black mb-4 uppercase italic">
+      <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-black mb-4 capitalize italic">
         Page Not Found
       </h1>
       
