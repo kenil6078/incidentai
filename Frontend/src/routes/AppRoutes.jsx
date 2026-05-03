@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import Protected from "./Protected";
 import ScrollToTop from "../components/ScrollToTop";
+import ClickSpark from "../components/ClickSpark";
 
 import { Skeleton } from "../components/ui/skeleton";
 
@@ -48,12 +49,18 @@ function PageLoader() {
 
 function RootLayout() {
   return (
-    <>
+    <ClickSpark
+      sparkColor="#FF6B6B"
+      sparkSize={20}
+      sparkRadius={30}
+      sparkCount={12}
+      duration={400}
+    >
       <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Outlet />
       </Suspense>
-    </>
+    </ClickSpark>
   );
 }
 
