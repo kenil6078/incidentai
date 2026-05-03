@@ -17,7 +17,6 @@ const CreateIncident = lazy(() => import("../features/incident/pages/CreateIncid
 const Team = lazy(() => import("../features/team/pages/Team"));
 const Analytics = lazy(() => import("../features/analytics/pages/Analytics"));
 const Services = lazy(() => import("../features/services/pages/Services"));
-const CreateService = lazy(() => import("../features/services/pages/CreateService"));
 const Billing = lazy(() => import("../features/billing/pages/Billing"));
 const Settings = lazy(() => import("../features/settings/pages/Settings"));
 const PublicStatus = lazy(() => import("../features/public/pages/PublicStatus"));
@@ -125,10 +124,6 @@ export const routes = createBrowserRouter([
       {
         path: "/services",
         element: <Protected><Services /></Protected>,
-      },
-      {
-        path: "/services/new",
-        element: <Protected allowedRoles={['admin']}><CreateService /></Protected>,
       },
       {
         path: "/analytics",
