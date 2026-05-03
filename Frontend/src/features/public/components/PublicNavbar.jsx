@@ -15,17 +15,17 @@ export default function PublicNavbar() {
 
   return (
     <nav className="border-b-2 border-black bg-white sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2" data-testid="landing-brand">
-          <div className="w-8 h-8 bg-black border-2 border-black neo-shadow flex items-center justify-center">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-2">
+        <Link to="/" className="flex items-center gap-2 shrink-0" data-testid="landing-brand">
+          <div className="w-8 h-8 bg-black border-2 border-black neo-shadow flex items-center justify-center shrink-0">
             <span className="text-[#FF6B6B] font-black text-xs uppercase italic">i</span>
           </div>
-          <span className="text-lg font-black tracking-tight text-black uppercase italic">incident.ai</span>
+          <span className="text-sm md:text-lg font-black tracking-tight text-black uppercase italic whitespace-nowrap">incident.ai</span>
         </Link>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3 md:gap-8 overflow-hidden">
           <Link 
             to="/pricing" 
-            className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
+            className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-colors whitespace-nowrap ${
               isPricing ? "text-[#FF6B6B]" : "text-black hover:text-[#FF6B6B]"
             }`}
           >
@@ -34,16 +34,16 @@ export default function PublicNavbar() {
           {user ? (
             <Link 
               to={getDashboardLink()} 
-              className="bg-black text-white text-[10px] font-black uppercase tracking-widest px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all"
+              className="bg-black text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 py-1.5 md:px-6 md:py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all whitespace-nowrap"
             >
               Dashboard
             </Link>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-bold text-black px-3 py-1.5 hover:bg-[#FDE68A] transition border-2 border-transparent hover:border-black">Sign in</Link>
+              <Link to="/login" className="text-xs md:text-sm font-bold text-black px-2 py-1 md:px-3 md:py-1.5 hover:bg-[#FDE68A] transition border-2 border-transparent hover:border-black whitespace-nowrap">Sign in</Link>
               <Link
                 to="/register"
-                className="bg-[#FF6B6B] text-black text-sm font-bold px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all"
+                className="bg-[#FF6B6B] text-black text-xs md:text-sm font-bold px-3 py-1.5 md:px-6 md:py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all whitespace-nowrap"
               >
                 Start free
               </Link>

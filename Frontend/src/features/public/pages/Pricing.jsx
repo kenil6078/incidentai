@@ -127,16 +127,18 @@ export default function Pricing() {
                 </p>
               </div>
 
-              <div className="mb-12 p-8 bg-zinc-50 border-4 border-black/10 group-hover:border-black transition-colors">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl lg:text-6xl font-black tracking-tight text-black font-mono italic leading-none">
-                    {typeof plan.price === 'string' ? plan.price : plan.price[billingCycle]}
-                  </span>
-                  {typeof plan.price !== 'string' && plan.price.monthly !== "₹0" && (
-                    <span className="text-xs font-mono font-black uppercase tracking-widest text-zinc-400">
-                      / {billingCycle}
+              <div className="mb-12 p-8 bg-zinc-50 border-4 border-black/10 group-hover:border-black transition-colors min-h-[140px] flex items-center">
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className={`${(typeof plan.price === 'string' ? plan.price : plan.price[billingCycle]) === 'Custom' ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'} font-black tracking-tight text-black font-mono italic leading-none`}>
+                      {typeof plan.price === 'string' ? plan.price : plan.price[billingCycle]}
                     </span>
-                  )}
+                    {typeof plan.price !== 'string' && plan.price.monthly !== "₹0" && (
+                      <span className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-400">
+                        / {billingCycle}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useAdmin } from "../hooks/useAdmin";
 import { toast } from "sonner";
-import { Users, Building2, ShieldCheck, Search, ArrowUpRight, UserCheck, ShieldAlert } from "lucide-react";
+import { 
+  Users, Building2, ShieldCheck, Search, ArrowUpRight, 
+  UserCheck, ShieldAlert, X, Edit2, Ban, CreditCard, Save, Trash2 
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SuperAdminDashboard() {
-  const { organizations, users, loading, getOrganizations, getUsers } = useAdmin();
+  const { 
+    organizations, users, loading, getOrganizations, getUsers, 
+    updateUser, toggleBan, updatePlan, deleteUser, deleteOrg 
+  } = useAdmin();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [view, setView] = useState("organizations"); // 'organizations' or 'users'
+  const [view, setView] = useState("organizations");
   const [roleFilter, setRoleFilter] = useState("all");
+
+  // Modals state
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
@@ -20,34 +33,95 @@ export default function SuperAdminDashboard() {
     getUsers();
   }, []);
 
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const userData = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      role: formData.get("role"),
+    };
+
+    try {
+      await updateUser(selectedUser._id, userData);
+      toast.success("User updated successfully");
+      setIsEditModalOpen(false);
+    } catch (err) {
+      toast.error(err.detail || "Failed to update user");
+    }
+  };
+
+  const handleToggleBan = async (userId) => {
+    try {
+      await toggleBan(userId);
+      toast.success("User status updated");
+    } catch (err) {
+      toast.error("Failed to update user status");
+    }
+  };
+
+  const handleUpdatePlan = async (e) => {
+    e.preventDefault();
+    const plan = new FormData(e.target).get("plan");
+    try {
+      await updatePlan(selectedOrg._id, plan);
+      toast.success("Plan updated successfully");
+      setIsPlanModalOpen(false);
+    } catch (err) {
+      toast.error("Failed to update plan");
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("Are you sure you want to PERMANENTLY DELETE this user? This action cannot be undone.")) {
+      try {
+        await deleteUser(userId);
+        toast.success("User deleted successfully");
+      } catch (err) {
+        toast.error(err.detail || "Failed to delete user");
+      }
+    }
+  };
+
+  const handleDeleteOrg = async (orgId) => {
+    if (window.confirm("Are you sure you want to PERMANENTLY DELETE this organization? All data associated with it may be lost.")) {
+      try {
+        await deleteOrg(orgId);
+        toast.success("Organization deleted successfully");
+      } catch (err) {
+        toast.error(err.detail || "Failed to delete organization");
+      }
+    }
+  };
+
   const filteredOrgs = organizations.filter(org => 
     org.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
     org.slug.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   );
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    const matchesSearch = user.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+                         user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 min-h-screen bg-[#FAFAFA]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2 font-black">Platform Control</div>
-          <h1 className="text-5xl font-black tracking-tighter text-black">Super Admin.</h1>
+          <h1 className="text-5xl font-black tracking-tighter text-black uppercase italic">Super Admin.</h1>
         </div>
         <div className="flex flex-wrap gap-4">
-           <div className="bg-[#D4F4E4] border-2 border-black p-4 neo-shadow flex items-center gap-4">
+           <div className="bg-[#D4F4E4] border-4 border-black p-4 neo-shadow flex items-center gap-4">
               <Building2 className="w-8 h-8 text-black" />
               <div>
                 <div className="text-[10px] font-mono uppercase font-black text-black/50">Companies</div>
                 <div className="text-2xl font-black text-black">{organizations.length}</div>
               </div>
            </div>
-           <div className="bg-[#FFB5E8] border-2 border-black p-4 neo-shadow flex items-center gap-4">
+           <div className="bg-[#FFB5E8] border-4 border-black p-4 neo-shadow flex items-center gap-4">
               <Users className="w-8 h-8 text-black" />
               <div>
                 <div className="text-[10px] font-mono uppercase font-black text-black/50">Total Users</div>
@@ -87,12 +161,12 @@ export default function SuperAdminDashboard() {
           <select 
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-white border-4 border-black neo-shadow px-4 py-2 font-bold focus:outline-none"
+            className="bg-white border-4 border-black neo-shadow px-6 py-2 font-bold focus:outline-none appearance-none cursor-pointer"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admins</option>
             <option value="developer">Developers</option>
-            <option value="normal_user">Normal Users</option>
+            <option value="super_admin">Super Admins</option>
           </select>
         )}
       </div>
@@ -105,27 +179,33 @@ export default function SuperAdminDashboard() {
             ))
           ) : filteredOrgs.length > 0 ? (
             filteredOrgs.map((org) => (
-              <div key={org._id} className="bg-white border-4 border-black neo-shadow p-6 flex flex-col hover:translate-y-1 hover:shadow-none transition-all">
+              <div key={org._id} className="bg-white border-4 border-black neo-shadow p-6 flex flex-col hover:translate-y-1 hover:shadow-none transition-all group">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-black tracking-tight">{org.name}</h3>
+                    <h3 className="text-2xl font-black text-black tracking-tight uppercase italic">{org.name}</h3>
                     <div className="text-xs font-mono text-zinc-500 font-bold">/{org.slug}</div>
                   </div>
-                  <div className="bg-[#D4F4E4] border-2 border-black px-2 py-1 text-[10px] font-black uppercase">
-                    {org.plan}
-                  </div>
+                  <button 
+                    onClick={() => { setSelectedOrg(org); setIsPlanModalOpen(true); }}
+                    className={`border-2 border-black px-3 py-1 text-[10px] font-black uppercase transition-all hover:bg-black hover:text-white flex items-center gap-2 ${
+                      org.plan === 'enterprise' ? 'bg-[#FDE68A]' : 
+                      org.plan === 'pro' ? 'bg-[#FF6B6B]' : 'bg-[#D4F4E4]'
+                    }`}
+                  >
+                    <CreditCard className="w-3 h-3" /> {org.plan}
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-2 bg-[#FDE68A] border-2 border-black">
+                  <div className="text-center p-2 bg-[#FDE68A] border-2 border-black neo-shadow-sm">
                     <div className="text-xs font-black text-black">{org.counts?.admins || 0}</div>
                     <div className="text-[8px] font-mono uppercase font-black text-black/50">Admins</div>
                   </div>
-                  <div className="text-center p-2 bg-[#FFB5E8] border-2 border-black">
+                  <div className="text-center p-2 bg-[#FFB5E8] border-2 border-black neo-shadow-sm">
                     <div className="text-xs font-black text-black">{org.counts?.developers || 0}</div>
                     <div className="text-[8px] font-mono uppercase font-black text-black/50">Devs</div>
                   </div>
-                  <div className="text-center p-2 bg-[#E2E8F0] border-2 border-black">
+                  <div className="text-center p-2 bg-[#E2E8F0] border-2 border-black neo-shadow-sm">
                     <div className="text-xs font-black text-black">{(org.counts?.total || 0) - (org.counts?.admins || 0) - (org.counts?.developers || 0)}</div>
                     <div className="text-[8px] font-mono uppercase font-black text-black/50">Others</div>
                   </div>
@@ -135,41 +215,50 @@ export default function SuperAdminDashboard() {
                   <div className="text-[10px] font-mono text-zinc-400 font-bold">
                     Created {new Date(org.createdAt).toLocaleDateString()}
                   </div>
-                  <button className="flex items-center gap-1 text-sm font-black text-black hover:underline">
-                    Manage <ArrowUpRight className="w-4 h-4" strokeWidth={3} />
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => handleDeleteOrg(org._id)}
+                      className="p-2 bg-red-50 text-red-500 border-2 border-black neo-shadow-sm hover:bg-red-500 hover:text-white hover:shadow-none hover:translate-y-0.5 transition-all"
+                      title="Delete Organization"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button className="flex items-center gap-1 text-sm font-black text-black hover:underline group-hover:translate-x-1 transition-transform">
+                      Manage <ArrowUpRight className="w-4 h-4" strokeWidth={3} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="col-span-full py-20 text-center border-4 border-dashed border-zinc-200">
-              <div className="text-xl font-bold text-zinc-400">No organizations found.</div>
+              <div className="text-xl font-bold text-zinc-400 font-mono">NO ORGANIZATIONS FOUND.</div>
             </div>
           )}
         </div>
       ) : (
-        <div className="bg-white border-4 border-black neo-shadow overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-white border-4 border-black neo-shadow overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-black text-white border-b-4 border-black">
               <tr>
-                <th className="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em]">User</th>
-                <th className="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em]">Organization</th>
-                <th className="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em]">Role</th>
-                <th className="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em]">Status</th>
-                <th className="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em]">Actions</th>
+                <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] font-black">User</th>
+                <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] font-black">Organization</th>
+                <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] font-black">Role</th>
+                <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] font-black">Status</th>
+                <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] font-black text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-black">
               {filteredUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-zinc-50 transition-colors">
+                <tr key={user._id} className={`hover:bg-zinc-50 transition-colors ${!user.active ? 'bg-red-50/50' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#FFB5E8] border-2 border-black flex items-center justify-center font-black">
+                      <div className="w-10 h-10 bg-[#FFB5E8] border-2 border-black flex items-center justify-center font-black neo-shadow-sm">
                         {user.name?.[0]}
                       </div>
                       <div>
                         <div className="text-sm font-black text-black">{user.name}</div>
-                        <div className="text-xs text-zinc-500 font-bold">{user.email}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono font-bold uppercase">{user.email}</div>
                       </div>
                     </div>
                   </td>
@@ -177,26 +266,54 @@ export default function SuperAdminDashboard() {
                     {user.orgId?.name || "N/A"}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-[10px] font-black uppercase border-2 border-black ${
+                    <span className={`px-2 py-1 text-[10px] font-black uppercase border-2 border-black neo-shadow-sm ${
                       user.role === 'admin' ? 'bg-[#FDE68A]' : 
-                      user.role === 'developer' ? 'bg-[#D4F4E4]' : 'bg-[#E2E8F0]'
+                      user.role === 'developer' ? 'bg-[#D4F4E4]' : 
+                      user.role === 'super_admin' ? 'bg-black text-white' : 'bg-[#E2E8F0]'
                     }`}>
                       {user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-xs font-bold">
-                      {user.isVerified ? (
-                        <><UserCheck className="w-3 h-3 text-green-600" strokeWidth={3} /> Verified</>
-                      ) : (
-                        <><ShieldAlert className="w-3 h-3 text-red-500" strokeWidth={3} /> Pending</>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase">
+                        {user.isVerified ? (
+                          <><UserCheck className="w-3 h-3 text-green-600" strokeWidth={4} /> Verified</>
+                        ) : (
+                          <><ShieldAlert className="w-3 h-3 text-red-500" strokeWidth={4} /> Pending</>
+                        )}
+                      </div>
+                      {!user.active && (
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase text-red-600">
+                          <Ban className="w-3 h-3" strokeWidth={4} /> Banned
+                        </div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="text-xs font-black text-black underline decoration-2 underline-offset-2 hover:text-[#FF6B6B]">
-                      Edit User
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}
+                        className="p-2 bg-[#FDE68A] border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all"
+                        title="Edit User"
+                      >
+                        <Edit2 className="w-4 h-4 text-black" />
+                      </button>
+                      <button 
+                        onClick={() => handleToggleBan(user._id)}
+                        className={`p-2 border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all ${user.active ? 'bg-white hover:bg-orange-400 group' : 'bg-orange-400'}`}
+                        title={user.active ? "Ban User" : "Unban User"}
+                      >
+                        <Ban className={`w-4 h-4 ${user.active ? 'text-black group-hover:text-white' : 'text-white'}`} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="p-2 bg-red-500 border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all text-white"
+                        title="Delete User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -204,6 +321,129 @@ export default function SuperAdminDashboard() {
           </table>
         </div>
       )}
+
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {isEditModalOpen && selectedUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEditModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-white border-4 border-black neo-shadow-lg p-8"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-black uppercase italic leading-none">Edit User.</h2>
+                <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-zinc-100 border-2 border-transparent hover:border-black transition-all">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateUser} className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-500 mb-2 block">Full Name</label>
+                  <input 
+                    name="name"
+                    defaultValue={selectedUser.name}
+                    className="w-full p-4 bg-zinc-50 border-2 border-black font-bold focus:outline-none focus:bg-[#FDE68A] transition-colors"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-500 mb-2 block">Email Address</label>
+                  <input 
+                    name="email"
+                    type="email"
+                    defaultValue={selectedUser.email}
+                    className="w-full p-4 bg-zinc-50 border-2 border-black font-bold focus:outline-none focus:bg-[#FDE68A] transition-colors"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-500 mb-2 block">System Role</label>
+                  <select 
+                    name="role"
+                    defaultValue={selectedUser.role}
+                    className="w-full p-4 bg-zinc-50 border-2 border-black font-bold focus:outline-none focus:bg-[#FDE68A] transition-colors appearance-none"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="developer">Developer</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-4 bg-black text-white text-sm font-black uppercase tracking-widest border-2 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3"
+                >
+                  <Save className="w-5 h-5" /> Save Changes
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Subscription Modal */}
+      <AnimatePresence>
+        {isPlanModalOpen && selectedOrg && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsPlanModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-sm bg-white border-4 border-black neo-shadow-lg p-8"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <div className="text-[8px] font-mono font-black uppercase text-zinc-400">Subscription Control</div>
+                  <h2 className="text-2xl font-black uppercase italic leading-none">{selectedOrg.name}</h2>
+                </div>
+                <button onClick={() => setIsPlanModalOpen(false)} className="p-2 hover:bg-zinc-100 border-2 border-transparent hover:border-black transition-all">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdatePlan} className="space-y-6">
+                <div className="grid grid-cols-1 gap-4">
+                  {['free', 'pro', 'enterprise'].map((plan) => (
+                    <label key={plan} className="relative cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="plan" 
+                        value={plan} 
+                        defaultChecked={selectedOrg.plan === plan}
+                        className="peer sr-only"
+                      />
+                      <div className={`p-4 border-2 border-black font-black uppercase text-sm flex justify-between items-center transition-all peer-checked:bg-black peer-checked:text-white hover:bg-zinc-50 peer-checked:hover:bg-black`}>
+                        {plan}
+                        {selectedOrg.plan === plan && <ShieldCheck className="w-4 h-4" />}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-4 bg-[#FF6B6B] text-black text-sm font-black uppercase tracking-widest border-2 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3"
+                >
+                  <CreditCard className="w-5 h-5" /> Update Subscription
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
