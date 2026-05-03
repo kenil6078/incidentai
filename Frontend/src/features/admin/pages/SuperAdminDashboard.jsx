@@ -16,6 +16,7 @@ export default function SuperAdminDashboard() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [view, setView] = useState("organizations");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [orgFilter, setOrgFilter] = useState("all");
 
   // Modals state
   const [selectedUser, setSelectedUser] = useState(null);
@@ -94,6 +95,12 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleManageOrg = (orgId) => {
+    setOrgFilter(orgId);
+    setView("users");
+    setSearchTerm("");
+  };
+
   const filteredOrgs = organizations.filter(org => 
     org.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
     org.slug.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
@@ -103,7 +110,8 @@ export default function SuperAdminDashboard() {
     const matchesSearch = user.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
                          user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    return matchesSearch && matchesRole;
+    const matchesOrg = orgFilter === "all" || user.orgId?._id === orgFilter || user.orgId === orgFilter;
+    return matchesSearch && matchesRole && matchesOrg;
   });
 
   return (
@@ -139,8 +147,8 @@ export default function SuperAdminDashboard() {
           Organizations
         </button>
         <button 
-          onClick={() => setView("users")}
-          className={`px-8 py-3 text-sm font-black uppercase tracking-widest transition-all ${view === "users" ? "bg-black text-white" : "bg-white text-black hover:bg-zinc-100"}`}
+          onClick={() => { setView("users"); setOrgFilter("all"); }}
+          className={`px-8 py-3 text-sm font-black uppercase tracking-widest transition-all ${view === "users" && orgFilter === "all" ? "bg-black text-white" : "bg-white text-black hover:bg-zinc-100"}`}
         >
           User Directory
         </button>
@@ -158,16 +166,29 @@ export default function SuperAdminDashboard() {
           />
         </div>
         {view === "users" && (
-          <select 
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-white border-4 border-black neo-shadow px-6 py-2 font-bold focus:outline-none appearance-none cursor-pointer"
-          >
-            <option value="all">All Roles</option>
-            <option value="admin">Admins</option>
-            <option value="developer">Developers</option>
-            <option value="super_admin">Super Admins</option>
-          </select>
+          <div className="flex gap-4">
+            {orgFilter !== "all" && (
+              <div className="flex items-center gap-2 bg-[#FDE68A] border-4 border-black px-4 py-2 font-bold neo-shadow whitespace-nowrap">
+                <Building2 className="w-4 h-4" />
+                <span className="text-xs uppercase italic truncate max-w-[150px]">
+                  {organizations.find(o => o._id === orgFilter)?.name}
+                </span>
+                <button onClick={() => setOrgFilter("all")} className="hover:text-red-500 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <select 
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="bg-white border-4 border-black neo-shadow px-6 py-2 font-bold focus:outline-none appearance-none cursor-pointer"
+            >
+              <option value="all">All Roles</option>
+              <option value="admin">Admins</option>
+              <option value="developer">Developers</option>
+              <option value="super_admin">Super Admins</option>
+            </select>
+          </div>
         )}
       </div>
 
@@ -223,7 +244,10 @@ export default function SuperAdminDashboard() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button className="flex items-center gap-1 text-sm font-black text-black hover:underline group-hover:translate-x-1 transition-transform">
+                    <button 
+                      onClick={() => handleManageOrg(org._id)}
+                      className="flex items-center gap-1 text-sm font-black text-black hover:underline group-hover:translate-x-1 transition-transform"
+                    >
                       Manage <ArrowUpRight className="w-4 h-4" strokeWidth={3} />
                     </button>
                   </div>
