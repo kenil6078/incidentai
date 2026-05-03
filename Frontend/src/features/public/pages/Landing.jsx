@@ -3,8 +3,16 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Zap, Brain, Globe, Activity, Shield, Users, BarChart3, CheckSquare, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import RevealText from "../../../components/RevealText";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Landing() {
+  const { user } = useAuth();
+
+  const getDashboardLink = () => {
+    if (!user) return "/login";
+    return user.role === 'super_admin' ? "/admin" : "/dashboard";
+  };
+
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       <nav className="border-b-2 border-black bg-white sticky top-0 z-30">
@@ -17,10 +25,22 @@ export default function Landing() {
           </Link>
           <div className="flex items-center gap-8">
             <Link to="/pricing" className="text-sm font-bold text-black hover:underline decoration-2">Pricing</Link>
-            <Link to="/login" className="text-sm font-bold text-black px-3 py-1.5 hover:bg-[#FDE68A] transition border-2 border-transparent hover:border-black" data-testid="landing-login">Sign in</Link>
-            <Link to="/register" className="bg-[#FF6B6B] text-black text-sm font-bold px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all" data-testid="landing-cta-register">
-              Start free
-            </Link>
+            {user ? (
+              <Link 
+                to={getDashboardLink()} 
+                className="bg-black text-white text-sm font-bold px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all"
+                data-testid="landing-dashboard"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-bold text-black px-3 py-1.5 hover:bg-[#FDE68A] transition border-2 border-transparent hover:border-black" data-testid="landing-login">Sign in</Link>
+                <Link to="/register" className="bg-[#FF6B6B] text-black text-sm font-bold px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all" data-testid="landing-cta-register">
+                  Start free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -51,21 +71,34 @@ export default function Landing() {
               The modern operations command-center. Detect, respond and learn from every incident — with realtime collaboration, status pages, and AI postmortems.
             </motion.p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Link
-                to="/register"
-                className="bg-[#FF6B6B] text-black px-8 py-4 text-lg font-black border-4 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-3 group"
-                data-testid="hero-cta-primary"
-              >
-                Create workspace
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" strokeWidth={3} />
-              </Link>
-              <Link
-                to="/login"
-                className="bg-white text-black px-8 py-4 text-lg font-black border-4 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all"
-                data-testid="hero-cta-secondary"
-              >
-                Sign in
-              </Link>
+              {user ? (
+                <Link
+                  to={getDashboardLink()}
+                  className="bg-[#FF6B6B] text-black px-10 py-5 text-xl font-black border-4 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-3 group"
+                  data-testid="hero-dashboard-primary"
+                >
+                  Go to Dashboard
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition" strokeWidth={3} />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="bg-[#FF6B6B] text-black px-8 py-4 text-lg font-black border-4 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-3 group"
+                    data-testid="hero-cta-primary"
+                  >
+                    Create workspace
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" strokeWidth={3} />
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="bg-white text-black px-8 py-4 text-lg font-black border-4 border-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all"
+                    data-testid="hero-cta-secondary"
+                  >
+                    Sign in
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -245,14 +278,25 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 py-24 text-center">
           <h2 className="text-5xl sm:text-7xl font-black tracking-tighter mb-8 leading-none">Stop firefighting alone.</h2>
           <p className="text-xl text-zinc-400 max-w-xl mx-auto font-bold mb-12">Spin up your workspace in under 30 seconds. No credit card required.</p>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-3 bg-[#FF6B6B] text-black px-10 py-5 text-xl font-black border-4 border-black neo-shadow hover:bg-white transition-all group"
-            data-testid="footer-cta-register"
-          >
-            Get started — it's free 
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition" strokeWidth={3} />
-          </Link>
+          {user ? (
+            <Link
+              to={getDashboardLink()}
+              className="inline-flex items-center gap-3 bg-[#FF6B6B] text-black px-10 py-5 text-xl font-black border-4 border-black neo-shadow hover:bg-white transition-all group"
+              data-testid="footer-dashboard"
+            >
+              Go to Dashboard
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition" strokeWidth={3} />
+            </Link>
+          ) : (
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-3 bg-[#FF6B6B] text-black px-10 py-5 text-xl font-black border-4 border-black neo-shadow hover:bg-white transition-all group"
+              data-testid="footer-cta-register"
+            >
+              Get started — it's free 
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition" strokeWidth={3} />
+            </Link>
+          )}
         </div>
       </section>
 
