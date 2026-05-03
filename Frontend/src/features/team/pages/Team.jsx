@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { Plus, Trash2, ArrowLeft, UserPlus, User, Mail, Key, CheckCircle2 } from "lucide-react";
+import ConfirmationModal from "../../../components/ConfirmationModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "../../../components/ui/dialog";
 import { fetchTeam, inviteMember, removeMember, selectTeamMembers, selectTeamLoading } from "../team.slice";
 
@@ -30,6 +31,7 @@ export default function Team() {
   const [form, setForm] = useState({ name: "", email: "", role: "developer", password: "changeme123" });
   const [tempCred, setTempCred] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, memberId: null });
 
   useEffect(() => {
     dispatch(fetchTeam());
@@ -51,7 +53,12 @@ export default function Team() {
   };
 
   const handleRemove = async (id) => {
-    if (!window.confirm("Remove this member? This action cannot be undone.")) return;
+    setConfirmModal({ isOpen: true, memberId: id });
+  };
+
+  const confirmRemove = async () => {
+    const id = confirmModal.memberId;
+    if (!id) return;
     try {
       await dispatch(removeMember(id)).unwrap();
       toast.success("Member removed");
@@ -253,6 +260,14 @@ export default function Team() {
           </table>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, memberId: null })}
+        onConfirm={confirmRemove}
+        title="Remove Team Member?"
+        message="Are you sure you want to remove this member? They will lose all access to the organization's incidents and data immediately. This action cannot be undone."
+        confirmText="Remove Member"
+      />
     </div>
   );
 }

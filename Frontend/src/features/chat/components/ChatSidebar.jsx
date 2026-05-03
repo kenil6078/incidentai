@@ -4,6 +4,7 @@ import { fetchChats, fetchUsers, setCurrentChat, createChat, deleteChat } from '
 import { Search, Plus, Users, MessageSquare, Trash2 } from 'lucide-react';
 import { ChatSidebarSkeleton } from '../../../components/ui/skeleton';
 import { toast } from 'sonner';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 export default function ChatSidebar() {
   const dispatch = useDispatch();
@@ -12,6 +13,7 @@ export default function ChatSidebar() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [showUserList, setShowUserList] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, chatId: null });
 
   // ── Debounced search ─────────────────────────────────
   useEffect(() => {
@@ -47,7 +49,12 @@ export default function ChatSidebar() {
   // ── Delete a chat from sidebar ───────────────────────
   const handleDeleteChat = async (e, chatId) => {
     e.stopPropagation();
-    if (!window.confirm('Delete this conversation? Messages will be permanently removed.')) return;
+    setDeleteConfirm({ isOpen: true, chatId });
+  };
+
+  const confirmDelete = async () => {
+    const chatId = deleteConfirm.chatId;
+    if (!chatId) return;
     try {
       await dispatch(deleteChat(chatId)).unwrap();
       toast.success('Chat deleted');
@@ -180,6 +187,14 @@ export default function ChatSidebar() {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, chatId: null })}
+        onConfirm={confirmDelete}
+        title="Delete Conversation?"
+        message="Are you sure you want to delete this conversation? All messages will be permanently removed for you. This action cannot be undone."
+        confirmText="Delete Chat"
+      />
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
 import { IncidentDetailSkeleton, Skeleton } from "../../../components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
+import ConfirmationModal from "../../../components/ConfirmationModal";
 
 const TYPE_LABEL = {
   update: "UPDATE", alert: "ALERT", fix: "FIX",
@@ -50,6 +51,7 @@ export default function IncidentDetail() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiOutput, setAiOutput] = useState({ kind: null, text: "" });
   const [copying, setCopying] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const timelineEndRef = useRef(null);
 
   const loadData = useCallback(() => {
@@ -237,7 +239,10 @@ export default function IncidentDetail() {
   };
 
   const onDelete = async () => {
-    if (!window.confirm("Delete this incident permanently?")) return;
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
     try {
       await deleteIncident(id);
       toast.success("Incident deleted");
@@ -484,6 +489,14 @@ export default function IncidentDetail() {
           </Dialog>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Incident?"
+        message="Are you sure you want to PERMANENTLY DELETE this incident? All timeline events, AI summaries, and data associated with this incident will be removed forever. This action cannot be undone."
+        confirmText="Delete Permanently"
+      />
     </div>
   );
 }

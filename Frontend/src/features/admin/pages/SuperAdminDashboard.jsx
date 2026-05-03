@@ -6,6 +6,7 @@ import {
   UserCheck, ShieldAlert, X, Edit2, Ban, CreditCard, Save, Trash2 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ConfirmationModal from "../../../components/ConfirmationModal";
 
 export default function SuperAdminDashboard() {
   const { 
@@ -23,6 +24,7 @@ export default function SuperAdminDashboard() {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, id: null });
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
@@ -74,24 +76,27 @@ export default function SuperAdminDashboard() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm("Are you sure you want to PERMANENTLY DELETE this user? This action cannot be undone.")) {
-      try {
-        await deleteUser(userId);
-        toast.success("User deleted successfully");
-      } catch (err) {
-        toast.error(err.detail || "Failed to delete user");
-      }
-    }
+    setConfirmModal({ isOpen: true, type: 'user', id: userId });
   };
 
   const handleDeleteOrg = async (orgId) => {
-    if (window.confirm("Are you sure you want to PERMANENTLY DELETE this organization? All data associated with it may be lost.")) {
-      try {
-        await deleteOrg(orgId);
+    setConfirmModal({ isOpen: true, type: 'org', id: orgId });
+  };
+
+  const handleConfirmAction = async () => {
+    const { type, id } = confirmModal;
+    if (!id) return;
+
+    try {
+      if (type === 'user') {
+        await deleteUser(id);
+        toast.success("User deleted successfully");
+      } else if (type === 'org') {
+        await deleteOrg(id);
         toast.success("Organization deleted successfully");
-      } catch (err) {
-        toast.error(err.detail || "Failed to delete organization");
       }
+    } catch (err) {
+      toast.error(err.detail || `Failed to delete ${type}`);
     }
   };
 
@@ -468,6 +473,19 @@ export default function SuperAdminDashboard() {
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, type: null, id: null })}
+        onConfirm={handleConfirmAction}
+        title={`Delete ${confirmModal.type === 'user' ? 'User' : 'Organization'}?`}
+        message={
+          confirmModal.type === 'user' 
+            ? "Are you sure you want to PERMANENTLY DELETE this user? This action cannot be undone and will remove all their profile data."
+            : "Are you sure you want to PERMANENTLY DELETE this organization? ALL data associated with it (incidents, team members, services) will be lost forever."
+        }
+        confirmText={`Delete ${confirmModal.type === 'user' ? 'User' : 'Org'}`}
+      />
     </div>
   );
 }

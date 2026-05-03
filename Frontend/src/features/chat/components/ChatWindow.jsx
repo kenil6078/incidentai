@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ChatWindowSkeleton } from '../../../components/ui/skeleton';
 import { toast } from 'sonner';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 // ─────────────────────────────────────────────────────────
 //  Helper: group messages by date for WhatsApp-style separators
@@ -135,6 +136,7 @@ export default function ChatWindow() {
   const [isNearBottom, setIsNearBottom] = useState(true);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const menuRef = useRef(null);
 
   const chatId = currentChat?._id;
@@ -281,7 +283,10 @@ export default function ChatWindow() {
 
   // ── Delete chat ──────────────────────────────────────
   const handleDeleteChat = useCallback(async () => {
-    if (!window.confirm('Delete this entire conversation? All messages will be permanently removed for everyone.')) return;
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const confirmDeleteChat = useCallback(async () => {
     try {
       await dispatch(deleteChat(currentChat._id)).unwrap();
       toast.success('Chat deleted');
@@ -463,6 +468,14 @@ export default function ChatWindow() {
           </button>
         </form>
       </div>
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteChat}
+        title="Delete Entire Chat?"
+        message="Are you sure you want to delete this ENTIRE conversation? This will permanently remove all messages for EVERYONE in the chat. This action cannot be undone."
+        confirmText="Delete for Everyone"
+      />
     </div>
   );
 }
