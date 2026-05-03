@@ -73,10 +73,10 @@ export default function Login() {
         />
 
         <Link to="/" className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#FF6B6B] border-2 border-white neo-shadow flex items-center justify-center">
-            <span className="text-black font-black text-lg">i</span>
+          <div className="w-10 h-10 bg-black border-2 border-white neo-shadow flex items-center justify-center">
+            <span className="text-[#FF6B6B] font-black text-lg uppercase italic">i</span>
           </div>
-          <span className="text-xl font-black tracking-tight text-white uppercase">incident.ai</span>
+          <span className="text-xl font-black tracking-tight text-white uppercase italic">incident.ai</span>
         </Link>
 
         <div className="relative z-10">

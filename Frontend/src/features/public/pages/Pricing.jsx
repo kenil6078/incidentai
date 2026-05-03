@@ -1,112 +1,103 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Check, ArrowLeft, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Check, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import RevealText from "../../../components/RevealText";
+import PublicNavbar from "../components/PublicNavbar";
+import PublicFooter from "../components/PublicFooter";
 
 export default function Pricing() {
-  const navigate = useNavigate();
+  const [billingCycle, setBillingCycle] = useState("yearly");
 
   const plans = [
     {
       name: "Starter",
-      price: "₹0",
-      desc: "For small teams getting started with incident management.",
+      tagline: "Ideal for small technical teams.",
+      price: { monthly: "₹0", yearly: "₹0" },
       features: [
-        "5 Teammates",
+        "5 Incident Creations",
         "Public Status Page",
         "Realtime Timeline",
-        "Standard Support",
+        "Standard Analytics",
+        "Basic AI Support"
       ],
-      cta: "Get started for free",
-      highlight: false,
+      cta: "Initialize for Free",
       color: "bg-[#D4F4E4]",
     },
     {
-      name: "Pro",
-      price: "₹4,499",
-      desc: "Everything in Starter plus advanced AI and deeper analytics.",
+      name: "Professional",
+      tagline: "For teams scaling reliability.",
+      price: { monthly: "₹499", yearly: "₹4,499" },
       features: [
-        "Unlimited Teammates",
-        "AI Assistant (Gemini)",
-        "Advanced Analytics",
+        "Unlimited Incidents",
+        "Gemini 1.5 Pro AI Support",
+        "Advanced Postmortems",
         "Custom Domain Status Page",
-        "Priority Support",
+        "Priority 24/7 Support",
+        "Team RBAC Controls"
       ],
-      cta: "Start 14-day trial",
+      cta: "Go Professional",
       highlight: true,
-      color: "bg-[#FDE68A]",
+      color: "bg-[#FF6B6B]",
     },
     {
       name: "Enterprise",
-      price: "Custom",
-      desc: "Built for massive organizations with complex compliance needs.",
+      tagline: "Maximum security and compliance.",
+      price: { monthly: "Custom", yearly: "Custom" },
       features: [
-        "Single Sign-On (SSO)",
-        "Audit Logs",
+        "SAML / Single Sign-On (SSO)",
+        "Advanced Audit Logging",
+        "White-glove Onboarding",
         "SLA Guarantees",
         "Dedicated Success Manager",
-        "24/7 Phone Support",
+        "Direct Engineering Slack"
       ],
-      cta: "Contact sales",
-      highlight: false,
-      color: "bg-[#FFB5E8]",
+      cta: "Contact Sales",
+      color: "bg-[#FDE68A]",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <nav className="border-b-2 border-black bg-white sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#FF6B6B] border-2 border-black neo-shadow flex items-center justify-center">
-              <span className="text-black font-black text-sm">i</span>
-            </div>
-            <span className="text-lg font-black tracking-tight text-black">
-              incident.ai
-            </span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/login"
-              className="text-sm font-bold text-black hover:underline decoration-2"
-            >
-              Sign in
-            </Link>
-            <Link
-              to="/register"
-              className="bg-[#FF6B6B] text-black text-sm font-bold px-6 py-2 border-2 border-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all"
-            >
-              Start free
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#FAFAFA] font-outfit selection:bg-black selection:text-white">
+      <PublicNavbar />
 
       <div className="max-w-7xl mx-auto px-6 py-24 text-center">
-        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-4 font-bold">
-          Simple pricing
-        </div>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-black mb-8 leading-none">
-          <RevealText>Invest in your </RevealText>
-          <br />
-          <span className="italic font-light text-[#FF6B6B]">
-            <RevealText delay={0.2}>reliability</RevealText>
-          </span>
-          .
-        </h1>
-        <motion.p
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          viewport={{ once: true }}
-          className="text-xl text-zinc-700 max-w-2xl mx-auto mb-16 font-medium"
+          animate={{ opacity: 1, y: 0 }}
+          className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-6"
         >
-          Whether you're a two-person startup or a global enterprise, we have a
-          plan that fits your engineering team's needs.
-        </motion.p>
+          Economic Infrastructure
+        </motion.div>
+        
+        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-black mb-12 leading-none uppercase italic">
+          <RevealText>Investment in </RevealText>
+          <br />
+          <span className="text-[#FF6B6B]">
+            <RevealText delay={0.2}>Reliability.</RevealText>
+          </span>
+        </h1>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Toggle */}
+        <div className="flex items-center justify-center gap-6 mb-20">
+          <div className="flex p-1 bg-zinc-200 border-4 border-black neo-shadow-sm">
+            {["monthly", "yearly"].map((cycle) => (
+              <button 
+                key={cycle}
+                onClick={() => setBillingCycle(cycle)}
+                className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  billingCycle === cycle 
+                    ? "bg-black text-white neo-shadow-sm -m-[2px] z-10" 
+                    : "text-zinc-500 hover:text-black"
+                }`}
+              >
+                {cycle} {cycle === "yearly" && <span className="text-[#FF6B6B] ml-1">(Save 25%)</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-10">
           {plans.map((plan, i) => (
             <motion.div
               key={i}
@@ -114,89 +105,66 @@ export default function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`relative p-8 border-4 border-black neo-shadow ${plan.color} text-left flex flex-col hover:translate-y-1 hover:shadow-none transition-all`}
+              className={`relative p-10 border-4 border-black text-left flex flex-col transition-all group ${
+                plan.highlight ? "bg-white neo-shadow-lg scale-105 z-10" : "bg-white neo-shadow"
+              }`}
             >
               {plan.highlight && (
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-mono uppercase tracking-widest px-4 py-1 border-2 border-black">
-                  Most Popular
+                <div className="absolute -top-5 left-10 bg-[#FF6B6B] text-black text-[10px] font-black uppercase tracking-widest px-4 py-2 border-4 border-black neo-shadow-sm">
+                  Recommended
                 </div>
               )}
-              <div className="mb-8">
-                <h3 className="text-3xl font-black tracking-tighter text-black mb-2">
+              
+              <div className="mb-10">
+                <div className={`w-12 h-12 ${plan.color} border-2 border-black mb-6 flex items-center justify-center neo-shadow-sm`}>
+                  {plan.highlight ? <Zap className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
+                </div>
+                <h3 className="text-2xl font-black tracking-tight text-black uppercase italic mb-2">
                   {plan.name}
                 </h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black tracking-tighter text-black">
-                    {plan.price}
-                  </span>
-                  {plan.price !== "Custom" && (
-                    <span className="text-sm text-black/60 font-bold">
-                      /{plan.price === "₹0" ? "month" : "year"}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-4 text-base font-bold text-black/70 leading-tight">
-                  {plan.desc}
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-tight">
+                  {plan.tagline}
                 </p>
               </div>
 
-              <div className="space-y-4 mb-10 flex-1">
+              <div className="mb-10 p-6 bg-zinc-50 border-2 border-black/10 group-hover:border-black transition-colors">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black tracking-tight text-black font-mono italic">
+                    {typeof plan.price === 'string' ? plan.price : plan.price[billingCycle]}
+                  </span>
+                  {typeof plan.price !== 'string' && plan.price.monthly !== "₹0" && (
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                      / {billingCycle}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-5 mb-12 flex-1">
                 {plan.features.map((f, j) => (
-                  <div key={j} className="flex items-start gap-3">
-                    <Check
-                      className="w-5 h-5 text-black mt-0.5 shrink-0"
-                      strokeWidth={3}
-                    />
-                    <span className="text-sm font-bold text-black">{f}</span>
+                  <div key={j} className="flex items-center gap-4 group/item">
+                    <div className="w-5 h-5 bg-[#D4F4E4] border-2 border-black flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-black" strokeWidth={4} />
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-zinc-600 group-hover/item:text-black transition-colors">{f}</span>
                   </div>
                 ))}
               </div>
 
               <Link
                 to="/register"
-                className={`w-full py-4 text-center text-lg font-black border-4 border-black neo-shadow transition-all hover:translate-y-0.5 hover:shadow-none ${plan.highlight ? "bg-black text-white" : "bg-white text-black"}`}
+                className={`w-full py-5 text-center text-sm font-black uppercase tracking-widest border-4 border-black neo-shadow transition-all hover:translate-y-0.5 hover:shadow-none ${
+                  plan.highlight ? "bg-[#FF6B6B] text-black" : "bg-white text-black hover:bg-zinc-50"
+                }`}
               >
                 {plan.cta}
               </Link>
             </motion.div>
           ))}
         </div>
-
-        <div className="mt-24 p-12 bg-black text-white text-left grid lg:grid-cols-2 gap-12 items-center border-4 border-black neo-shadow">
-          <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-4">
-              Questions? We're here to help.
-            </h2>
-            <p className="text-zinc-400 text-lg font-bold">
-              Our team of SRE experts is ready to help you optimize your
-              incident response workflow.
-            </p>
-          </div>
-          <div className="flex justify-start lg:justify-end">
-            <button className="bg-[#FF6B6B] text-black px-8 py-4 text-lg font-black border-4 border-black neo-shadow hover:bg-white transition-all flex items-center gap-3 group">
-              Chat with an expert{" "}
-              <ArrowRight
-                className="w-5 h-5 group-hover:translate-x-1 transition"
-                strokeWidth={3}
-              />
-            </button>
-          </div>
-        </div>
       </div>
 
-      <footer className="border-t-4 border-black bg-white py-12">
-        <div className="max-w-7xl mx-auto px-6 text-sm font-black text-black flex justify-between">
-          <span>© 2026 incident.ai</span>
-          <div className="flex gap-8">
-            <Link to="/" className="hover:underline decoration-2">
-              Home
-            </Link>
-            <Link to="/status/demo" className="hover:underline decoration-2">
-              Status Page
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
