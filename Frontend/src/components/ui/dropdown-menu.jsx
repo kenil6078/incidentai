@@ -52,7 +52,7 @@ export const DropdownMenuContent = ({ children, align = "end", className }) => {
 
   const alignClass = align === "end" ? "right-0" : "left-0";
   return (
-    <div className={cn("absolute z-50 mt-2 min-w-[8rem] overflow-hidden bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]", alignClass, className)}>
+    <div className={cn("absolute z-50 mt-2 min-w-[8rem] max-h-80 overflow-y-auto bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]", alignClass, className)}>
       {children}
     </div>
   );

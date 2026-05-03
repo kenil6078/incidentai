@@ -60,7 +60,7 @@ export const SelectValue = ({ placeholder }) => null; // Not needed in this simp
 
 export const SelectContent = ({ children, onSelect, className }) => (
   <div className={cn(
-    "absolute z-50 mt-2 max-h-60 w-full overflow-hidden border-2 border-black bg-white neo-shadow-md animate-in fade-in slide-in-from-top-2 duration-200", 
+    "absolute z-50 mt-2 max-h-60 w-full overflow-y-auto border-2 border-black bg-white neo-shadow-md animate-in fade-in slide-in-from-top-2 duration-200", 
     className
   )}>
     <div className="p-1.5 bg-grid-bg">
