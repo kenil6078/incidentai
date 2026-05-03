@@ -29,21 +29,22 @@ export const getBillingInfo = async (req, res) => {
 
 export const createOrder = async (req, res) => {
   try {
-    let { planId } = req.body;
+    const { planId, billingCycle = 'yearly' } = req.body;
     
-    // Handle nested payload if it accidentally happens
-    if (typeof planId === 'object' && planId.planId) {
-      planId = planId.planId;
-    }
-    
-    // As per user request: Pro plan is 4499 INR
-    const amounts = {
-      pro: 4499,
-      enterprise: 9999 // Example
+    // Plan amounts based on cycle
+    const planConfig = {
+      pro: {
+        monthly: 499,
+        yearly: 4499
+      },
+      enterprise: {
+        monthly: 999,
+        yearly: 9999
+      }
     };
 
-    const amount = amounts[planId];
-    if (!amount) return res.status(400).json({ detail: "Invalid plan selected" });
+    const amount = planConfig[planId]?.[billingCycle];
+    if (!amount) return res.status(400).json({ detail: "Invalid plan or billing cycle selected" });
 
     const instance = new Razorpay({
       key_id: config.RAZORPAY_KEY_ID,
@@ -129,7 +130,10 @@ export const verifyPayment = async (req, res) => {
 
 export const getTransactions = async (req, res) => {
   try {
-    const transactions = await transactionModel.find({ orgId: req.user.orgId._id || req.user.orgId })
+    const transactions = await transactionModel.find({ 
+      orgId: req.user.orgId._id || req.user.orgId,
+      status: 'captured' 
+    })
       .sort({ createdAt: -1 });
     res.json(transactions);
   } catch (error) {

@@ -46,18 +46,18 @@ export default function IncidentsList() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-7xl">
-      <button onClick={() => navigate("/dashboard")} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950" data-testid="incidents-back">
-        <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
-      </button>
-
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/incidents</div>
-          <h1 className="text-3xl font-black tracking-tighter text-zinc-950">All incidents</h1>
+          <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">
+            Incidents
+          </h1>
+          <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">
+            Manage and respond to system disruptions.
+          </p>
         </div>
         {user?.role === 'admin' && (
-          <Link to="/incidents/new" className="bg-zinc-950 text-white text-sm font-semibold px-4 py-2 hover:bg-zinc-800 flex items-center gap-2" data-testid="incidents-new-button">
-            <Plus className="w-4 h-4" /> New Incident
+          <Link to="/incidents/new" className="bg-[#FF6B6B] text-black border-2 border-black text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest" data-testid="incidents-new-button">
+            <Plus className="w-4 h-4" strokeWidth={3} /> New Incident
           </Link>
         )}
       </div>

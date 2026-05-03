@@ -252,18 +252,17 @@ export default function IncidentDetail() {
 
   return (
     <div className="p-6 space-y-5 max-w-7xl animate-in fade-in duration-500">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950">
-        <ArrowLeft className="w-3.5 h-3.5" /> All incidents
-      </button>
-
-      <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-1">incident · {(incident?.id || incident?._id)?.toString().slice(-8)}</div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-950 break-words">{incident.title}</h1>
-          <div className="flex flex-wrap items-center gap-3 mt-3">
+          <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic break-words">
+            {incident.title}
+          </h1>
+          <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight mt-1">
+            INCIDENT · {(incident?.id || incident?._id)?.toString().slice(-8)} · OPENED BY {incident.creator?.name || 'SYSTEM'} · {formatRelative(incident.createdAt)}
+          </p>
+          <div className="flex flex-wrap items-center gap-3 mt-4">
             <SeverityBadge severity={incident.severity} />
             <StatusPill status={incident.status} />
-            <span className="text-[10px] font-mono text-zinc-500">opened by {incident.creator?.name || (typeof incident.creator === 'string' ? incident.creator : 'System')} · {formatRelative(incident.createdAt)}</span>
           </div>
         </div>
         {canDelete && (

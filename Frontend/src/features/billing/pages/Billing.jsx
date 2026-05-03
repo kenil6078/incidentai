@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { CreditCard, Check, Zap, ArrowRight, Loader2, ShieldCheck, History, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { CreditCard, Check, Zap, ArrowRight, Loader2, History, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { fetchBillingInfo, createOrder, verifyPayment, fetchTransactions, selectBilling, selectTransactions } from "../billing.slice";
@@ -8,9 +9,10 @@ import { fetchBillingInfo, createOrder, verifyPayment, fetchTransactions, select
 export default function Billing() {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { plan, incidentCount, limit, loading, orderLoading, verifying } = useSelector(selectBilling);
+  const { plan, incidentCount, limit } = useSelector(selectBilling);
   const transactions = useSelector(selectTransactions) || [];
   const [localLoading, setLocalLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState("yearly");
 
   useEffect(() => {
     dispatch(fetchBillingInfo());
@@ -21,271 +23,185 @@ export default function Billing() {
     {
       id: "free",
       name: "Starter",
-      price: "₹0",
-      amount: 0,
-      features: [
-        "5 Incident Creations",
-        "AI Assistant (Minimal - Gemini 1.5 Flash)",
-        "Customer Support",
-        "Basic Analytics",
-        "Public Status Page"
-      ]
+      price: { monthly: "₹0", yearly: "₹0" },
+      amount: { monthly: 0, yearly: 0 },
+      features: ["5 Incident Creations", "AI Assistant (Minimal)", "Basic Analytics", "Public Status Page"]
     },
     {
       id: "pro",
       name: "Pro",
-      price: "₹4,499",
-      amount: 4499,
-      features: [
-        "250+ Incident Creations",
-        "Gemini 3.1 Pro AI Support",
-        "Mistral Large 2 Fallback",
-        "Community & Priority Support",
-        "Advanced Postmortems",
-        "Custom Domains"
-      ]
+      price: { monthly: "₹499", yearly: "₹4,499" },
+      amount: { monthly: 499, yearly: 4499 },
+      features: ["Unlimited Incidents", "Gemini 1.5 Pro AI", "Advanced Postmortems", "Team Management", "Priority Support"]
     }
   ];
 
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
   const handleUpgrade = async (selectedPlan) => {
     if (selectedPlan.id === plan) {
-      toast.info(`You are already on the ${selectedPlan.name} plan`);
+      toast.info(`Already on ${selectedPlan.name}`);
       return;
     }
-
-    if (selectedPlan.amount === 0) {
-      toast.info("Switching to starter plan is currently manual. Contact support.");
+    if (selectedPlan.amount[billingCycle] === 0) {
+      toast.info("Switching to free is manual.");
       return;
     }
 
     setLocalLoading(true);
-    const sdkLoaded = await loadRazorpay();
-
-    if (!sdkLoaded) {
-      toast.error("Razorpay SDK failed to load. Check your connection.");
-      setLocalLoading(false);
-      return;
-    }
-
-    try {
-      const order = await dispatch(createOrder({
-        planId: selectedPlan.id
-      })).unwrap();
-
-      // Use the key returned from the backend if available, or fallback to env
-      const razorpayKey = order.key || import.meta.env.VITE_RAZORPAY_KEY_ID;
-      
-      if (!razorpayKey) {
-        toast.error("Razorpay configuration missing.");
-        setLocalLoading(false);
-        return;
-      }
-
-      const options = {
-        key: razorpayKey,
-        amount: order.amount,
-        currency: order.currency,
-        name: "incident.ai",
-        description: `Upgrade to ${selectedPlan.name} Plan`,
-        order_id: order.id,
-        handler: async (response) => {
-          try {
-            await dispatch(verifyPayment(response)).unwrap();
-            toast.success("Workspace upgraded successfully!");
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = async () => {
+      try {
+        const order = await dispatch(createOrder({ planId: selectedPlan.id, billingCycle })).unwrap();
+        const options = {
+          key: order.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: "INR",
+          name: "incident.ai",
+          description: `${selectedPlan.name} (${billingCycle})`,
+          order_id: order.id,
+          handler: async (res) => {
+            await dispatch(verifyPayment(res)).unwrap();
+            toast.success("Upgraded!");
             dispatch(fetchBillingInfo());
             dispatch(fetchTransactions());
-          } catch (err) {
-            toast.error("Payment verification failed.");
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setLocalLoading(false);
-            toast.info("Payment cancelled.");
-          }
-        },
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || "",
-        },
-        theme: {
-          color: "#000000",
-        },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (err) {
-      toast.error(err?.detail || "Could not initiate payment");
-    } finally {
-      setLocalLoading(false);
-    }
+          },
+          prefill: { name: user?.name, email: user?.email },
+          theme: { color: "#000000" },
+        };
+        new window.Razorpay(options).open();
+      } catch (err) {
+        toast.error("Payment failed");
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+    document.body.appendChild(script);
   };
 
-  const currentPlanName = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Starter";
-
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-8">
-      <div>
-        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/billing</div>
-        <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase">Billing & Subscription</h1>
-        <p className="text-sm text-zinc-600 mt-1">Manage your workspace plan and growth.</p>
+    <div className="p-6 max-w-5xl mx-auto space-y-6 selection:bg-black selection:text-white relative">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">Billing & Subscription</h1>
+          <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">Manage your workspace economics.</p>
+        </div>
+        <div className="flex p-1 bg-zinc-100 border-2 border-black neo-shadow-sm">
+          {["monthly", "yearly"].map((cycle) => (
+            <button 
+              key={cycle}
+              onClick={() => setBillingCycle(cycle)}
+              className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                billingCycle === cycle ? "bg-black text-white neo-shadow-sm -m-[1px] z-10" : "text-zinc-500"
+              }`}
+            >
+              {cycle} {cycle === "yearly" && <span className="text-[#FF6B6B]">-25%</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="bg-white border-2 border-black p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 neo-shadow relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-2 bg-zinc-950" />
-        
-        <div className="flex items-center gap-6 w-full md:w-auto">
-          <div className="w-16 h-16 bg-zinc-950 flex items-center justify-center border-2 border-black neo-shadow-sm shrink-0">
-            <Zap className="w-8 h-8 text-white" />
+      <div className="bg-white border-2 border-black p-5 flex flex-col md:flex-row items-center justify-between gap-6 neo-shadow">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 ${plan === 'pro' ? 'bg-[#FF6B6B]' : 'bg-black'} border-2 border-black flex items-center justify-center neo-shadow-sm shrink-0`}>
+            <Zap className="w-6 h-6 text-white" />
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold mb-1">Current Workspace Plan</div>
-            <div className="flex items-center gap-3">
-              <div className="text-2xl font-black text-zinc-950 uppercase tracking-tight">{currentPlanName}</div>
-              <span className="bg-[#D4F4E4] text-black border-2 border-black text-[10px] font-mono font-bold uppercase px-2 py-0.5">Active</span>
-            </div>
+            <div className="text-[10px] font-black uppercase text-zinc-400">Current Plan</div>
+            <div className="text-xl font-black uppercase italic">{plan ? plan : "FREE"}</div>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-8 md:gap-12 w-full md:w-auto justify-start md:justify-end">
+        <div className="flex gap-8">
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold mb-1">Incidents Usage</div>
-            <div className="text-lg font-black text-zinc-950 font-mono">
-              {incidentCount} / {limit === Infinity ? "∞" : limit}
-            </div>
-            <div className="w-32 h-3 border-2 border-black bg-zinc-100 mt-2">
-              <div 
-                className="h-full bg-zinc-950 transition-all duration-500" 
-                style={{ width: `${Math.min((incidentCount / (limit === Infinity ? 1 : limit)) * 100, 100)}%` }}
+            <div className="text-[10px] font-black uppercase text-zinc-400">Incidents Usage</div>
+            <div className="text-sm font-black font-mono">{incidentCount} / {plan === 'pro' ? "∞" : limit}</div>
+            <div className="w-32 h-2 border-2 border-black bg-zinc-50 mt-1">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((incidentCount / (plan === 'pro' ? 1 : limit)) * (plan === 'pro' ? 0 : 100), 100)}%` }}
+                className="h-full bg-black"
               />
             </div>
           </div>
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold mb-1">Renewal Cycle</div>
-            <div className="text-lg font-black text-zinc-950 uppercase tracking-tight">Monthly</div>
+          <div className="hidden sm:block border-l-2 border-black/5 h-10" />
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-green-600" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Verified</span>
           </div>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 pt-4">
+      <div className="grid md:grid-cols-2 gap-6">
         {plans.map((p) => (
           <div 
-            key={p.id} 
-            className={`p-8 border-2 flex flex-col transition-all group ${
-              p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))
-                ? "border-black bg-zinc-50 opacity-80" 
-                : p.id === "pro" 
-                  ? "border-black bg-white neo-shadow-lg scale-[1.02]" 
-                  : "border-black bg-white neo-shadow"
+            key={p.id}
+            className={`p-6 border-2 border-black flex flex-col relative transition-all ${
+              p.id === plan ? "bg-zinc-50/50 opacity-60" : "bg-white neo-shadow hover:translate-y-[-4px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
             }`}
           >
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-black tracking-tighter text-zinc-950 uppercase italic">{p.name}</h3>
-                {p.id === "pro" && <span className="bg-[#FF6B6B] text-black border-2 border-black text-[10px] font-mono font-bold uppercase px-2 py-1 neo-shadow-sm">Most Popular</span>}
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-black tracking-tighter text-zinc-950 font-mono">{p.price}</span>
-                <span className="text-sm text-zinc-500 font-bold uppercase tracking-tighter">/ {
-                  p.id === "free" ? "month" : "year"
-              }</span>
+            {p.id === "pro" && <span className="absolute -top-3 right-6 bg-black text-white px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] neo-shadow-sm">Best Value</span>}
+            <div className="mb-6">
+              <h3 className="text-xl font-black uppercase italic">{p.name}</h3>
+              <div className="flex items-baseline gap-1 mt-2">
+                <span className="text-4xl font-black font-mono italic">{p.price[billingCycle]}</span>
+                <span className="text-[10px] font-black uppercase text-zinc-400">/ {billingCycle}</span>
               </div>
             </div>
-
-            <ul className="space-y-4 mb-10 flex-1">
+            <ul className="space-y-3 mb-8 flex-1">
               {p.features.map((f, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="mt-1 p-0.5 bg-zinc-950 border border-black">
-                    <Check className="w-3 h-3 text-white" />
+                <li key={i} className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-[#D4F4E4] border-2 border-black flex items-center justify-center shrink-0">
+                    <Check className="w-2 h-2 text-black" strokeWidth={5} />
                   </div>
-                  <span className="text-sm font-bold text-zinc-700 uppercase tracking-tight">{f}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">{f}</span>
                 </li>
               ))}
             </ul>
-
             <button
               onClick={() => handleUpgrade(p)}
               disabled={localLoading || p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))}
-              className={`w-full py-4 text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:translate-x-1 active:translate-y-1 active:neo-shadow-none ${
-                p.id === "pro" 
-                  ? "bg-zinc-950 text-white hover:bg-zinc-800 neo-shadow" 
-                  : "bg-white text-zinc-950 border-2 border-black hover:bg-zinc-50 neo-shadow"
-              } disabled:opacity-50 disabled:neo-shadow-none disabled:translate-y-0`}
+              className={`w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 border-2 border-black transition-all ${
+                p.id === "pro" ? "bg-[#FF6B6B] neo-shadow hover:translate-y-0.5 hover:shadow-none" : "bg-white hover:bg-zinc-50"
+              } disabled:opacity-50`}
             >
-              {localLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-               (p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))) ? "Active Plan" : `Select ${p.name}`}
-              {!(p.id === plan || (p.id === 'free' && (!plan || plan === 'free'))) && !localLoading && <ArrowRight className="w-5 h-5" />}
+              {localLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+               (p.id === plan) ? "Active Engine" : `Upgrade to ${p.name}`}
             </button>
           </div>
         ))}
       </div>
 
-      <div className="pt-12 border-t-2 border-black">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-black text-zinc-950 uppercase tracking-tighter flex items-center gap-3">
-            <History className="w-6 h-6" /> Payment History
-          </h3>
-        </div>
-        
-        {transactions.length === 0 ? (
-          <div className="bg-white border-2 border-black neo-shadow overflow-hidden">
-            <div className="p-12 text-center space-y-3">
-              <div className="w-16 h-16 bg-zinc-100 border-2 border-dashed border-black mx-auto flex items-center justify-center">
-                <CreditCard className="w-8 h-8 text-zinc-400" />
-              </div>
-              <div className="text-sm font-bold text-zinc-950 uppercase tracking-widest">No transaction history</div>
-              <p className="text-xs text-zinc-500 max-w-xs mx-auto">Your invoices and payment records will be listed here once you upgrade.</p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border-2 border-black neo-shadow overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b-2 border-black bg-zinc-50 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-                  <th className="px-6 py-4 font-bold">Order ID</th>
-                  <th className="px-6 py-4 font-bold">Plan</th>
-                  <th className="px-6 py-4 font-bold">Amount</th>
-                  <th className="px-6 py-4 font-bold">Status</th>
-                  <th className="px-6 py-4 font-bold">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y-2 divide-zinc-200">
-                {transactions.map((t) => (
-                  <tr key={t._id} className="text-sm font-bold uppercase tracking-tight">
-                    <td className="px-6 py-4 font-mono text-xs">{t.razorpayOrderId}</td>
-                    <td className="px-6 py-4">{t.planId}</td>
-                    <td className="px-6 py-4">₹{t.amount}</td>
+      <div className="space-y-4 pt-6">
+        <h3 className="text-xl font-black uppercase italic flex items-center gap-2">
+          <History className="w-5 h-5" /> Ledger History
+        </h3>
+        <div className="bg-white border-2 border-black neo-shadow overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b-2 border-black bg-zinc-50 text-[8px] font-black uppercase tracking-widest text-zinc-400">
+                <th className="px-6 py-3">Order ID</th>
+                <th className="px-6 py-3">Value</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y-2 divide-black/5">
+              {transactions.length === 0 ? (
+                <tr><td colSpan={4} className="px-6 py-10 text-center text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">No records found.</td></tr>
+              ) : (
+                transactions.map((t) => (
+                  <tr key={t._id} className="text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors">
+                    <td className="px-6 py-4 font-mono text-zinc-500">{t.razorpayOrderId}</td>
+                    <td className="px-6 py-4 italic">₹{t.amount}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 border-2 border-black text-[10px] font-mono ${
-                        t.status === 'captured' ? 'bg-[#D4F4E4]' : 'bg-[#FF6B6B]'
-                      }`}>
-                        {t.status}
-                      </span>
+                      <span className="px-2 py-0.5 border-2 border-black text-[8px] bg-[#D4F4E4]">{t.status}</span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 font-mono text-xs">
-                      {new Date(t.createdAt).toLocaleDateString()}
-                    </td>
+                    <td className="px-6 py-4 text-zinc-400 font-mono">{new Date(t.createdAt).toLocaleDateString()}</td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

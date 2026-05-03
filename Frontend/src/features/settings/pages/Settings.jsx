@@ -67,21 +67,13 @@ export default function Settings() {
 
   return (
     <div className="p-4 md:p-6 max-w-4xl space-y-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950"
-        data-testid="settings-back"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
-      </button>
-
       <div>
-        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">
-          /settings
-        </div>
-        <h1 className="text-3xl font-black tracking-tighter text-zinc-950">
+        <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">
           Settings
         </h1>
+        <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">
+          Manage your account and organization preferences.
+        </p>
       </div>
 
       <div className="flex flex-col md:grid md:grid-cols-4 gap-8">

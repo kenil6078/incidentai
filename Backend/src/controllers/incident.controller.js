@@ -36,7 +36,7 @@ export const createIncident = async (req, res) => {
 
     const LIMITS = {
       free: 5,
-      pro: 250,
+      pro: Infinity,
       enterprise: Infinity,
     };
 

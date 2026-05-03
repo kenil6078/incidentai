@@ -44,7 +44,12 @@ export default function CreateIncident() {
       toast.success("Incident created");
       navigate(`/incidents/${data.id || data._id}`);
     } catch (err) {
-      toast.error("Failed to create incident");
+      if (err.response?.status === 403) {
+        toast.error(err.response.data.detail);
+        navigate("/billing");
+      } else {
+        toast.error("Failed to create incident");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,11 +64,14 @@ export default function CreateIncident() {
 
   return (
     <div className="p-4 md:p-6 max-w-3xl">
-      <button onClick={() => navigate("/dashboard")} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950 mb-4" data-testid="create-back">
-        <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
-      </button>
-      <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/incidents/new</div>
-      <h1 className="text-3xl font-black tracking-tighter text-zinc-950 mb-6">Declare incident</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">
+          Declare Incident
+        </h1>
+        <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">
+          Initialize a new system disruption record.
+        </p>
+      </div>
 
       <form onSubmit={submit} className="space-y-5 bg-white border border-zinc-200 p-6" data-testid="create-incident-form">
         <div>

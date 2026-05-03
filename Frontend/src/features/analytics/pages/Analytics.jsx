@@ -38,13 +38,13 @@ export default function Analytics() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-xs font-semibold text-zinc-600 hover:text-zinc-950" data-testid="analytics-back">
-        <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
-      </button>
-
       <div>
-        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/analytics</div>
-        <h1 className="text-3xl font-black tracking-tighter text-zinc-950">Insights</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">
+          Analytics
+        </h1>
+        <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">
+          System performance and reliability metrics.
+        </p>
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">

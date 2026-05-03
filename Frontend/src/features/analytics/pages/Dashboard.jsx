@@ -51,16 +51,17 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 space-y-6 max-w-7xl">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">/dashboard</div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-zinc-950">
-            Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {user?.name?.split(" ")[0]}.
+          <h1 className="text-3xl font-black tracking-tighter text-zinc-950 uppercase italic">
+            Dashboard
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">Here's what's happening across <span className="font-mono">{user?.org_name}</span>.</p>
+          <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight">
+            Greetings, {user?.name?.split(" ")[0]}. Overview of <span className="font-mono">{user?.org_name}</span>.
+          </p>
         </div>
-        <Link to="/incidents/new" className="bg-zinc-950 text-white text-[10px] md:text-sm font-semibold px-3 md:px-4 py-2 hover:bg-zinc-800 transition flex items-center gap-2" data-testid="dashboard-new-incident">
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Incident</span><span className="sm:hidden">New</span>
+        <Link to="/incidents/new" className="bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest" data-testid="dashboard-new-incident">
+          <Plus className="w-4 h-4" strokeWidth={3} /> <span className="hidden sm:inline">New Incident</span><span className="sm:hidden">New</span>
         </Link>
       </div>
 

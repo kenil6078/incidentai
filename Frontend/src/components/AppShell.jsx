@@ -113,7 +113,9 @@ export default function AppShell({ children }) {
               <NavItem to="/services" icon={Activity} label="Services" onClick={() => setShowSidebar(false)} />
               <NavItem to="/team" icon={Users} label="Team" onClick={() => setShowSidebar(false)} />
               <NavItem to="/analytics" icon={BarChart3} label="Analytics" onClick={() => setShowSidebar(false)} />
-              <NavItem to="/billing" icon={CreditCard} label="Billing" onClick={() => setShowSidebar(false)} />
+              {user.role === 'admin' && (
+                <NavItem to="/billing" icon={CreditCard} label="Billing" onClick={() => setShowSidebar(false)} />
+              )}
               <NavItem to="/settings" icon={Settings} label="Settings" onClick={() => setShowSidebar(false)} />
             </>
           )}
