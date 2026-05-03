@@ -5,20 +5,24 @@ import { config } from '../config/config.js';
 
 // ── 1. MODELS ─────────────────────────────
 const geminiFlash = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
   apiKey: config.GEMINI_API_KEY,
+  apiVersion: "v1beta",
+  maxRetries: 1,
   temperature: 0.1,
 });
 
 const geminiPro = new ChatGoogleGenerativeAI({
   model: "gemini-1.5-pro",
   apiKey: config.GEMINI_API_KEY,
+  apiVersion: "v1beta",
+  maxRetries: 1,
   temperature: 0.1,
 });
 
 const mistralModel = config.MISTRAL_API_KEY 
   ? new ChatMistralAI({
-      model: "mistral-large-latest",
+      model: "mistral-medium-latest",
       apiKey: config.MISTRAL_API_KEY,
       temperature: 0.1,
     })
@@ -34,37 +38,46 @@ const runAiStream = async (systemPrompt, userPrompt, onChunk, plan = 'free') => 
     new HumanMessage(userPrompt),
   ];
 
-  // Plan-based primary model selection
-  const primaryModel = plan === 'pro' || plan === 'enterprise' ? geminiPro : geminiFlash;
-
   try {
-    console.log(`Attempting AI generation with ${plan === 'pro' ? 'Gemini 1.5 Pro' : 'Gemini 1.5 Flash'}...`);
-    const stream = await primaryModel.stream(messages);
+    console.log(`Attempting AI generation with Gemini 2.5 Flash...`);
+    const stream = await geminiFlash.stream(messages);
     for await (const chunk of stream) {
       if (chunk.content) {
         onChunk(chunk.content);
       }
     }
+    return;
   } catch (err) {
-    console.warn('Primary AI failed, checking fallback:', err.message);
+    console.warn('Gemini 2.5 Flash failed, trying Gemini 1.5 Pro:', err.message);
     
-    // Only attempt Mistral fallback for Pro/Enterprise users as requested
-    if ((plan === 'pro' || plan === 'enterprise') && mistralModel) {
-      try {
-        console.log('Falling back to Mistral Large...');
-        const stream = await mistralModel.stream(messages);
-        for await (const chunk of stream) {
-          if (chunk.content) {
-            onChunk(chunk.content);
-          }
+    try {
+      console.log('Attempting AI generation with Gemini 1.5 Pro...');
+      const stream = await geminiPro.stream(messages);
+      for await (const chunk of stream) {
+        if (chunk.content) {
+          onChunk(chunk.content);
         }
-        return;
-      } catch (mistralErr) {
-        console.error('Mistral fallback failed:', mistralErr.message);
       }
+      return;
+    } catch (proErr) {
+      console.warn('Gemini 1.5 Pro failed, checking Mistral fallback:', proErr.message);
+      
+      if (mistralModel) {
+        try {
+          console.log('Falling back to Mistral...');
+          const stream = await mistralModel.stream(messages);
+          for await (const chunk of stream) {
+            if (chunk.content) {
+              onChunk(chunk.content);
+            }
+          }
+          return;
+        } catch (mistralErr) {
+          console.error('Mistral fallback failed:', mistralErr.message);
+        }
+      }
+      throw new Error(`AI generation failed on all providers. Flash Error: ${err.message}, Pro Error: ${proErr.message}`);
     }
-    
-    throw new Error(`AI generation failed. ${err.message}`);
   }
 };
 

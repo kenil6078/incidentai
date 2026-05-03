@@ -5,7 +5,13 @@ import { useIncident } from "../hooks/useIncident";
 import { SeverityBadge, StatusPill } from "../../../components/Badges";
 import { formatRelative } from "../../../components/Badges";
 import { Plus, Search, ArrowLeft } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 import { IncidentRowSkeleton } from "../../../components/ui/skeleton";
 
 import { useAuth } from "../../auth/hooks/useAuth";
@@ -15,7 +21,7 @@ export default function IncidentsList() {
   const { user } = useAuth();
   const { subscribe } = useSocket();
   const { list: incidents, loading, getIncidents } = useIncident();
-  
+
   const [statusF, setStatusF] = useState("All statuses");
   const [sevF, setSevF] = useState("All severities");
   const [q, setQ] = useState("");
@@ -33,7 +39,9 @@ export default function IncidentsList() {
     getIncidents(params);
   };
 
-  useEffect(() => { load(); }, [statusF, sevF]);
+  useEffect(() => {
+    load();
+  }, [statusF, sevF]);
 
   useEffect(() => {
     const unsub = subscribe?.((evt) => {
@@ -42,7 +50,12 @@ export default function IncidentsList() {
     return () => unsub && unsub();
   }, [subscribe]);
 
-  const visible = incidents.filter((i) => !debouncedQ || i.title?.toLowerCase().includes(debouncedQ.toLowerCase()) || i.description?.toLowerCase().includes(debouncedQ.toLowerCase()));
+  const visible = incidents.filter(
+    (i) =>
+      !debouncedQ ||
+      i.title?.toLowerCase().includes(debouncedQ.toLowerCase()) ||
+      i.description?.toLowerCase().includes(debouncedQ.toLowerCase()),
+  );
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-7xl">
@@ -55,8 +68,12 @@ export default function IncidentsList() {
             Manage and respond to system disruptions.
           </p>
         </div>
-        {user?.role === 'admin' && (
-          <Link to="/incidents/new" className="bg-[#FF6B6B] text-black border-2 border-black text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest" data-testid="incidents-new-button">
+        {user?.role === "admin" && (
+          <Link
+            to="/incidents/new"
+            className="bg-[#FF6B6B] text-black border-2 border-black text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest"
+            data-testid="incidents-new-button"
+          >
             <Plus className="w-4 h-4" strokeWidth={3} /> New Incident
           </Link>
         )}
@@ -74,7 +91,12 @@ export default function IncidentsList() {
           />
         </div>
         <Select value={statusF} onValueChange={setStatusF}>
-          <SelectTrigger className="w-44 rounded-none" data-testid="incidents-filter-status"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger
+            className="w-44 rounded-none"
+            data-testid="incidents-filter-status"
+          >
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
           <SelectContent className="rounded-none">
             <SelectItem value="All statuses">All statuses</SelectItem>
             <SelectItem value="Investigating">Investigating</SelectItem>
@@ -84,7 +106,12 @@ export default function IncidentsList() {
           </SelectContent>
         </Select>
         <Select value={sevF} onValueChange={setSevF}>
-          <SelectTrigger className="w-44 rounded-none" data-testid="incidents-filter-severity"><SelectValue placeholder="Severity" /></SelectTrigger>
+          <SelectTrigger
+            className="w-44 rounded-none"
+            data-testid="incidents-filter-severity"
+          >
+            <SelectValue placeholder="Severity" />
+          </SelectTrigger>
           <SelectContent className="rounded-none">
             <SelectItem value="All severities">All severities</SelectItem>
             <SelectItem value="Low">Low</SelectItem>
@@ -112,7 +139,10 @@ export default function IncidentsList() {
               <IncidentRowSkeleton />
             </>
           ) : visible.length === 0 ? (
-            <div className="p-10 text-center text-sm text-zinc-500" data-testid="incidents-empty">
+            <div
+              className="p-10 text-center text-sm text-zinc-500"
+              data-testid="incidents-empty"
+            >
               No incidents match your filters.
             </div>
           ) : (
@@ -124,18 +154,32 @@ export default function IncidentsList() {
                 data-testid={`incident-row-${i.id || i._id}`}
               >
                 <div className="col-span-10 md:col-span-6 min-w-0">
-                  <div className="text-sm font-semibold text-zinc-950 truncate">{i.title}</div>
+                  <div className="text-sm font-semibold text-zinc-950 truncate">
+                    {i.title}
+                  </div>
                   <div className="flex items-center gap-2 mt-1 md:mt-0">
-                     <div className="text-[10px] font-mono text-zinc-500 truncate">{i.creator?.name || i.created_by_name || "Unknown"}</div>
-                     <div className="md:hidden flex gap-1">
-                        <span className="scale-75 origin-left"><SeverityBadge severity={i.severity} withDot={false} /></span>
-                        <span className="scale-75 origin-left"><StatusPill status={i.status} /></span>
-                     </div>
+                    <div className="text-[10px] font-mono text-zinc-500 truncate">
+                      {i.creator?.name || i.created_by_name || "Unknown"}
+                    </div>
+                    <div className="md:hidden flex gap-1">
+                      <span className="scale-75 origin-left">
+                        <SeverityBadge severity={i.severity} withDot={false} />
+                      </span>
+                      <span className="scale-75 origin-left">
+                        <StatusPill status={i.status} />
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="hidden md:block md:col-span-2"><SeverityBadge severity={i.severity} /></div>
-                <div className="hidden md:block md:col-span-2"><StatusPill status={i.status} /></div>
-                <div className="col-span-2 text-right text-[10px] font-mono text-zinc-500">{formatRelative(i.created_at || i.createdAt)}</div>
+                <div className="hidden md:block md:col-span-2">
+                  <SeverityBadge severity={i.severity} />
+                </div>
+                <div className="hidden md:block md:col-span-2">
+                  <StatusPill status={i.status} />
+                </div>
+                <div className="col-span-2 text-right text-[10px] font-mono text-zinc-500">
+                  {formatRelative(i.created_at || i.createdAt)}
+                </div>
               </Link>
             ))
           )}

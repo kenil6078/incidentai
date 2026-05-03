@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 const ClickSpark = ({
   sparkColor = '#fff',
@@ -13,7 +13,7 @@ const ClickSpark = ({
   const canvasRef = useRef(null);
   const sparksRef = useRef([]);
   const startTimeRef = useRef(null);
-  const [showHint, setShowHint] = useState(true);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -115,7 +115,7 @@ const ClickSpark = ({
   }, [sparkColor, sparkSize, sparkRadius, sparkCount, duration, easeFunc, extraScale]);
 
   const handleClick = e => {
-    if (showHint) setShowHint(false);
+
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -157,13 +157,7 @@ const ClickSpark = ({
           zIndex: 9999
         }}
       />
-      {showHint && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 pointer-events-none z-[10000] animate-bounce">
-          <span className="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-zinc-400 bg-white/80 backdrop-blur-sm border-2 border-black px-3 py-1 neo-shadow-sm">
-            Click Anywhere
-          </span>
-        </div>
-      )}
+
       {children}
     </div>
   );

@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 import { useIncident } from "../hooks/useIncident";
 import { useTeam } from "../../team/hooks/useTeam";
 import { useServices } from "../../services/hooks/useServices";
@@ -12,7 +18,7 @@ export default function CreateIncident() {
   const { createIncident } = useIncident();
   const { members: team, getTeam } = useTeam();
   const { list: services, getServices } = useServices();
-  
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -37,7 +43,7 @@ export default function CreateIncident() {
         severity: form.severity.toLowerCase(),
         status: form.status.toLowerCase(),
         assignedTo: form.assigned_to,
-        affectedServices: form.affected_services
+        affectedServices: form.affected_services,
       };
       const result = await createIncident(payload);
       const data = result.payload;
@@ -58,7 +64,12 @@ export default function CreateIncident() {
   const toggle = (key, value) => {
     setForm((f) => {
       const arr = f[key];
-      return { ...f, [key]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value] };
+      return {
+        ...f,
+        [key]: arr.includes(value)
+          ? arr.filter((v) => v !== value)
+          : [...arr, value],
+      };
     });
   };
 
@@ -73,9 +84,15 @@ export default function CreateIncident() {
         </p>
       </div>
 
-      <form onSubmit={submit} className="space-y-5 bg-white border border-zinc-200 p-6" data-testid="create-incident-form">
+      <form
+        onSubmit={submit}
+        className="space-y-5 bg-white border border-zinc-200 p-6"
+        data-testid="create-incident-form"
+      >
         <div>
-          <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Title *</label>
+          <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+            Title *
+          </label>
           <input
             required
             value={form.title}
@@ -87,7 +104,9 @@ export default function CreateIncident() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Description</label>
+          <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+            Description
+          </label>
           <textarea
             rows={4}
             value={form.description}
@@ -100,9 +119,19 @@ export default function CreateIncident() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Severity *</label>
-            <Select value={form.severity} onValueChange={(v) => setForm({ ...form, severity: v })}>
-              <SelectTrigger className="rounded-none" data-testid="create-severity-select"><SelectValue /></SelectTrigger>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+              Severity *
+            </label>
+            <Select
+              value={form.severity}
+              onValueChange={(v) => setForm({ ...form, severity: v })}
+            >
+              <SelectTrigger
+                className="rounded-none"
+                data-testid="create-severity-select"
+              >
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent className="rounded-none">
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
@@ -112,9 +141,19 @@ export default function CreateIncident() {
             </Select>
           </div>
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Status *</label>
-            <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-              <SelectTrigger className="rounded-none" data-testid="create-status-select"><SelectValue /></SelectTrigger>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+              Status *
+            </label>
+            <Select
+              value={form.status}
+              onValueChange={(v) => setForm({ ...form, status: v })}
+            >
+              <SelectTrigger
+                className="rounded-none"
+                data-testid="create-status-select"
+              >
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent className="rounded-none">
                 <SelectItem value="investigating">Investigating</SelectItem>
                 <SelectItem value="identified">Identified</SelectItem>
@@ -125,39 +164,48 @@ export default function CreateIncident() {
           </div>
         </div>
 
-        {team.filter(m => m.isVerified).length > 0 ? (
+        {team.filter((m) => m.isVerified).length > 0 ? (
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Assign team members (Verified only)</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+              Assign team members (Verified only)
+            </label>
             <div className="flex flex-wrap gap-2">
-              {team.filter(m => m.isVerified).map((m) => (
-                <button
-                  type="button"
-                  key={m.id || m._id}
-                  onClick={() => toggle("assigned_to", m.id || m._id)}
-                  className={`px-3 py-1.5 text-xs border-2 transition ${
-                    form.assigned_to.includes(m.id || m._id)
-                      ? "bg-zinc-950 text-white border-black"
-                      : "bg-white text-zinc-700 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none"
-                  }`}
-                  data-testid={`assign-${m.id || m._id}`}
-                >
-                  {m.name}
-                </button>
-              ))}
+              {team
+                .filter((m) => m.isVerified)
+                .map((m) => (
+                  <button
+                    type="button"
+                    key={m.id || m._id}
+                    onClick={() => toggle("assigned_to", m.id || m._id)}
+                    className={`px-3 py-1.5 text-xs border-2 transition ${
+                      form.assigned_to.includes(m.id || m._id)
+                        ? "bg-zinc-950 text-white border-black"
+                        : "bg-white text-zinc-700 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none"
+                    }`}
+                    data-testid={`assign-${m.id || m._id}`}
+                  >
+                    {m.name}
+                  </button>
+                ))}
             </div>
           </div>
         ) : (
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Assign team members</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+              Assign team members
+            </label>
             <p className="text-xs text-amber-600 font-bold bg-amber-50 p-3 border-2 border-dashed border-amber-200">
-              No verified developers found. Please ensure your team members have verified their emails.
+              No verified developers found. Please ensure your team members have
+              verified their emails.
             </p>
           </div>
         )}
 
         {services.length > 0 && (
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">Affected services</label>
+            <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-600 mb-1.5">
+              Affected services
+            </label>
             <div className="flex flex-wrap gap-2">
               {services.map((s) => (
                 <button
@@ -179,10 +227,20 @@ export default function CreateIncident() {
         )}
 
         <div className="flex justify-end gap-2 pt-4 border-t border-zinc-200">
-          <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 text-sm font-semibold border border-zinc-300 hover:bg-zinc-50" data-testid="create-cancel">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 text-sm font-semibold border border-zinc-300 hover:bg-zinc-50"
+            data-testid="create-cancel"
+          >
             Cancel
           </button>
-          <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-semibold bg-zinc-950 text-white hover:bg-zinc-800 disabled:opacity-50" data-testid="create-submit">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 text-sm font-semibold bg-zinc-950 text-white hover:bg-zinc-800 disabled:opacity-50"
+            data-testid="create-submit"
+          >
             {loading ? "Creating..." : "Declare incident"}
           </button>
         </div>
