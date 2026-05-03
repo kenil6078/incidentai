@@ -61,16 +61,16 @@ export default function Pricing() {
     <div className="min-h-screen bg-[#FAFAFA] font-outfit selection:bg-black selection:text-white">
       <PublicNavbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-24 text-center">
+      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-6"
+          className="text-[10px] md:text-xs font-mono uppercase tracking-[0.4em] text-zinc-400 mb-8 font-black"
         >
           Economic Infrastructure
         </motion.div>
         
-        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-black mb-12 leading-none uppercase italic">
+        <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tight text-black mb-16 leading-[0.85] uppercase italic">
           <RevealText>Investment in </RevealText>
           <br />
           <span className="text-[#FF6B6B]">
@@ -79,25 +79,25 @@ export default function Pricing() {
         </h1>
 
         {/* Toggle */}
-        <div className="flex items-center justify-center gap-6 mb-20">
-          <div className="flex p-1 bg-zinc-200 border-4 border-black neo-shadow-sm">
+        <div className="flex items-center justify-center gap-6 mb-24">
+          <div className="flex p-1.5 bg-zinc-200 border-4 border-black neo-shadow-sm">
             {["monthly", "yearly"].map((cycle) => (
               <button 
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
-                className={`px-8 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-10 py-3 text-[10px] md:text-xs font-mono font-black uppercase tracking-widest transition-all ${
                   billingCycle === cycle 
                     ? "bg-black text-white neo-shadow-sm -m-[2px] z-10" 
                     : "text-zinc-500 hover:text-black"
                 }`}
               >
-                {cycle} {cycle === "yearly" && <span className="text-[#FF6B6B] ml-1">(Save 25%)</span>}
+                {cycle} {cycle === "yearly" && <span className="text-[#FF6B6B] ml-2 font-black">(Save 25%)</span>}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid md:grid-cols-3 gap-10 lg:gap-12">
           {plans.map((plan, i) => (
             <motion.div
               key={i}
@@ -105,55 +105,55 @@ export default function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`relative p-10 border-4 border-black text-left flex flex-col transition-all group ${
+              className={`relative p-10 lg:p-12 border-4 border-black text-left flex flex-col transition-all group ${
                 plan.highlight ? "bg-white neo-shadow-lg scale-105 z-10" : "bg-white neo-shadow"
               }`}
             >
               {plan.highlight && (
-                <div className="absolute -top-5 left-10 bg-[#FF6B6B] text-black text-[10px] font-black uppercase tracking-widest px-4 py-2 border-4 border-black neo-shadow-sm">
+                <div className="absolute -top-5 left-10 bg-[#FF6B6B] text-black text-[10px] font-mono font-black uppercase tracking-widest px-4 py-2 border-4 border-black neo-shadow-sm">
                   Recommended
                 </div>
               )}
               
-              <div className="mb-10">
-                <div className={`w-12 h-12 ${plan.color} border-2 border-black mb-6 flex items-center justify-center neo-shadow-sm`}>
-                  {plan.highlight ? <Zap className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
+              <div className="mb-12">
+                <div className={`w-14 h-14 ${plan.color} border-4 border-black mb-8 flex items-center justify-center neo-shadow-sm group-hover:-rotate-6 transition-transform`}>
+                  {plan.highlight ? <Zap className="w-8 h-8" /> : <ShieldCheck className="w-8 h-8" />}
                 </div>
-                <h3 className="text-2xl font-black tracking-tight text-black uppercase italic mb-2">
+                <h3 className="text-3xl font-black tracking-tight text-black uppercase italic mb-3 leading-none">
                   {plan.name}
                 </h3>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-tight">
+                <p className="text-[10px] font-mono font-black text-zinc-400 uppercase tracking-widest leading-tight">
                   {plan.tagline}
                 </p>
               </div>
 
-              <div className="mb-10 p-6 bg-zinc-50 border-2 border-black/10 group-hover:border-black transition-colors">
+              <div className="mb-12 p-8 bg-zinc-50 border-4 border-black/10 group-hover:border-black transition-colors">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black tracking-tight text-black font-mono italic">
+                  <span className="text-5xl lg:text-6xl font-black tracking-tight text-black font-mono italic leading-none">
                     {typeof plan.price === 'string' ? plan.price : plan.price[billingCycle]}
                   </span>
                   {typeof plan.price !== 'string' && plan.price.monthly !== "₹0" && (
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                    <span className="text-xs font-mono font-black uppercase tracking-widest text-zinc-400">
                       / {billingCycle}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-5 mb-12 flex-1">
+              <div className="space-y-6 mb-16 flex-1">
                 {plan.features.map((f, j) => (
                   <div key={j} className="flex items-center gap-4 group/item">
-                    <div className="w-5 h-5 bg-[#D4F4E4] border-2 border-black flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-black" strokeWidth={4} />
+                    <div className="w-6 h-6 bg-[#D4F4E4] border-2 border-black flex items-center justify-center shrink-0">
+                      <Check className="w-4 h-4 text-black" strokeWidth={4} />
                     </div>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-zinc-600 group-hover/item:text-black transition-colors">{f}</span>
+                    <span className="text-xs font-mono font-black uppercase tracking-widest text-zinc-600 group-hover/item:text-black transition-colors">{f}</span>
                   </div>
                 ))}
               </div>
 
               <Link
                 to="/register"
-                className={`w-full py-5 text-center text-sm font-black uppercase tracking-widest border-4 border-black neo-shadow transition-all hover:translate-y-0.5 hover:shadow-none ${
+                className={`w-full py-6 text-center text-sm font-mono font-black uppercase tracking-widest border-4 border-black neo-shadow transition-all hover:translate-y-1 hover:shadow-none ${
                   plan.highlight ? "bg-[#FF6B6B] text-black" : "bg-white text-black hover:bg-zinc-50"
                 }`}
               >
