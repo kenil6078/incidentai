@@ -14,3 +14,8 @@ export async function getIncidentTrends() {
     const response = await analyticsApiInstance.get("/incidents")
     return response.data
 }
+
+export async function getSummary() {
+    const response = await analyticsApiInstance.get("/summary")
+    return response.data
+}

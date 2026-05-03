@@ -56,16 +56,22 @@ export const getSummary = async (req, res) => {
       : 0;
 
     const services = await serviceModel.find({ orgId });
+    const operationalCount = services.filter(s => s.status === 'operational').length;
+    const availability = services.length > 0 
+      ? Math.round((operationalCount / services.length) * 100) 
+      : 100;
+
     const by_service = services.map(s => ({
       name: s.name,
-      uptime: s.status === 'operational' ? 99.9 : 85.5
+      uptime: s.status === 'operational' ? 100 : s.status === 'degraded' ? 85 : 50,
+      status: s.status
     }));
 
     res.json({
       total_incidents,
       critical_count,
       mttr_minutes,
-      availability: 99.9,
+      availability,
       by_severity,
       by_service
     });

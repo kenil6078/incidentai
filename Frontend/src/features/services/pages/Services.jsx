@@ -6,13 +6,16 @@ import { Activity, Plus, ShieldCheck, ShieldAlert, MoreVertical, ArrowLeft, Serv
 import { SERVICE_STATUS_LABELS, SERVICE_STATUS_COLORS } from "../../../components/Badges";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "../../../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
-import { fetchServices, createService, selectServices, selectServicesLoading } from "../services.slice";
+import { fetchServices, createService, updateService, deleteService, selectServices, selectServicesLoading } from "../services.slice";
+import { useSocket } from "../../../context/SocketContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
 
 export default function Services() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const services = useSelector(selectServices) || [];
   const loading = useSelector(selectServicesLoading);
+  const { subscribe } = useSocket();
   
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", status: "operational" });
@@ -21,6 +24,15 @@ export default function Services() {
   useEffect(() => {
     dispatch(fetchServices());
   }, [dispatch]);
+
+  useEffect(() => {
+    const unsub = subscribe((evt) => {
+      if (evt.eventName?.startsWith('service.')) {
+        dispatch(fetchServices());
+      }
+    });
+    return () => unsub && unsub();
+  }, [subscribe, dispatch]);
 
   const handleAddService = async (e) => {
     e.preventDefault();
@@ -34,6 +46,25 @@ export default function Services() {
       toast.error(err.detail || "Failed to add service");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await dispatch(updateService({ id, payload: { status } })).unwrap();
+      toast.success(`Service status updated to ${status}`);
+    } catch (err) {
+      toast.error(err.detail || "Failed to update status");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this service?")) return;
+    try {
+      await dispatch(deleteService(id)).unwrap();
+      toast.success("Service deleted");
+    } catch (err) {
+      toast.error(err.detail || "Failed to delete service");
     }
   };
 
@@ -168,17 +199,36 @@ export default function Services() {
           </div>
         ) : (
           services.map((s) => (
-            <div key={s.id || s._id} className="bg-white border-2 border-black p-5 hover:bg-zinc-50 transition group neo-shadow">
+            <div key={s.id || s._id} className="bg-white border-2 border-black p-5 hover:bg-zinc-50 transition group neo-shadow flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-2 border-2 border-black ${s.status === 'operational' ? 'bg-[#D4F4E4]' : 'bg-[#FFB5E8]'}`}>
                   {s.status === 'operational' ? <ShieldCheck className="w-5 h-5 text-black" /> : <ShieldAlert className="w-5 h-5 text-black" />}
                 </div>
-                <button className="text-zinc-400 hover:text-zinc-950 transition">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="text-zinc-400 hover:text-zinc-950 transition p-1">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 border-2 border-black neo-shadow-sm rounded-none">
+                    <DropdownMenuItem onClick={() => handleUpdateStatus(s._id, 'operational')} className="cursor-pointer">
+                      Mark Operational
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleUpdateStatus(s._id, 'degraded')} className="cursor-pointer">
+                      Mark Degraded
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleUpdateStatus(s._id, 'outage')} className="cursor-pointer">
+                      Mark Outage
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDelete(s._id)} className="text-red-600 focus:text-red-600 cursor-pointer">
+                      Delete Service
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="text-xl font-black tracking-tight text-zinc-950 mb-1">{s.name}</div>
-              <div className="text-xs text-zinc-600 mb-6 h-8 line-clamp-2 leading-relaxed">{s.description || "No description provided."}</div>
+              <div className="text-xs text-zinc-600 mb-6 h-8 line-clamp-2 leading-relaxed flex-1">{s.description || "No description provided."}</div>
               
               <div className="flex items-center justify-between pt-4 border-t-2 border-black">
                 <div className="flex items-center gap-2">
@@ -187,7 +237,9 @@ export default function Services() {
                     {SERVICE_STATUS_LABELS[s.status] || s.status}
                   </span>
                 </div>
-                <div className="text-[10px] font-mono font-bold text-zinc-500">99.9% UPTIME</div>
+                <div className="text-[10px] font-mono font-bold text-zinc-500">
+                  {s.status === 'operational' ? '100% UPTIME' : s.status === 'degraded' ? '85% UPTIME' : '50% UPTIME'}
+                </div>
               </div>
             </div>
           ))

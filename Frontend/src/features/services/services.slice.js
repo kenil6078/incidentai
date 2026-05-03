@@ -25,6 +25,32 @@ export const createService = createAsyncThunk(
   }
 );
 
+export const updateService = createAsyncThunk(
+  'services/update',
+  async ({ id, payload }, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await servicesApi.updateService(id, payload);
+      dispatch(fetchServices());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to update service' });
+    }
+  }
+);
+
+export const deleteService = createAsyncThunk(
+  'services/delete',
+  async (id, { rejectWithValue, dispatch }) => {
+    try {
+      const data = await servicesApi.deleteService(id);
+      dispatch(fetchServices());
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { detail: 'Failed to delete service' });
+    }
+  }
+);
+
 const initialState = {
   list: [],
   loading: false,
