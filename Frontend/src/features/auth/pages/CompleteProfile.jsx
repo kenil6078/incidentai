@@ -3,7 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import * as authApi from '../services/auth.api';
 import { toast } from "sonner";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { 
+  ArrowRight, 
+  Eye, 
+  EyeOff, 
+  ShieldCheck, 
+  Code2, 
+  User, 
+  Building2, 
+  MapPin, 
+  Lock,
+  Loader2,
+  CheckCircle2
+} from "lucide-react";
 
 export default function CompleteProfile() {
   const { user, handleGetMe } = useAuth();
@@ -63,8 +75,8 @@ export default function CompleteProfile() {
       }
 
       await authApi.finalizeProfile(payload);
-      await handleGetMe(); // Refresh user state
-      toast.success("Profile completed successfully!");
+      await handleGetMe(); 
+      toast.success("Welcome aboard!");
       navigate("/dashboard");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to complete profile");
@@ -73,136 +85,189 @@ export default function CompleteProfile() {
     }
   };
 
+  const roles = [
+    { id: 'admin', title: 'Admin', desc: 'Create & manage an organization', color: 'bg-[#FFB5E8]', icon: ShieldCheck },
+    { id: 'developer', title: 'Developer', desc: 'Join an existing team', color: 'bg-[#D4F4E4]', icon: Code2 },
+    { id: 'normal_user', title: 'Individual', desc: 'Standard platform access', color: 'bg-[#FDE68A]', icon: User },
+  ];
+
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA]">
-      <div className="flex flex-col justify-center px-8 sm:px-16 py-12">
-        <div className="max-w-sm w-full">
-          <h1 className="text-4xl font-black tracking-tighter text-zinc-950 mb-2">Almost there.</h1>
-          <p className="text-sm text-zinc-600 mb-8">Tell us how you'll be using incident.ai.</p>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA] selection:bg-black selection:text-white">
+      {/* --- Left Side: Form --- */}
+      <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12 relative overflow-y-auto">
+        <div className="max-w-md w-full mx-auto space-y-10">
+          <header className="space-y-2">
+            <div className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] mb-4">Final Step</div>
+            <h1 className="text-5xl font-black tracking-tighter text-black">Perfect your profile.</h1>
+            <p className="text-zinc-500 font-bold">Choose your path and set your credentials.</p>
+          </header>
 
-          <div className="flex gap-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setRole("admin")}
-              className={`flex-1 py-2 text-xs font-bold border-2 border-black neo-shadow transition-all ${role === "admin" ? "bg-[#FFB5E8] shadow-none translate-y-0.5" : "bg-white"}`}
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("developer")}
-              className={`flex-1 py-2 text-xs font-bold border-2 border-black neo-shadow transition-all ${role === "developer" ? "bg-[#D4F4E4] shadow-none translate-y-0.5" : "bg-white"}`}
-            >
-              Developer
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("normal_user")}
-              className={`flex-1 py-2 text-xs font-bold border-2 border-black neo-shadow transition-all ${role === "normal_user" ? "bg-[#FDE68A] shadow-none translate-y-0.5" : "bg-white"}`}
-            >
-              User
-            </button>
-          </div>
-
-          <form onSubmit={submit} className="space-y-4 neo-card p-6 bg-white border-2 border-black">
-            {!user?.hasPassword && (
-              <React.Fragment>
-                <div className="p-3 bg-[#FDE68A] border-2 border-black mb-2">
-                  <p className="text-[10px] font-bold leading-tight uppercase italic">Secure your account by setting a manual login password.</p>
-                </div>
-                <div className="relative">
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">New Password</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm neo-shadow pr-10"
-                    placeholder="••••••••"
-                  />
+          <div className="space-y-8">
+            {/* --- Role Selection --- */}
+            <div className="space-y-4">
+              <label className="block text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400 font-black ml-1">Select your account type</label>
+              <div className="grid grid-cols-1 gap-3">
+                {roles.map((r) => (
                   <button
+                    key={r.id}
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-[34px] text-zinc-500 hover:text-zinc-950"
+                    onClick={() => setRole(r.id)}
+                    className={`group flex items-center gap-4 p-4 border-4 border-black transition-all text-left ${
+                      role === r.id ? `${r.color} translate-x-1 -translate-y-1 neo-shadow` : "bg-white hover:bg-zinc-50"
+                    }`}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <div className={`w-12 h-12 border-2 border-black flex items-center justify-center neo-shadow-sm ${role === r.id ? 'bg-white' : r.color}`}>
+                      <r.icon className="w-6 h-6 text-black" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-black uppercase italic text-sm tracking-tight">{r.title}</h3>
+                      <p className="text-[10px] font-bold text-zinc-500 leading-tight">{r.desc}</p>
+                    </div>
+                    {role === r.id && <CheckCircle2 className="w-5 h-5 text-black" />}
                   </button>
-                </div>
-                <div className="relative">
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Confirm Password</label>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-[#D4F4E4] text-sm neo-shadow pr-10"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-[34px] text-zinc-500 hover:text-zinc-950"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <div className="border-b-2 border-black my-4 opacity-10"></div>
-              </React.Fragment>
-            )}
-
-            {role === "admin" && (
-              <React.Fragment>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Organization name</label>
-                  <input
-                    type="text" required value={orgName} onChange={(e) => setOrgName(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-[#FFB5E8] border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
-                    placeholder="Acme Corp"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Organization Address</label>
-                  <input
-                    type="text" required value={address} onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-white text-sm neo-shadow"
-                    placeholder="123 Main St, NY"
-                  />
-                </div>
-              </React.Fragment>
-            )}
-
-            {role === "developer" && (
-              <div>
-                <label className="block text-[10px] font-mono uppercase tracking-wider text-black font-bold mb-1.5">Select Organization</label>
-                <select
-                  required value={orgId} onChange={(e) => setOrgId(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border-2 border-black focus:outline-none focus:bg-[#FFB5E8] text-sm neo-shadow"
-                >
-                  <option value="" disabled>Select an organization</option>
-                  {organizations.map(org => (
-                    <option key={org._id} value={org._id}>{org.name}</option>
-                  ))}
-                </select>
+                ))}
               </div>
-            )}
+            </div>
 
-            {role === "normal_user" && (
-              <p className="text-sm text-zinc-600 mb-4">You will join as a normal user. No organization required.</p>
-            )}
+            <form onSubmit={submit} className="bg-white border-4 border-black p-8 neo-shadow-lg space-y-6">
+              {/* --- Password Section (Only if Google User without password) --- */}
+              {!user?.hasPassword && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-[#FDE68A] border-2 border-black flex items-start gap-3">
+                    <Lock className="w-5 h-5 shrink-0 mt-0.5" />
+                    <p className="text-[10px] font-black leading-snug uppercase italic">Important: Since you used Google, please set a password for manual login backup.</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Create Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
+                          className="w-full pl-4 pr-12 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button" onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4 bg-[#FF6B6B] text-black border-2 border-black py-2.5 text-sm font-bold neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? "Saving..." : "Complete Profile"} <ArrowRight className="w-4 h-4" strokeWidth={3} />
-            </button>
-          </form>
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Confirm Password</label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full pl-4 pr-12 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-b-2 border-black/10 my-6" />
+                </div>
+              )}
+
+              {/* --- Role Specific Fields --- */}
+              <div className="space-y-4">
+                {role === "admin" && (
+                  <>
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Organization Name</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black" />
+                        <input
+                          type="text" required value={orgName} onChange={(e) => setOrgName(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="e.g. Stark Industries"
+                        />
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Office Address</label>
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black" />
+                        <input
+                          type="text" required value={address} onChange={(e) => setAddress(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="123 Silicon Valley, CA"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {role === "developer" && (
+                  <div className="relative group">
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Choose Organization</label>
+                    <div className="relative">
+                      <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black" />
+                      <select
+                        required value={orgId} onChange={(e) => setOrgId(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold appearance-none"
+                      >
+                        <option value="" disabled>Select from the list</option>
+                        {organizations.map(org => (
+                          <option key={org._id} value={org._id}>{org.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {role === "normal_user" && (
+                  <div className="py-4 text-center">
+                    <p className="text-xs font-bold text-zinc-400 italic italic">No additional setup required for individual accounts.</p>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#FF6B6B] text-black border-4 border-black py-4 text-sm font-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-3 active:translate-y-1.5"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "COMPLETE ONBOARDING"} 
+                {!loading && <ArrowRight className="w-5 h-5" strokeWidth={3} />}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-      
-      <div className="hidden lg:block bg-[#FFB5E8] border-l-2 border-black relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-10" />
+
+      {/* --- Right Side: Aesthetic Section --- */}
+      <div className="hidden lg:flex flex-col items-center justify-center bg-[#D4F4E4] border-l-4 border-black p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+        
+        <div className="relative z-10 text-center space-y-8">
+          <div className="w-32 h-32 bg-white border-4 border-black neo-shadow mx-auto flex items-center justify-center rotate-3">
+            <CheckCircle2 className="w-16 h-16 text-black" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 className="text-4xl font-black italic tracking-tighter uppercase text-black leading-none">Security<br/>First.</h2>
+            <p className="mt-4 text-sm font-bold text-zinc-600 max-w-xs mx-auto">
+              Setting your role helps us tailor the dashboard experience to your specific workflow.
+            </p>
+          </div>
+        </div>
+
+        {/* Decorative Floating Card */}
+        <div className="absolute bottom-12 right-12 w-48 h-48 bg-[#FFB5E8] border-4 border-black neo-shadow -rotate-6 hidden xl:block">
+           <div className="p-4 space-y-2">
+              <div className="w-full h-4 bg-black/10" />
+              <div className="w-3/4 h-4 bg-black/10" />
+              <div className="w-full h-12 bg-black/20 mt-4" />
+           </div>
+        </div>
       </div>
     </div>
   );
