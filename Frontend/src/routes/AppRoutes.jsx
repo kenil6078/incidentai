@@ -25,6 +25,7 @@ const Pricing = lazy(() => import("../features/public/pages/Pricing"));
 const SuperAdminDashboard = lazy(() => import("../features/admin/pages/SuperAdminDashboard"));
 const VerifyEmail = lazy(() => import("../features/auth/pages/VerifyEmail"));
 const CompleteProfile = lazy(() => import("../features/auth/pages/CompleteProfile"));
+const ForgotPassword = lazy(() => import("../features/auth/pages/ForgotPassword"));
 const ChatPage = lazy(() => import("../features/chat/pages/ChatPage"));
 
 function PageLoader() {
@@ -80,6 +81,10 @@ export const routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
       },
       {
         path: "/verify-email/:token",

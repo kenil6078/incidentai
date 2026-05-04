@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { register, login, getMe, logout, resendVerificationEmail } from "../services/auth.api";
+import { register, login, getMe, logout, resendVerificationEmail, requestPasswordReset as requestResetApi, resetPassword as resetApi } from "../services/auth.api";
 import { setUser, setLoading, setError, clearError, selectAuth } from "../auth.slice";
 import { useCallback } from "react";
 
@@ -91,6 +91,32 @@ export function useAuth() {
         }
     }, [dispatch]);
 
+    const handleRequestReset = useCallback(async (email) => {
+        try {
+            dispatch(setLoading(true));
+            return await requestResetApi(email);
+        } catch (error) {
+            const message = error.response?.data?.detail || error.response?.data?.message || "Failed to request reset";
+            dispatch(setError(message));
+            throw error;
+        } finally {
+            dispatch(setLoading(false));
+        }
+    }, [dispatch]);
+
+    const handleResetPassword = useCallback(async (payload) => {
+        try {
+            dispatch(setLoading(true));
+            return await resetApi(payload);
+        } catch (error) {
+            const message = error.response?.data?.detail || error.response?.data?.message || "Failed to reset password";
+            dispatch(setError(message));
+            throw error;
+        } finally {
+            dispatch(setLoading(false));
+        }
+    }, [dispatch]);
+
     return {
         user,
         loading,
@@ -101,6 +127,8 @@ export function useAuth() {
         handleGetMe,
         handleLogout,
         handleResendEmail,
+        handleRequestReset,
+        handleResetPassword,
         setUser: (userData) => dispatch(setUser(userData)),
         clearError: () => dispatch(clearError())
     };

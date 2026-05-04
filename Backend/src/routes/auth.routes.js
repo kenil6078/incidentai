@@ -15,6 +15,8 @@ router.put('/me', auth, authController.updateProfile);
 router.put('/password', auth, authController.updatePassword);
 router.post('/finalize-profile', auth, authController.finalizeProfile);
 router.get('/organizations', authController.getOrganizations);
+router.post('/request-reset', authController.requestPasswordReset);
+router.post('/reset-password', authController.resetPasswordWithOTP);
 
 // Google Auth
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));

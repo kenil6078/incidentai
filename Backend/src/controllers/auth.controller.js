@@ -541,3 +541,65 @@ export const getOrganizations = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to fetch organizations" });
     }
 };
+
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Account not found with this email' });
+    }
+
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    user.resetOTP = otp;
+    user.resetOTPExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
+    await sendEmail({
+      to: email,
+      subject: 'Your Password Reset OTP - incident.ai',
+      html: `
+        <div style="background-color: #FAFAFA; padding: 40px 20px; font-family: 'Inter', sans-serif;">
+          <div style="background-color: #FFFFFF; max-width: 500px; margin: 0 auto; border-radius: 12px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; padding: 48px; text-align: center;">
+            <h1 style="font-size: 24px; font-weight: 900; margin-bottom: 16px;">Password Reset</h1>
+            <p style="color: #666; margin-bottom: 32px;">Use the code below to reset your password. This code expires in 10 minutes.</p>
+            <div style="font-size: 48px; font-weight: 900; letter-spacing: 12px; background: #F4F4F4; padding: 20px; border: 2px dashed #000; display: inline-block;">
+              ${otp}
+            </div>
+          </div>
+        </div>
+      `
+    });
+
+    res.status(200).json({ success: true, message: 'OTP sent to your email' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to send OTP', detail: err.message });
+  }
+};
+
+export const resetPasswordWithOTP = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await userModel.findOne({ 
+      email,
+      resetOTP: otp,
+      resetOTPExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    user.password = newPassword;
+    user.resetOTP = undefined;
+    user.resetOTPExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successful! You can now login.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to reset password', detail: err.message });
+  }
+};

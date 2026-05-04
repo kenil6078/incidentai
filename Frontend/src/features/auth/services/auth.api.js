@@ -56,3 +56,13 @@ export async function updatePassword(payload) {
     const response = await authApiInstance.put("/password", payload)
     return response.data
 }
+
+export async function requestPasswordReset(email) {
+    const response = await authApiInstance.post("/request-reset", { email })
+    return response.data
+}
+
+export async function resetPassword(payload) {
+    const response = await authApiInstance.post("/reset-password", payload)
+    return response.data
+}
