@@ -1,9 +1,10 @@
 import React from 'react';
+import { API_URL } from '../../../utils/config';
 
 const GoogleButton = ({ text = "Continue with Google" }) => {
   return (
     <a
-      href="/api/auth/google"
+      href={`${API_URL}/api/auth/google`}
       className="w-full flex items-center justify-center gap-3 bg-white text-black border-2 border-black py-3 text-sm font-black neo-shadow hover:translate-y-0.5 hover:shadow-none transition-all active:translate-y-1"
     >
       <svg className="w-5 h-5" viewBox="0 0 48 48">
