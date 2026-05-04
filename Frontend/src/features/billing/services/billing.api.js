@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const billingApiInstance = axios.create({
-    baseURL: "/api/billing",
+    baseURL: `${API_URL}/api/billing`,
     withCredentials: true,
 })
 

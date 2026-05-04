@@ -108,7 +108,7 @@ const billingSlice = createSlice({
       })
       // fetchTransactions
       .addCase(fetchTransactions.fulfilled, (state, { payload }) => {
-        state.transactions = payload;
+        state.transactions = Array.isArray(payload) ? payload : (payload.transactions || []);
       });
   },
 });

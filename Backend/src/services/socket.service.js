@@ -14,8 +14,9 @@ const onlineUsers = new Map(); // userId -> Set<socketId>
 export const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: config.FRONTEND_URL,
       methods: ['GET', 'POST'],
+      credentials: true
     },
     pingTimeout: 60000,
     pingInterval: 25000,

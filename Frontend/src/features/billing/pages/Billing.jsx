@@ -131,7 +131,7 @@ export default function Billing() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {plans.map((p) => (
+        {(plans || []).map((p) => (
           <div 
             key={p.id}
             className={`p-6 border-2 border-black flex flex-col relative transition-all ${
@@ -142,12 +142,12 @@ export default function Billing() {
             <div className="mb-6">
               <h3 className="text-xl font-black uppercase italic">{p.name}</h3>
               <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-4xl font-black font-mono italic">{p.price[billingCycle]}</span>
+                <span className="text-4xl font-black font-mono italic">{p.price?.[billingCycle] || "₹0"}</span>
                 <span className="text-[10px] font-black uppercase text-zinc-400">/ {billingCycle}</span>
               </div>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
-              {p.features.map((f, i) => (
+              {(p.features || []).map((f, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-[#D4F4E4] border-2 border-black flex items-center justify-center shrink-0">
                     <Check className="w-2 h-2 text-black" strokeWidth={5} />
@@ -185,17 +185,17 @@ export default function Billing() {
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-black/5">
-              {transactions.length === 0 ? (
+              {(!transactions || transactions.length === 0) ? (
                 <tr><td colSpan={4} className="px-6 py-10 text-center text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">No records found.</td></tr>
               ) : (
                 transactions.map((t) => (
                   <tr key={t._id} className="text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-zinc-500">{t.razorpayOrderId}</td>
-                    <td className="px-6 py-4 italic">₹{t.amount}</td>
+                    <td className="px-6 py-4 font-mono text-zinc-500">{t.razorpayOrderId || "N/A"}</td>
+                    <td className="px-6 py-4 italic">₹{t.amount || 0}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 border-2 border-black text-[8px] bg-[#D4F4E4]">{t.status}</span>
+                      <span className="px-2 py-0.5 border-2 border-black text-[8px] bg-[#D4F4E4]">{t.status || "UNKNOWN"}</span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-400 font-mono">{new Date(t.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-zinc-400 font-mono">{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "N/A"}</td>
                   </tr>
                 ))
               )}
