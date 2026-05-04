@@ -86,50 +86,54 @@ export default function CompleteProfile() {
   };
 
   const roles = [
-    { id: 'admin', title: 'Admin', desc: 'Create & manage an organization', color: 'bg-[#FFB5E8]', icon: ShieldCheck },
+    { id: 'admin', title: 'Admin', desc: 'Create & manage organization', color: 'bg-[#FFB5E8]', icon: ShieldCheck },
     { id: 'developer', title: 'Developer', desc: 'Join an existing team', color: 'bg-[#D4F4E4]', icon: Code2 },
-    { id: 'normal_user', title: 'Individual', desc: 'Standard platform access', color: 'bg-[#FDE68A]', icon: User },
   ];
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA] selection:bg-black selection:text-white">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA] selection:bg-black selection:text-white overflow-hidden">
       {/* --- Left Side: Form --- */}
-      <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12 relative overflow-y-auto">
+      <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12 relative h-screen overflow-y-auto custom-scrollbar">
         <div className="max-w-md w-full mx-auto space-y-10">
           <header className="space-y-2">
             <div className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] mb-4">Final Step</div>
-            <h1 className="text-5xl font-black tracking-tighter text-black">Perfect your profile.</h1>
-            <p className="text-zinc-500 font-bold">Choose your path and set your credentials.</p>
+            <h1 className="text-5xl font-black tracking-tighter text-black leading-none">Complete your<br/>profile.</h1>
+            <p className="text-zinc-500 font-bold">Choose your role and setup your workspace.</p>
           </header>
 
           <div className="space-y-8">
-            {/* --- Role Selection --- */}
+            {/* --- Role Selection (Only Admin & Developer) --- */}
             <div className="space-y-4">
-              <label className="block text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400 font-black ml-1">Select your account type</label>
-              <div className="grid grid-cols-1 gap-3">
+              <label className="block text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400 font-black ml-1">Account Type</label>
+              <div className="grid grid-cols-2 gap-4">
                 {roles.map((r) => (
                   <button
                     key={r.id}
                     type="button"
                     onClick={() => setRole(r.id)}
-                    className={`group flex items-center gap-4 p-4 border-4 border-black transition-all text-left ${
+                    className={`group relative flex flex-col p-4 border-4 border-black transition-all text-left ${
                       role === r.id ? `${r.color} translate-x-1 -translate-y-1 neo-shadow` : "bg-white hover:bg-zinc-50"
                     }`}
                   >
-                    <div className={`w-12 h-12 border-2 border-black flex items-center justify-center neo-shadow-sm ${role === r.id ? 'bg-white' : r.color}`}>
-                      <r.icon className="w-6 h-6 text-black" />
+                    <div className={`w-10 h-10 border-2 border-black flex items-center justify-center mb-3 ${role === r.id ? 'bg-white' : r.color}`}>
+                      <r.icon className="w-5 h-5 text-black" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-black uppercase italic text-sm tracking-tight">{r.title}</h3>
-                      <p className="text-[10px] font-bold text-zinc-500 leading-tight">{r.desc}</p>
+                    <div>
+                      <h3 className="font-black uppercase italic text-xs tracking-tight">{r.title}</h3>
+                      <p className="text-[9px] font-bold text-zinc-500 leading-tight mt-1">{r.desc}</p>
                     </div>
-                    {role === r.id && <CheckCircle2 className="w-5 h-5 text-black" />}
+                    {role === r.id && (
+                      <div className="absolute top-2 right-2">
+                        <CheckCircle2 className="w-4 h-4 text-black" />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
             <form onSubmit={submit} className="bg-white border-4 border-black p-8 neo-shadow-lg space-y-6">
+              
               {/* --- Password Section (Only if Google User without password) --- */}
               {!user?.hasPassword && (
                 <div className="space-y-4">
@@ -179,7 +183,7 @@ export default function CompleteProfile() {
 
               {/* --- Role Specific Fields --- */}
               <div className="space-y-4">
-                {role === "admin" && (
+                {role === "admin" ? (
                   <>
                     <div className="relative group">
                       <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Organization Name</label>
@@ -204,9 +208,7 @@ export default function CompleteProfile() {
                       </div>
                     </div>
                   </>
-                )}
-
-                {role === "developer" && (
+                ) : (
                   <div className="relative group">
                     <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-black mb-1.5 ml-1">Choose Organization</label>
                     <div className="relative">
@@ -223,12 +225,6 @@ export default function CompleteProfile() {
                     </div>
                   </div>
                 )}
-
-                {role === "normal_user" && (
-                  <div className="py-4 text-center">
-                    <p className="text-xs font-bold text-zinc-400 italic italic">No additional setup required for individual accounts.</p>
-                  </div>
-                )}
               </div>
 
               <button
@@ -236,7 +232,7 @@ export default function CompleteProfile() {
                 disabled={loading}
                 className="w-full bg-[#FF6B6B] text-black border-4 border-black py-4 text-sm font-black neo-shadow hover:translate-y-1 hover:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-3 active:translate-y-1.5"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "COMPLETE ONBOARDING"} 
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "COMPLETE SETUP"} 
                 {!loading && <ArrowRight className="w-5 h-5" strokeWidth={3} />}
               </button>
             </form>
@@ -245,7 +241,7 @@ export default function CompleteProfile() {
       </div>
 
       {/* --- Right Side: Aesthetic Section --- */}
-      <div className="hidden lg:flex flex-col items-center justify-center bg-[#D4F4E4] border-l-4 border-black p-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col items-center justify-center bg-[#D4F4E4] border-l-4 border-black p-12 relative overflow-hidden h-screen">
         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }} />
         
         <div className="relative z-10 text-center space-y-8">
@@ -255,7 +251,7 @@ export default function CompleteProfile() {
           <div>
             <h2 className="text-4xl font-black italic tracking-tighter uppercase text-black leading-none">Security<br/>First.</h2>
             <p className="mt-4 text-sm font-bold text-zinc-600 max-w-xs mx-auto">
-              Setting your role helps us tailor the dashboard experience to your specific workflow.
+              Choose your role carefully. Admins manage teams, while Developers respond to incidents.
             </p>
           </div>
         </div>
