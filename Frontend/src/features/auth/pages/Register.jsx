@@ -8,46 +8,28 @@ import * as authApi from '../services/auth.api';
 import GoogleButton from "../components/GoogleButton";
 
 export default function Register() {
-  const [role, setRole] = useState("admin"); // 'admin', 'developer'
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [orgName, setOrgName] = useState("");
   const [address, setAddress] = useState("");
-  const [orgId, setOrgId] = useState("");
-  const [organizations, setOrganizations] = useState([]);
   
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { handleRegister, loading } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchOrgs = async () => {
-      try {
-        const res = await authApi.getOrganizations();
-        if (res.success) {
-          setOrganizations(res.organizations);
-        }
-      } catch (err) {
-        console.error("Failed to load organizations");
-      }
-    };
-    if (role === "developer") {
-      fetchOrgs();
-    }
-  }, [role]);
-
   const submit = async (e) => {
     e.preventDefault();
     try {
-      const payload = { name, email, password, role };
-      if (role === "admin") {
-        payload.orgName = orgName;
-        payload.address = address;
-      } else if (role === "developer") {
-        payload.orgId = orgId;
-      }
+      const payload = { 
+        name, 
+        email, 
+        password, 
+        role: "admin",
+        orgName,
+        address
+      };
 
       await handleRegister(payload);
       setSuccess(true);
@@ -138,25 +120,7 @@ export default function Register() {
             <div className="space-y-8">
               <div className="text-center lg:text-left pt-4">
                 <h1 className="text-5xl font-black tracking-tighter text-black mb-2">Register.</h1>
-                <p className="text-zinc-500 font-bold">Enter your details to create your workspace.</p>
-              </div>
-
-              {/* Role Selection (Neubrutalist style) */}
-              <div className="flex p-1 bg-zinc-200 border-2 border-black neo-shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setRole("admin")}
-                  className={`flex-1 py-3 text-xs font-black uppercase tracking-widest transition-all ${role === "admin" ? "bg-white border-2 border-black" : "text-zinc-500"}`}
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("developer")}
-                  className={`flex-1 py-3 text-xs font-black uppercase tracking-widest transition-all ${role === "developer" ? "bg-white border-2 border-black" : "text-zinc-500"}`}
-                >
-                  Developer
-                </button>
+                <p className="text-zinc-500 font-bold">Create a new organization and get started.</p>
               </div>
 
               <form onSubmit={submit} className="bg-white border-4 border-black p-8 neo-shadow-lg space-y-6">
@@ -205,66 +169,30 @@ export default function Register() {
                     </div>
                   </div>
 
-                  <AnimatePresence mode="wait">
-                    {role === "admin" ? (
-                      <motion.div 
-                        key="admin"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 overflow-hidden"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="relative group">
-                            <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 font-black mb-1.5 ml-1">Org Name</label>
-                            <div className="relative">
-                              <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
-                              <input
-                                type="text" required value={orgName} onChange={(e) => setOrgName(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 bg-[#FFB5E8]/10 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
-                                placeholder="Acme Inc"
-                              />
-                            </div>
-                          </div>
-                          <div className="relative group">
-                            <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 font-black mb-1.5 ml-1">Location</label>
-                            <div className="relative">
-                              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
-                              <input
-                                type="text" required value={address} onChange={(e) => setAddress(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
-                                placeholder="London, UK"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div 
-                        key="dev"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 overflow-hidden"
-                      >
-                        <div className="relative group">
-                          <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 font-black mb-1.5 ml-1">Select Workspace</label>
-                          <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
-                            <select
-                              required value={orgId} onChange={(e) => setOrgId(e.target.value)}
-                              className="w-full pl-12 pr-4 py-4 bg-[#D4F4E4]/10 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold appearance-none"
-                            >
-                              <option value="" disabled>Choose your company...</option>
-                              {organizations.map(org => (
-                                <option key={org._id} value={org._id}>{org.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 font-black mb-1.5 ml-1">Org Name</label>
+                      <div className="relative">
+                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
+                        <input
+                          type="text" required value={orgName} onChange={(e) => setOrgName(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[#FFB5E8]/10 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="Acme Inc"
+                        />
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 font-black mb-1.5 ml-1">Location</label>
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
+                        <input
+                          type="text" required value={address} onChange={(e) => setAddress(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-zinc-50 border-2 border-black focus:bg-white focus:outline-none transition-all text-sm font-bold"
+                          placeholder="London, UK"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <button

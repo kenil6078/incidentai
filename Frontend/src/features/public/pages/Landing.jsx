@@ -159,7 +159,7 @@ export default function Landing() {
               { icon: Brain, title: "AI assistant", desc: "Auto-generate summaries, root-cause hypotheses and full postmortems.", color: "bg-[#FDE68A]" },
               { icon: Globe, title: "Public status page", desc: "A reassuring, branded page for your customers — no extra setup.", color: "bg-[#FF6B6B]" },
               { icon: Activity, title: "Service health", desc: "Track operational state of every service and subsystem you run.", color: "bg-[#FFB5E8]" },
-              { icon: Users, title: "Team & roles", desc: "Admin, Developer, Viewer. Invite teammates. Assign incidents.", color: "bg-[#E2E8F0]" },
+              { icon: Users, title: "Team & roles", desc: "Admin, Developer. Invite teammates. Assign incidents.", color: "bg-[#E2E8F0]" },
               { icon: Shield, title: "Multi-tenant", desc: "Each workspace is fully isolated. Your data, your team.", color: "bg-[#C084FC]" },
             ].map((f, i) => (
               <div key={i} className={`${f.color} border-4 border-black p-8 neo-shadow hover:translate-y-1 hover:shadow-none transition-all group`}>

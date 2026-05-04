@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'developer', 'super_admin'],
     default: 'admin'
   },
-  developerStatus: {
-    type: String,
-    enum: ['pending', 'approved']
-  },
   address: {
     type: String
   },

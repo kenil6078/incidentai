@@ -32,7 +32,8 @@ export const inviteMember = async (req, res) => {
       orgId: req.user.orgId._id,
       role,
       isVerified: false,
-      verificationToken
+      verificationToken,
+      profileCompleted: true
     });
     await user.save();
 

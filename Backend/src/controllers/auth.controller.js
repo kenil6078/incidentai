@@ -8,12 +8,13 @@ import { getRedisClient } from '../config/redis.js';
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role, orgName, address, orgId } = req.body;
+    const { name, email, password, orgName, address } = req.body;
+    const role = 'admin'; // FORCE ADMIN ROLE FOR PUBLIC REGISTRATION
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password) {
       return res.status(400).json({ 
         success: false, 
-        message: "Name, email, password and role are required" 
+        message: "Name, email and password are required" 
       });
     }
 
@@ -25,30 +26,17 @@ export const register = async (req, res) => {
       });
     }
 
-    let organization = null;
-    let devStatus = undefined;
-
-    if (role === 'admin') {
-      if (!orgName || !address) {
-        return res.status(400).json({ success: false, message: "Organization name and address are required for admin" });
-      }
-      const slug = orgName.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
-      if (!slug) return res.status(400).json({ success: false, message: "Invalid organization name" });
-      
-      const orgExists = await organizationModel.findOne({ slug });
-      if (orgExists) return res.status(400).json({ success: false, message: "Organization name is already taken" });
-      
-      organization = await organizationModel.create({ name: orgName, slug, address });
-    } else if (role === 'developer') {
-      if (!orgId) {
-        return res.status(400).json({ success: false, message: "Organization selection is required for developers" });
-      }
-      organization = await organizationModel.findById(orgId);
-      if (!organization) return res.status(400).json({ success: false, message: "Organization not found" });
-      devStatus = 'pending';
-      // Here a notification would be sent to the organization admin
-      console.log(`Notification: User ${email} requested to join ${organization.name} as a developer.`);
+    if (!orgName || !address) {
+      return res.status(400).json({ success: false, message: "Organization name and address are required" });
     }
+
+    const slug = orgName.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+    if (!slug) return res.status(400).json({ success: false, message: "Invalid organization name" });
+    
+    const orgExists = await organizationModel.findOne({ slug });
+    if (orgExists) return res.status(400).json({ success: false, message: "Organization name is already taken" });
+    
+    const organization = await organizationModel.create({ name: orgName, slug, address });
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
@@ -57,10 +45,9 @@ export const register = async (req, res) => {
       email,
       password,
       role,
-      orgId: organization ? organization._id : undefined,
-      developerStatus: devStatus,
+      orgId: organization._id,
       verificationToken,
-      address: role === 'admin' ? address : undefined,
+      address,
       profileCompleted: true
     });
 
@@ -157,7 +144,7 @@ export const googleCallback = async (req, res) => {
                 name: displayName,
                 avatar: profilePic,
                 isVerified: true, 
-                role: 'admin', 
+                role: 'admin', // NEW GOOGLE USERS ARE ADMINS BY DEFAULT
                 profileCompleted: false 
             });
         } else if (!user.isVerified) {
@@ -196,9 +183,6 @@ export const finalizeProfile = async (req, res) => {
             return res.status(400).json({ success: false, message: "Profile is already complete" });
         }
 
-        let organization = null;
-        let devStatus = undefined;
-
         if (role === 'admin') {
             if (!orgName || !address) {
                 return res.status(400).json({ success: false, message: "Organization name and address are required" });
@@ -208,16 +192,10 @@ export const finalizeProfile = async (req, res) => {
             if (orgExists) return res.status(400).json({ success: false, message: "Organization name is already taken" });
             
             organization = await organizationModel.create({ name: orgName, slug, address });
-        } else if (role === 'developer') {
-            if (!orgId) return res.status(400).json({ success: false, message: "Organization selection is required" });
-            organization = await organizationModel.findById(orgId);
-            if (!organization) return res.status(400).json({ success: false, message: "Organization not found" });
-            devStatus = 'pending';
         }
 
         user.role = role;
         user.orgId = organization ? organization._id : undefined;
-        user.developerStatus = devStatus;
         if (role === 'admin') user.address = address;
         if (password) user.password = password; // Set password if provided
         user.profileCompleted = true;
@@ -548,15 +526,6 @@ export const updatePassword = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: "Failed to update password", detail: err.message });
   }
-};
-
-export const getOrganizations = async (req, res) => {
-    try {
-        const orgs = await organizationModel.find({}, '_id name');
-        res.status(200).json({ success: true, organizations: orgs });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Failed to fetch organizations" });
-    }
 };
 
 export const requestPasswordReset = async (req, res) => {

@@ -40,20 +40,10 @@ export default function CompleteProfile() {
   }, [user, navigate]);
 
   useEffect(() => {
-    const fetchOrgs = async () => {
-      try {
-        const res = await authApi.getOrganizations();
-        if (res.success) {
-          setOrganizations(res.organizations);
-        }
-      } catch (err) {
-        console.error("Failed to load organizations");
-      }
-    };
-    if (role === "developer") {
-      fetchOrgs();
-    }
-  }, [role]);
+    // Developers invited by admin already have profileCompleted: true and won't reach here.
+    // New Google users default to 'admin' role.
+    setRole("admin");
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -62,13 +52,11 @@ export default function CompleteProfile() {
     }
     setLoading(true);
     try {
-      const payload = { role };
-      if (role === "admin") {
-        payload.orgName = orgName;
-        payload.address = address;
-      } else if (role === "developer") {
-        payload.orgId = orgId;
-      }
+      const payload = { 
+        role: "admin",
+        orgName,
+        address
+      };
 
       if (!user?.hasPassword && password) {
         payload.password = password;
@@ -85,23 +73,6 @@ export default function CompleteProfile() {
     }
   };
 
-  const roles = [
-    {
-      id: "admin",
-      title: "Admin",
-      desc: "Create & manage organization",
-      color: "bg-[#FFB5E8]",
-      icon: ShieldCheck,
-    },
-    {
-      id: "developer",
-      title: "Developer",
-      desc: "Join an existing team",
-      color: "bg-[#D4F4E4]",
-      icon: Code2,
-    },
-  ];
-
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA] selection:bg-black selection:text-white overflow-hidden">
       {/* --- Left Side: Form --- */}
@@ -117,50 +88,11 @@ export default function CompleteProfile() {
               profile.
             </h1>
             <p className="text-zinc-500 font-bold">
-              Choose your role and setup your workspace.
+              Setup your workspace to get started.
             </p>
           </header>
 
           <div className="space-y-8">
-            {/* --- Role Selection (Only Admin & Developer) --- */}
-            <div className="space-y-4">
-              <label className="block text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-400 font-black ml-1">
-                Account Type
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                {roles.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setRole(r.id)}
-                    className={`group relative flex flex-col p-4 border-4 border-black transition-all text-left ${
-                      role === r.id
-                        ? `${r.color} translate-x-1 -translate-y-1 neo-shadow`
-                        : "bg-white hover:bg-zinc-50"
-                    }`}
-                  >
-                    <div
-                      className={`w-10 h-10 border-2 border-black flex items-center justify-center mb-3 ${role === r.id ? "bg-white" : r.color}`}
-                    >
-                      <r.icon className="w-5 h-5 text-black" />
-                    </div>
-                    <div>
-                      <h3 className="font-black uppercase italic text-xs tracking-tight">
-                        {r.title}
-                      </h3>
-                      <p className="text-[9px] font-bold text-zinc-500 leading-tight mt-1">
-                        {r.desc}
-                      </p>
-                    </div>
-                    {role === r.id && (
-                      <div className="absolute top-2 right-2">
-                        <CheckCircle2 className="w-4 h-4 text-black" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
 
             <form
               onSubmit={submit}
