@@ -47,13 +47,17 @@ export function useAuth() {
         try {
             dispatch(setLoading(true));
             const response = await getMe();
-            dispatch(setUser(response.user || response));
+            // Crucial fix: Only set user if it exists in response.user
+            // If response itself is returned (legacy), check for identifying fields
+            const userData = response.user || (response._id ? response : null);
+            dispatch(setUser(userData));
         } catch (error) {
-            if (error.response?.status !== 401) {
-                const message = error.response?.data?.detail || error.response?.data?.message || "Failed to fetch user";
-                dispatch(setError(message));
-            }
+            // If we get a 401, it's a clean "not logged in" state
+            // Any other error (like server cold start timeout) should also result in null user
             dispatch(setUser(null));
+            if (error.response?.status && error.response.status !== 401) {
+                console.error("Server synchronization error:", error.message);
+            }
         } finally {
             dispatch(setLoading(false));
         }
