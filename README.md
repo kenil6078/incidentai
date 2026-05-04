@@ -1,6 +1,6 @@
 # 🚀 IncidentAI
 
-**IncidentAI** is a professional, AI-powered incident management platform designed for modern DevOps and SRE teams. It streamlines the entire incident lifecycle—from detection and real-time collaboration to automated postmortem generation—using state-of-the-art Generative AI.
+**IncidentAI** is a professional, AI-powered incident management platform designed for modern DevOps and SRE teams. It streamlines the entire incident lifecycle from detection and real-time collaboration to automated postmortem generation using state-of-the-art Generative AI.
 
 ---
 
@@ -95,7 +95,7 @@ IncidentAI uses a sophisticated multi-model fallback strategy to ensure high ava
    ```
 3. Create a `.env` file based on `.env.example` and fill in your credentials:
    ```env
-   PORT=5000
+   PORT=****
    MONGODB_URI=your_mongodb_uri
    JWT_SECRET=your_secret
    REDIS_HOST=127.0.0.1
@@ -119,7 +119,7 @@ IncidentAI uses a sophisticated multi-model fallback strategy to ensure high ava
    ```
 3. Create a `.env` file:
    ```env
-   VITE_API_URL=http://localhost:5000
+   VITE_API_URL=http://localhost:****
    VITE_RAZORPAY_KEY_ID=your_id
    ```
 4. Start the development server:
@@ -143,4 +143,10 @@ IncidentAI uses a sophisticated multi-model fallback strategy to ensure high ava
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+This project is licensed under the IncidentAI License.
+
+## Team Katana Members
+1. Kenil Bhuva
+2. Ashok Kumar
+3. Subham Dhar
+
