@@ -1,6 +1,7 @@
 import http from 'http';
 import app from './src/app.js';
 import { connectToDB } from './src/config/database.js';
+import { connectRedis } from './src/config/redis.js';
 import { config } from './src/config/config.js';
 import { initSocket } from './src/services/socket.service.js';
 
@@ -21,13 +22,20 @@ server.on('error', (err) => {
   }
 });
 
-// MongoDB Connection
-connectToDB().then(() => {
-  const PORT = config.PORT;
-  server.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error('❌ Server failed to start due to DB connection error:', err.message);
-  process.exit(1);
-});
+// Start sequence: DB -> Redis -> Server
+const startServer = async () => {
+  try {
+    await connectToDB();
+    await connectRedis();
+    
+    const PORT = config.PORT;
+    server.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Server failed to start:', err.message);
+    process.exit(1);
+  }
+};
+
+startServer();
