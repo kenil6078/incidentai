@@ -8,7 +8,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../../components/ConfirmationModal";
 
+import { useAuth } from "../../auth/hooks/useAuth";
+
 export default function SuperAdminDashboard() {
+  const { user: currentUser } = useAuth();
   const { 
     organizations, users, loading, getOrganizations, getUsers, 
     updateUser, toggleBan, updatePlan, deleteUser, deleteOrg 
@@ -116,7 +119,11 @@ export default function SuperAdminDashboard() {
                          user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesOrg = orgFilter === "all" || user.orgId?._id === orgFilter || user.orgId === orgFilter;
-    return matchesSearch && matchesRole && matchesOrg;
+    
+    // Logic: If viewing a specific organization, hide Super Admins from that list
+    const hideSuperAdminInOrgView = orgFilter !== "all" && user.role === 'super_admin';
+    
+    return matchesSearch && matchesRole && matchesOrg && !hideSuperAdminInOrgView;
   });
 
   return (
@@ -292,7 +299,11 @@ export default function SuperAdminDashboard() {
                     </div>
                   </td>
                   <td className="px-6 py-4 font-bold text-sm">
-                    {user.orgId?.name || "N/A"}
+                    {user.role === 'super_admin' ? (
+                      <span className="text-zinc-400 italic">PLATFORM CONTROL</span>
+                    ) : (
+                      user.orgId?.name || "N/A"
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-[10px] font-black uppercase border-2 border-black neo-shadow-sm ${
@@ -311,6 +322,9 @@ export default function SuperAdminDashboard() {
                         ) : (
                           <><ShieldAlert className="w-3 h-3 text-red-500" strokeWidth={4} /> Pending</>
                         )}
+                        {user._id === (currentUser?.id || currentUser?._id) && (
+                          <span className="ml-1 text-[8px] bg-zinc-950 text-white px-1 py-0.5">YOU</span>
+                        )}
                       </div>
                       {!user.active && (
                         <div className="flex items-center gap-2 text-[10px] font-black uppercase text-red-600">
@@ -323,22 +337,25 @@ export default function SuperAdminDashboard() {
                     <div className="flex items-center justify-end gap-3">
                       <button 
                         onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}
-                        className="p-2 bg-[#FDE68A] border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all"
-                        title="Edit User"
+                        disabled={user._id === (currentUser?.id || currentUser?._id)}
+                        className={`p-2 border-2 border-black neo-shadow-sm transition-all ${user._id === (currentUser?.id || currentUser?._id) ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : 'bg-[#FDE68A] hover:translate-y-0.5 hover:shadow-none'}`}
+                        title={user._id === (currentUser?.id || currentUser?._id) ? "You cannot edit yourself here" : "Edit User"}
                       >
                         <Edit2 className="w-4 h-4 text-black" />
                       </button>
                       <button 
                         onClick={() => handleToggleBan(user._id)}
-                        className={`p-2 border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all ${user.active ? 'bg-white hover:bg-orange-400 group' : 'bg-orange-400'}`}
-                        title={user.active ? "Ban User" : "Unban User"}
+                        disabled={user._id === (currentUser?.id || currentUser?._id)}
+                        className={`p-2 border-2 border-black neo-shadow-sm transition-all ${user._id === (currentUser?.id || currentUser?._id) ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : user.active ? 'bg-white hover:bg-orange-400 group' : 'bg-orange-400'}`}
+                        title={user._id === (currentUser?.id || currentUser?._id) ? "You cannot ban yourself" : user.active ? "Ban User" : "Unban User"}
                       >
-                        <Ban className={`w-4 h-4 ${user.active ? 'text-black group-hover:text-white' : 'text-white'}`} />
+                        <Ban className={`w-4 h-4 ${user._id === (currentUser?.id || currentUser?._id) ? 'text-zinc-400' : user.active ? 'text-black group-hover:text-white' : 'text-white'}`} />
                       </button>
                       <button 
                         onClick={() => handleDeleteUser(user._id)}
-                        className="p-2 bg-red-500 border-2 border-black neo-shadow-sm hover:translate-y-0.5 hover:shadow-none transition-all text-white"
-                        title="Delete User"
+                        disabled={user._id === (currentUser?.id || currentUser?._id)}
+                        className={`p-2 border-2 border-black neo-shadow-sm transition-all ${user._id === (currentUser?.id || currentUser?._id) ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : 'bg-red-500 hover:translate-y-0.5 hover:shadow-none text-white'}`}
+                        title={user._id === (currentUser?.id || currentUser?._id) ? "You cannot delete yourself" : "Delete User"}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

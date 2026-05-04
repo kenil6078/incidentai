@@ -97,7 +97,18 @@ export const register = async (req, res) => {
     });
 
     if (!emailResult.success) {
-      console.error("Failed to send verification email:", emailResult.error);
+      return res.status(201).json({ 
+        success: true, 
+        message: 'Registration successful, but we could not send the verification email. Please contact support or try logging in with Google.',
+        warning: 'Email service error',
+        user: { 
+          id: user._id, 
+          name, 
+          email, 
+          role: user.role,
+          profileCompleted: user.profileCompleted
+        } 
+      });
     }
 
     res.status(201).json({ 
@@ -398,36 +409,23 @@ export const verifyEmail = async (req, res) => {
     const user = await userModel.findOne({ verificationToken: token });
     
     if (!user) {
-      return res.status(400).send(`
-        <html>
-          <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #FAFAFA;">
-            <div style="text-align: center; padding: 40px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; background: #FFF;">
-              <h1 style="color: #FF6B6B;">Verification Failed</h1>
-              <p>The link is invalid or has expired.</p>
-              <a href="${config.FRONTEND_URL}/register" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #000; color: #FFF; text-decoration: none;">Back to Register</a>
-            </div>
-          </body>
-        </html>
-      `);
+      return res.status(400).json({ 
+        success: false, 
+        detail: "Invalid or expired verification link." 
+      });
     }
 
     user.isVerified = true;
     user.verificationToken = undefined;
     await user.save();
 
-    res.status(200).send(`
-      <html>
-        <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #FAFAFA;">
-          <div style="text-align: center; padding: 40px; border: 2px solid #000; box-shadow: 8px 8px 0px #000; background: #FFF;">
-            <h1 style="color: #2ECC71;">Email Verified!</h1>
-            <p>Welcome to incident.ai, ${user.name}. Your account is ready.</p>
-            <a href="${config.FRONTEND_URL}/login" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #FF6B6B; color: #000; font-weight: bold; border: 2px solid #000; text-decoration: none; box-shadow: 4px 4px 0px #000;">Login to Workspace</a>
-          </div>
-        </body>
-      </html>
-    `);
+    return res.status(200).json({ 
+      success: true, 
+      detail: "Email verified successfully!",
+      message: `Welcome to incident.ai, ${user.name}. Your account is ready.`
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, detail: err.message });
   }
 };
 

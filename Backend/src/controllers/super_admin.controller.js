@@ -66,6 +66,12 @@ export const updateUser = async (req, res) => {
 export const toggleUserStatus = async (req, res) => {
   try {
     const { userId } = req.params;
+    
+    // Safety: Cannot ban yourself
+    if (userId === req.user._id.toString()) {
+      return res.status(403).json({ detail: 'You cannot ban your own Super Admin account.' });
+    }
+
     const user = await userModel.findById(userId);
     
     if (!user) return res.status(404).json({ detail: 'User not found' });
@@ -105,6 +111,12 @@ export const updateOrganizationPlan = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // Safety: Cannot delete yourself
+    if (userId === req.user._id.toString()) {
+      return res.status(403).json({ detail: 'You cannot delete your own Super Admin account.' });
+    }
+
     const user = await userModel.findByIdAndDelete(userId);
     if (!user) return res.status(404).json({ detail: 'User not found' });
     res.json({ message: 'User deleted successfully' });

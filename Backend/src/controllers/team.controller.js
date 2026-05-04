@@ -6,7 +6,10 @@ import { config } from '../config/config.js';
 
 export const getTeam = async (req, res) => {
   try {
-    const team = await userModel.find({ orgId: req.user.orgId._id }).select('-password');
+    const team = await userModel.find({ 
+      orgId: req.user.orgId._id,
+      role: { $ne: 'super_admin' }
+    }).select('-password');
     res.json(team);
   } catch (err) {
     res.status(500).json({ detail: err.message });
@@ -35,7 +38,7 @@ export const inviteMember = async (req, res) => {
 
     const verifyUrl = `${config.FRONTEND_URL}/verify-email/${verificationToken}`;
     
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: email,
       subject: `Invitation to join ${req.user.orgId.name} on incident.ai`,
       html: `
@@ -56,6 +59,13 @@ export const inviteMember = async (req, res) => {
       `
     });
 
+    if (!emailResult.success) {
+      return res.status(500).json({ 
+        detail: "Member created, but invitation email failed to send. Please check your Gmail API configuration.",
+        error: emailResult.error 
+      });
+    }
+
     res.json({ email: user.email, temp_password: password });
   } catch (err) {
     res.status(500).json({ detail: err.message });
@@ -65,6 +75,12 @@ export const inviteMember = async (req, res) => {
 export const updateRole = async (req, res) => {
   try {
     const { role } = req.body;
+    
+    // Safety: Only super_admin can promote others to super_admin
+    if (role === 'super_admin' && req.user.role !== 'super_admin') {
+      return res.status(403).json({ detail: 'Only a Super Admin can promote members to Super Admin role.' });
+    }
+
     const user = await userModel.findOneAndUpdate(
       { _id: req.params.id, orgId: req.user.orgId._id },
       { role },

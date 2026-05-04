@@ -240,7 +240,7 @@ export default function AppShell({ children }) {
             >
               <Menu className="w-5 h-5" />
             </button>
-            {user?.role !== "developer" && user?.role !== "normal_user" && (
+            {user?.role !== "developer" && user?.role !== "super_admin" && user?.role !== "normal_user" && (
               <button
                 onClick={() => navigate("/incidents/new")}
                 className="neo-shadow bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-xs font-bold px-2.5 md:px-3 py-1.5 transition flex items-center gap-1.5"
