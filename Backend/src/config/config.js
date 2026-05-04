@@ -42,6 +42,6 @@ export const config = {
     MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
-    FRONTEND_URL: process.env.FRONTEND_URL,
+    FRONTEND_URL: (process.env.FRONTEND_URL || "").replace(/\/$/, ""),
     NODE_ENV: process.env.NODE_ENV || "development",
 };
