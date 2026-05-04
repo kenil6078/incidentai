@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const notificationApiInstance = axios.create({
-    baseURL: "/api/notifications",
+    baseURL: `${API_URL}/api/notifications`,
     withCredentials: true,
 })
 

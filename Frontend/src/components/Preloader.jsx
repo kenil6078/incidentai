@@ -94,17 +94,17 @@ const Preloader = ({ isInitialized }) => {
               {/* Console Logs Simulator */}
               <div className="bg-black p-4 font-mono text-[9px] text-green-500 h-24 overflow-hidden border-2 border-black neo-shadow-sm">
                  <div className="opacity-50">
-                    <div>> BOOT_SEQUENCE_START</div>
-                    <div>> KERNEL_INIT_SUCCESS</div>
-                    <div>> CONNECTING_TO_REMOTE_SERVER_RENDER</div>
-                    {displayPercent > 30 && <div>> SERVER_HANDSHAKE_PENDING...</div>}
-                    {displayPercent > 60 && <div>> DB_POOL_ESTABLISHED</div>}
-                    {displayPercent > 90 && <div>> FETCHING_USER_STATE</div>}
-                    {displayPercent === 100 && <div className="text-white font-bold">> AUTHENTICATION_SYNC_COMPLETE</div>}
+                    <div>&gt; BOOT_SEQUENCE_START</div>
+                    <div>&gt; KERNEL_INIT_SUCCESS</div>
+                    <div>&gt; CONNECTING_TO_REMOTE_SERVER_RENDER</div>
+                    {displayPercent > 30 && <div>&gt; SERVER_HANDSHAKE_PENDING...</div>}
+                    {displayPercent > 60 && <div>&gt; DB_POOL_ESTABLISHED</div>}
+                    {displayPercent > 90 && <div>&gt; FETCHING_USER_STATE</div>}
+                    {displayPercent === 100 && <div className="text-white font-bold">&gt; AUTHENTICATION_SYNC_COMPLETE</div>}
                     <motion.div 
                       animate={{ opacity: [0, 1] }} 
                       transition={{ duration: 0.5, repeat: Infinity }}
-                    >_</motion.div>
+                    >&gt;_</motion.div>
                  </div>
               </div>
             </div>

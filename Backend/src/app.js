@@ -20,7 +20,7 @@ const app = express();
 
 app.use(morgan('dev'));
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite default port
+  origin: config.FRONTEND_URL, 
   credentials: true
 }));
 app.use(express.json());
@@ -35,7 +35,7 @@ app.use(passport.initialize());
 passport.use(new GoogleStrategy({
     clientID: config.GOOGLE_CLIENT_ID,
     clientSecret: config.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/auth/google/callback",
+    callbackURL: "/api/auth/google/callback",
     proxy: true
 }, (accessToken, refreshToken, profile, done) => {
     return done(null, profile);

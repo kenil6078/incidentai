@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../features/auth/hooks/useAuth";
 
+import { API_URL } from "../utils/config";
+
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
@@ -13,7 +15,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return;
 
-    const newSocket = io("/", {
+    const newSocket = io(API_URL, {
       transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: 10,
