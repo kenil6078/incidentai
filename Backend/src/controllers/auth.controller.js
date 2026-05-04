@@ -4,6 +4,7 @@ import userModel from '../models/user.model.js';
 import organizationModel from '../models/organization.model.js';
 import { config } from '../config/config.js';
 import { sendEmail } from '../services/email.service.js';
+import { getRedisClient } from '../config/redis.js';
 
 export const register = async (req, res) => {
   try {
@@ -365,12 +366,30 @@ export const getMe = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({ 
-    success: true, 
-    message: "Logged out successfully" 
-  });
+export const logout = async (req, res) => {
+  try {
+    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+    
+    if (token) {
+      const redis = getRedisClient();
+      // Blacklist for 7 days (matching JWT expiry)
+      await redis.set(`blacklist:${token}`, 'true', 'EX', 7 * 24 * 60 * 60);
+    }
+
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: config.NODE_ENV === "production",
+        sameSite: config.NODE_ENV === "production" ? "none" : "lax",
+        path: "/",
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Logged out successfully" 
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Logout failed" });
+  }
 };
 
 export const verifyEmail = async (req, res) => {

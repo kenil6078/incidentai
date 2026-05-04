@@ -1,11 +1,19 @@
 import jwt from 'jsonwebtoken';
 import userModel from '../models/user.model.js';
 import { config } from '../config/config.js';
+import { getRedisClient } from '../config/redis.js';
 
 export const auth = async (req, res, next) => {
   try {
     const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ detail: 'No token provided' });
+
+    // Check Redis Blacklist
+    const redis = getRedisClient();
+    const isBlacklisted = await redis.get(`blacklist:${token}`);
+    if (isBlacklisted) {
+      return res.status(401).json({ detail: 'Token is blacklisted. Please login again.' });
+    }
 
     const decoded = jwt.verify(token, config.JWT_SECRET);
     const user = await userModel.findById(decoded.id).populate('orgId');

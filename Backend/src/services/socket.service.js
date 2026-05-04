@@ -5,6 +5,7 @@ import userModel from '../models/user.model.js';
 import chatModel from '../models/chat.model.js';
 import messageModel from '../models/message.model.js';
 import { encrypt } from '../utils/crypto.js';
+import { getRedisClient } from '../config/redis.js';
 
 // ──────────────────────────────────────────────────────────
 //  Track online users for typing indicators & presence
@@ -35,6 +36,13 @@ export const initSocket = (server) => {
 
       if (!token) {
         return next(new Error('Authentication error: No token provided'));
+      }
+
+      // Check Redis Blacklist
+      const redis = getRedisClient();
+      const isBlacklisted = await redis.get(`blacklist:${token}`);
+      if (isBlacklisted) {
+        return next(new Error('Authentication error: Token is blacklisted'));
       }
 
       const decoded = jwt.verify(token, config.JWT_SECRET);
