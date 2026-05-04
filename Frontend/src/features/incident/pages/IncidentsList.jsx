@@ -68,7 +68,7 @@ export default function IncidentsList() {
             Manage and respond to system disruptions.
           </p>
         </div>
-        {user?.role === "admin" && (
+        {user?.role !== "developer" && user?.role !== "normal_user" && (
           <Link
             to="/incidents/new"
             className="bg-[#FF6B6B] text-black border-2 border-black text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest"

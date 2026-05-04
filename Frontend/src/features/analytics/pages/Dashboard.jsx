@@ -87,15 +87,17 @@ export default function Dashboard() {
             <span className="font-mono">{user?.org_name}</span>.
           </p>
         </div>
-        <Link
-          to="/incidents/new"
-          className="bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest"
-          data-testid="dashboard-new-incident"
-        >
-          <Plus className="w-4 h-4" strokeWidth={3} />{" "}
-          <span className="hidden sm:inline">New Incident</span>
-          <span className="sm:hidden">New</span>
-        </Link>
+        {user?.role !== "developer" && user?.role !== "normal_user" && (
+          <Link
+            to="/incidents/new"
+            className="bg-[#FF6B6B] text-black border-2 border-black text-[10px] md:text-sm font-black px-4 py-2 hover:translate-y-0.5 neo-shadow transition-all flex items-center gap-2 uppercase tracking-widest"
+            data-testid="dashboard-new-incident"
+          >
+            <Plus className="w-4 h-4" strokeWidth={3} />{" "}
+            <span className="hidden sm:inline">New Incident</span>
+            <span className="sm:hidden">New</span>
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
