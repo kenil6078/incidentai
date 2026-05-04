@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const aiApiInstance = axios.create({
-    baseURL: "/api/ai",
+    baseURL: `${API_URL}/api/ai`,
     withCredentials: true,
 })
 

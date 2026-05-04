@@ -163,12 +163,12 @@ export default function IncidentDetail() {
     setShowAiModal(true);
     
     try {
-      const response = await fetch(`/api/ai/${kind}`, {
+      const response = await fetch(`${API_URL}/api/ai/${kind}`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ incidentId: id })
       });
 
@@ -252,8 +252,8 @@ export default function IncidentDetail() {
     }
   };
 
-  const assignedNames = (incident.assignedTo || []).map((u) => u.name || (typeof u === 'string' ? team.find(t => (t.id || t._id) === u)?.name : null)).filter(Boolean);
-  const serviceNames = (incident.affectedServices || []).map((s) => s.name || (typeof s === 'string' ? services.find(sv => (sv.id || sv._id) === s)?.name : null)).filter(Boolean);
+  const assignedNames = (Array.isArray(incident.assignedTo) ? incident.assignedTo : []).map((u) => u.name || (typeof u === 'string' ? team.find(t => (t.id || t._id) === u)?.name : null)).filter(Boolean);
+  const serviceNames = (Array.isArray(incident.affectedServices) ? incident.affectedServices : []).map((s) => s.name || (typeof s === 'string' ? services.find(sv => (sv.id || sv._id) === s)?.name : null)).filter(Boolean);
 
   return (
     <div className="p-6 space-y-5 max-w-7xl animate-in fade-in duration-500">
@@ -263,7 +263,7 @@ export default function IncidentDetail() {
             {incident.title}
           </h1>
           <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight mt-1">
-            INCIDENT · {(incident?.id || incident?._id)?.toString().slice(-8)} · OPENED BY {incident.creator?.name || 'SYSTEM'} · {formatRelative(incident.createdAt)}
+            INCIDENT · {(incident?.id || incident?._id || "NEW").toString().slice(-8)} · OPENED BY {incident.creator?.name || 'SYSTEM'} · {formatRelative(incident.createdAt)}
           </p>
           <div className="flex flex-wrap items-center gap-3 mt-4">
             <SeverityBadge severity={incident.severity} />
@@ -300,7 +300,7 @@ export default function IncidentDetail() {
               )}
               {timeline.map((ev, idx) => (
                 <div key={ev.id || ev._id || idx} className={`border-l-2 border-black pl-4 relative transition-all duration-300 ${ev.isOptimistic ? 'opacity-50' : 'opacity-100'}`}>
-                  <div className={`absolute -left-[5px] top-1.5 w-2 h-2 border border-black ${ev.type === "ai" ? "bg-[#FF6B6B]" : ev.type === "fix" ? "bg-[#4ECDC4]" : ev.type === "alert" ? "bg-[#FFE66D]" : "bg-zinc-400"}`} />
+                  <div className={`absolute -left-[5.5px] top-1.5 w-2.5 h-2.5 rounded-full border border-black ${ev.type === "ai" ? "bg-[#FF6B6B]" : ev.type === "fix" ? "bg-[#4ECDC4]" : ev.type === "alert" ? "bg-[#FFE66D]" : "bg-zinc-400"}`} />
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${TYPE_COLOR[ev.type] || "text-zinc-700"}`}>{TYPE_LABEL[ev.type] || "UPDATE"}</span>
                     <span className="text-[10px] font-mono text-zinc-500">{ev.createdBy?.name || ev.user || 'System'}</span>

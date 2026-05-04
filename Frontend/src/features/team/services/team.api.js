@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const teamApiInstance = axios.create({
-    baseURL: "/api/team",
+    baseURL: `${API_URL}/api/team`,
     withCredentials: true,
 })
 

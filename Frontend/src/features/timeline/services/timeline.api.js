@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const timelineApiInstance = axios.create({
-    baseURL: "/api/timeline",
+    baseURL: `${API_URL}/api/timeline`,
     withCredentials: true,
 })
 

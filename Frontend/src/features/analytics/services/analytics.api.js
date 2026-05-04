@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_URL } from "../../../utils/config";
 
 const analyticsApiInstance = axios.create({
-    baseURL: "/api/analytics",
+    baseURL: `${API_URL}/api/analytics`,
     withCredentials: true,
 })
 

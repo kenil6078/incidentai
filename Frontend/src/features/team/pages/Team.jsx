@@ -22,7 +22,9 @@ export default function Team() {
   // Filter: Admin only sees themselves and developers. SuperAdmin sees everyone.
   const team = allMembers.filter(m => {
     if (isSuperAdmin) return true;
-    const isMe = (m.id || m._id) === (user?.id || user?._id);
+    const memberId = m._id || m.id;
+    const currentUserId = user?._id || user?.id;
+    const isMe = memberId === currentUserId;
     const isDeveloper = m.role === 'developer';
     return isMe || isDeveloper;
   });
@@ -192,66 +194,90 @@ export default function Team() {
         )}
       </div>
 
-      <div className="bg-white border-2 border-black neo-shadow overflow-hidden">
+      <div className="bg-white border-4 border-black neo-shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="border-b-2 border-black bg-zinc-50 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-                <th className="px-6 py-4 font-bold">Member</th>
-                <th className="px-6 py-4 font-bold">Email</th>
-                <th className="px-6 py-4 font-bold">Role</th>
-                <th className="px-6 py-4 font-bold text-right">Actions</th>
+              <tr className="border-b-4 border-black bg-[#D4F4E4] text-[11px] font-black uppercase tracking-widest text-black">
+                <th className="px-6 py-5">Team Member</th>
+                <th className="px-6 py-5">Email Address</th>
+                <th className="px-6 py-5">Role & Status</th>
+                <th className="px-6 py-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-zinc-200" data-testid="team-table">
+            <tbody className="divide-y-4 divide-black/5" data-testid="team-table">
               {loading && team.length === 0 ? (
                 <>
                   {[1, 2, 3].map(i => (
                     <tr key={i} className="animate-pulse">
-                      <td className="px-6 py-4 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-zinc-100 border-2 border-black" />
-                        <div className="h-4 w-32 bg-zinc-100" />
+                      <td className="px-6 py-6 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-zinc-100 border-2 border-black" />
+                        <div className="h-5 w-40 bg-zinc-100" />
                       </td>
-                      <td className="px-6 py-4"><div className="h-4 w-48 bg-zinc-100" /></td>
-                      <td className="px-6 py-4"><div className="h-8 w-24 bg-zinc-100" /></td>
-                      <td className="px-6 py-4"></td>
+                      <td className="px-6 py-6"><div className="h-4 w-48 bg-zinc-100" /></td>
+                      <td className="px-6 py-6"><div className="h-10 w-32 bg-zinc-100" /></td>
+                      <td className="px-6 py-6"></td>
                     </tr>
                   ))}
                 </>
+              ) : team.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 bg-zinc-50 border-2 border-black flex items-center justify-center">
+                        <User className="w-8 h-8 text-zinc-300" />
+                      </div>
+                      <p className="text-sm font-black text-zinc-400 uppercase tracking-widest italic">No members found in this view.</p>
+                    </div>
+                  </td>
+                </tr>
               ) : team.map((m) => (
-                <tr key={m.id || m._id} className="hover:bg-zinc-50 transition-colors" data-testid={`team-row-${m.id || m._id}`}>
-                  <td className="px-6 py-4 flex items-center gap-4">
-                    <div className="w-10 h-10 flex-shrink-0 bg-zinc-950 text-white text-sm font-black flex items-center justify-center border-2 border-black neo-shadow-sm">
-                      {m.name?.[0]?.toUpperCase() || '?'}
+                <tr key={m._id || m.id} className="hover:bg-zinc-50 transition-all group" data-testid={`team-row-${m._id || m.id}`}>
+                  <td className="px-6 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 flex-shrink-0 text-black text-lg font-black flex items-center justify-center border-4 border-black neo-shadow-sm ${(m._id || m.id) === (user?._id || user?.id) ? 'bg-[#FF6B6B]' : 'bg-white'}`}>
+                        {m.name?.[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-base font-black text-black truncate uppercase tracking-tight flex items-center gap-2">
+                          {m.name}
+                          {(m._id || m.id) === (user?._id || user?.id) && (
+                            <span className="bg-black text-white text-[9px] px-2 py-0.5 tracking-widest">YOU</span>
+                          )}
+                        </div>
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Joined {new Date(m.createdAt).toLocaleDateString()}</div>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-black text-zinc-950 truncate uppercase tracking-tight">{m.name}</div>
-                      {(m.id === user?.id || m._id === user?.id) && <div className="text-[10px] font-mono font-bold text-[#FF6B6B]">YOU</div>}
+                  </td>
+                  <td className="px-6 py-6">
+                    <div className="text-sm text-zinc-600 font-bold font-mono tracking-tighter">{m.email}</div>
+                  </td>
+                  <td className="px-6 py-6">
+                    <div className="flex flex-col gap-2">
+                      <span className={`inline-flex w-fit px-3 py-1 text-[10px] font-black uppercase tracking-wider border-2 border-black ${m.role === 'admin' ? 'bg-[#FFB5E8]' : 'bg-[#D4F4E4]'}`}>
+                        {m.role}
+                      </span>
+                      {m.isVerified ? (
+                        <span className="text-[9px] font-black text-emerald-600 flex items-center gap-1.5 uppercase italic">
+                          <CheckCircle2 className="w-3 h-3" strokeWidth={3} /> Verified Member
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-black text-amber-500 flex items-center gap-1.5 uppercase italic">
+                          <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse border border-black/20" /> Verification Pending
+                        </span>
+                      )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-zinc-600 font-medium font-mono truncate">{m.email}</div>
-                  </td>
-                  <td className="px-6 py-4 flex flex-col gap-1.5">
-                    <span className="inline-flex w-fit px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-100 border-2 border-black">
-                      {m.role}
-                    </span>
-                    {m.isVerified ? (
-                      <span className="text-[9px] font-black text-green-600 flex items-center gap-1 uppercase">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full" /> Verified
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-black text-amber-500 flex items-center gap-1 uppercase">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" /> Pending Verification
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    {/* Only allow removing if Admin is viewing a Developer, or SuperAdmin is viewing anyone else */}
-                    {((isAdmin && m.role === 'developer') || (isSuperAdmin && (m.id !== user?.id && m._id !== user?.id))) && (
-                      <button onClick={() => handleRemove(m.id || m._id)} className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all border border-transparent hover:border-red-200">
-                        <Trash2 className="w-4 h-4" />
+                  <td className="px-6 py-6 text-right">
+                    {((isAdmin && m.role === 'developer') || (isSuperAdmin && (m._id !== user?._id && m.id !== user?.id))) ? (
+                      <button 
+                        onClick={() => handleRemove(m._id || m.id)} 
+                        className="p-3 text-zinc-400 hover:text-black hover:bg-[#FF6B6B] transition-all border-2 border-transparent hover:border-black neo-shadow-sm hover:shadow-none"
+                      >
+                        <Trash2 className="w-4 h-4 stroke-[2.5]" />
                       </button>
+                    ) : (
+                      <div className="text-[10px] font-black text-zinc-300 italic uppercase">Permanent</div>
                     )}
                   </td>
                 </tr>
