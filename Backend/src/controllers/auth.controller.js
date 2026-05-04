@@ -183,6 +183,7 @@ export const finalizeProfile = async (req, res) => {
             return res.status(400).json({ success: false, message: "Profile is already complete" });
         }
 
+        let organization = null;
         if (role === 'admin') {
             if (!orgName || !address) {
                 return res.status(400).json({ success: false, message: "Organization name and address are required" });
