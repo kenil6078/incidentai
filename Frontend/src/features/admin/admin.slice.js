@@ -96,14 +96,14 @@ const adminSlice = createSlice({
       })
       .addCase(fetchOrganizations.fulfilled, (state, action) => {
         state.loading = false;
-        state.organizations = action.payload;
+        state.organizations = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchOrganizations.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
-        state.users = action.payload;
+        state.users = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(updateUserInfo.fulfilled, (state, action) => {
         const index = state.users.findIndex(u => u._id === action.payload._id);
@@ -126,11 +126,15 @@ const adminSlice = createSlice({
       })
       .addCase(removeUser.fulfilled, (state, action) => {
         const userId = action.meta.arg;
-        state.users = state.users.filter(u => u._id !== userId);
+        if (Array.isArray(state.users)) {
+          state.users = state.users.filter(u => u._id !== userId);
+        }
       })
       .addCase(removeOrganization.fulfilled, (state, action) => {
         const orgId = action.meta.arg;
-        state.organizations = state.organizations.filter(o => o._id !== orgId);
+        if (Array.isArray(state.organizations)) {
+          state.organizations = state.organizations.filter(o => o._id !== orgId);
+        }
       });
   },
 });

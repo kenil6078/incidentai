@@ -26,7 +26,7 @@ export async function resendVerificationEmail({ email }) {
 }
 
 export async function logout() {
-    const response = await authApiInstance.post("/logout")
+    const response = await authApiInstance.get("/logout")
     return response.data
 }
 

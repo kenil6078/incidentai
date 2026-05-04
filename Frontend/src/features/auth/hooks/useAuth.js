@@ -63,11 +63,14 @@ export function useAuth() {
         try {
             dispatch(setLoading(true));
             await logout();
-            dispatch(setUser(null));
         } catch (error) {
-            dispatch(setError("Logout failed"));
+            console.error("Logout API failed:", error);
+            dispatch(setError("Logout failed on server, but clearing local session."));
         } finally {
+            dispatch(setUser(null));
             dispatch(setLoading(false));
+            // Force reload or redirect to login to ensure state is clean
+            window.location.href = "/login";
         }
     }, [dispatch]);
 

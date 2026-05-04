@@ -9,7 +9,7 @@ router.post('/register', authController.register);
 router.get('/verify-email/:token', authController.verifyEmail);
 router.post('/resend-verification', authController.resendVerification);
 router.post('/login', authController.login);
-router.post('/logout', auth, authController.logout);
+router.all('/logout', auth, authController.logout);
 router.get('/me', auth, authController.getMe);
 router.put('/me', auth, authController.updateProfile);
 router.put('/password', auth, authController.updatePassword);

@@ -108,7 +108,9 @@ const incidentSlice = createSlice({
         if (index !== -1) state.list[index] = action.payload;
       })
       .addCase(deleteIncident.fulfilled, (state, action) => {
-        state.list = state.list.filter(i => (i._id || i.id) !== action.payload);
+        if (Array.isArray(state.list)) {
+          state.list = state.list.filter(i => (i._id || i.id) !== action.payload);
+        }
         if (state.current && (state.current._id === action.payload || state.current.id === action.payload)) {
           state.current = null;
         }

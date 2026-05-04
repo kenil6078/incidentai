@@ -206,7 +206,7 @@ const chatSlice = createSlice({
       })
       .addCase(fetchChats.fulfilled, (state, action) => {
         state.loading = false;
-        state.chats = action.payload;
+        state.chats = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.loading = false;
@@ -257,7 +257,9 @@ const chatSlice = createSlice({
       // ── Delete Chat ──────────────────────────────────
       .addCase(deleteChat.fulfilled, (state, action) => {
         const chatId = action.payload;
-        state.chats = state.chats.filter(c => c._id !== chatId);
+        if (Array.isArray(state.chats)) {
+          state.chats = state.chats.filter(c => c._id !== chatId);
+        }
         delete state.messages[chatId];
         delete state.hasMore[chatId];
         delete state.typingUsers[chatId];
