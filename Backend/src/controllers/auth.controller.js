@@ -238,6 +238,8 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    console.log(`[Login Attempt] Email: ${email}`);
+
     if (!email || !password) {
       return res.status(400).json({ 
         success: false, 
@@ -248,14 +250,16 @@ export const login = async (req, res) => {
     const user = await userModel.findOne({ email }).populate('orgId').select('+password');
     
     if (!user) {
+      console.log(`[Login Failed] User not found: ${email}`);
       return res.status(400).json({ 
         success: false, 
-        message: 'Invalid credentials',
+        message: 'Account not found with this email',
         err: "user not found" 
       });
     }
 
     if (!user.isVerified) {
+      console.log(`[Login Failed] Email not verified: ${email}`);
       return res.status(403).json({ 
         success: false,
         message: 'Please verify your email first', 
@@ -266,21 +270,25 @@ export const login = async (req, res) => {
 
     // Google-only users might not have a password set
     if (!user.password) {
+        console.log(`[Login Failed] No password set for Google user: ${email}`);
         return res.status(400).json({
             success: false,
-            message: "Please login with Google",
+            message: "This account uses Google Login. Please use the Google button.",
             err: "no password"
         });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log(`[Login Failed] Incorrect password for: ${email}`);
       return res.status(400).json({ 
         success: false, 
-        message: 'Invalid credentials',
+        message: 'Incorrect password. Please try again.',
         err: "incorrect password"
       });
     }
+
+    console.log(`[Login Success] User: ${email}`);
 
     const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
       expiresIn: "7d",
