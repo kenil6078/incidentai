@@ -93,8 +93,8 @@ export default function CompleteProfile() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAFAFA] selection:bg-black selection:text-white overflow-hidden">
       {/* --- Left Side: Form --- */}
-      <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12 relative h-screen overflow-y-auto custom-scrollbar">
-        <div className="max-w-md w-full mx-auto space-y-10">
+      <div className="flex flex-col items-center px-8 sm:px-16 lg:px-24 py-20 relative h-screen overflow-y-auto custom-scrollbar">
+        <div className="max-w-md w-full space-y-10">
           <header className="space-y-2">
             <div className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] mb-4">Final Step</div>
             <h1 className="text-5xl font-black tracking-tighter text-black leading-none">Complete your<br/>profile.</h1>
